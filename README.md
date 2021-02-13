@@ -2,7 +2,7 @@
 
 ![Go](https://github.com/l-lin/tcli/workflows/Go/badge.svg)
 
-> Project's description
+> Trello interactive CLI
 
 ## Getting started
 

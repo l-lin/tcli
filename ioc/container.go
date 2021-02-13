@@ -2,7 +2,7 @@ package ioc
 
 import (
 	"github.com/l-lin/tcli/conf"
-	"github.com/l-lin/tcli/user"
+	"github.com/l-lin/tcli/trello"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -11,7 +11,7 @@ import (
 type Container struct {
 	Inputs
 	*conf.Conf
-	UserRepository user.Repository
+	TrelloRepository trello.Repository
 }
 
 // Bootstrap the beans from the given user inputs
@@ -20,25 +20,23 @@ func Boostrap(inputs Inputs) *Container {
 		Inputs: inputs,
 	}
 	container.registerConf()
-
-	// TODO: add custom beans here
-	container.registerUserRepository()
+	container.registerTrelloRepository()
 
 	container.setLogLevel()
 	return container
 }
 
-func (c *Container) registerUserRepository() {
-	var ur user.Repository
-	ur = user.NewHttpRepository(*c.Conf, c.Debug)
-	c.UserRepository = ur
+func (c *Container) registerTrelloRepository() {
+	var tr trello.Repository
+	tr = trello.NewHttpRepository(*c.Conf, c.Debug)
+	c.TrelloRepository = tr
 }
 
 func (c *Container) registerConf() {
 	var cr conf.Repository
 	cr = conf.NewFileRepository(c.File, c.Viper)
 	var cp conf.Provider
-	cp = conf.NewProvider(cr)
+	cp = conf.NewProvider(cr, c.Inputs.TrelloDevKey, c.Inputs.TrelloAppName)
 	if err := cp.Init(); err != nil {
 		log.Fatal().
 			Err(err).

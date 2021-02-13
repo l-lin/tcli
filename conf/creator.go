@@ -3,46 +3,70 @@ package conf
 import (
 	"errors"
 	"fmt"
+	wrappedhttp "github.com/l-lin/tcli/http"
 	"github.com/manifoldco/promptui"
+	"github.com/rs/zerolog/log"
 	"io"
-	"regexp"
+	"net/url"
+	"os/exec"
+	"runtime"
 	"strings"
+)
+
+const (
+	defaultTrelloApiKey  = "85e0a48198cd720949ad9d829c464b2e"
+	defaultTrelloAppName = "Trello CLI"
 )
 
 // creator is used as a builder to create a new Conf by asking the user the needed information
 type creator struct {
-	Err error
 	*Conf
+	client *wrappedhttp.Client
+	Err    error
 	stdin  io.ReadCloser
 	stdout io.WriteCloser
 }
 
-func (creator *creator) askSomeProperty() *creator {
+func (creator *creator) askTrelloAccessToken() *creator {
 	if creator.Err != nil {
 		return creator
 	}
-
+	v := url.Values{}
+	v.Set("key", creator.ApiKey)
+	v.Set("name", creator.AppName)
+	v.Set("response_type", "token")
+	v.Set("expires", "never")
+	v.Set("scope", "read,write")
+	u := fmt.Sprintf("%s/authorize?%v", creator.BaseURL, v.Encode())
+	log.Info().
+		Str("url", u).
+		Msg("Please copy the API access token from Trello")
+	openBrowser(u)
 	prompt := promptui.Prompt{
-		Label:    "Some property",
+		Label:    "Paste the API token here",
 		Validate: validateNotEmpty,
 		Stdin:    creator.stdin,
 		Stdout:   creator.stdout,
 	}
-	creator.SomeProperty, creator.Err = prompt.Run()
+	creator.AccessToken, creator.Err = prompt.Run()
 	return creator
 }
 
-func (creator *creator) askEmail() *creator {
-	if creator.Err != nil {
-		return creator
+func (creator *creator) setTrelloApiKey(trelloApiKey string) *creator {
+	if trelloApiKey != "" {
+		creator.ApiKey = trelloApiKey
+	} else {
+		creator.ApiKey = defaultTrelloApiKey
 	}
-	prompt := promptui.Prompt{
-		Label:    "Email",
-		Validate: validateEmail,
-		Stdin:    creator.stdin,
-		Stdout:   creator.stdout,
+	return creator
+}
+
+func (creator *creator) setTrelloAppName(appName string) *creator {
+	if appName != "" {
+		creator.AppName = appName
+	} else {
+		creator.AppName = defaultTrelloAppName
 	}
-	creator.Email, creator.Err = prompt.Run()
 	return creator
 }
 
@@ -57,10 +81,19 @@ func validateNotEmpty(s string) error {
 	return nil
 }
 
-func validateEmail(s string) error {
-	emailRegex := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
-	if len(s) < 3 && len(s) > 254 || !emailRegex.MatchString(s) {
-		return fmt.Errorf(`"%s" is not a valid email`, s)
+func openBrowser(url string) {
+	var err error
+	switch runtime.GOOS {
+	case "linux":
+		err = exec.Command("xdg-open", url).Start()
+	case "windows":
+		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
+	case "darwin":
+		err = exec.Command("open", url).Start()
+	default:
+		err = fmt.Errorf("unsupported platform")
 	}
-	return nil
+	if err != nil {
+		log.Fatal().Err(err)
+	}
 }

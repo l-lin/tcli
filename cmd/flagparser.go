@@ -36,6 +36,10 @@ func (fp flagParser) GetDebug() bool {
 	return fp.GetBool("debug", true)
 }
 
-func (fp flagParser) GetUserName() string {
-	return fp.GetString("user-name", false)
+func (fp flagParser) GetTrelloDevKey() string {
+	return fp.GetString("trello-dev-key", false)
+}
+
+func (fp flagParser) GetTrelloAppName() string {
+	return fp.GetString("trello-app-name", false)
 }

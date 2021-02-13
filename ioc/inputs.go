@@ -8,6 +8,8 @@ type Inputs struct {
 	Viper *viper.Viper
 	Debug bool
 	File  string
-	// TODO: add custom fields here
-	UserName string
+	// key used to identify the app
+	TrelloDevKey string
+	// name of the app registered in the Trello account
+	TrelloAppName string
 }

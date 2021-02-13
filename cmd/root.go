@@ -14,14 +14,8 @@ var container *ioc.Container
 // NewRootCmd creates a root command that represents the base command when called without any subcommands
 func NewRootCmd(version, buildDate string) *cobra.Command {
 	c := &cobra.Command{
-		Use:   "tcli",
-		Short: "A brief description of your application",
-		Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+		Use:              "tcli",
+		Short:            "Trello interactive CLI",
 		Run:              runRootCmd,
 		PersistentPreRun: initializeIocContainer,
 	}
@@ -41,40 +35,23 @@ func initRootCmd(c *cobra.Command, version, buildDate string) *pflag.FlagSet {
 	c.SetVersionTemplate(`{{printf "%s" .Version}}`)
 	c.PersistentFlags().String("config", "", "config file (default will look at $PWD/.tcli.yml then at $HOME/.tcli.yml)")
 	c.PersistentFlags().Bool("debug", false, "debug mode")
-
-	// TODO: Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-	c.PersistentFlags().StringSlice("types", []string{"foo", "bar"}, "types")
-	c.PersistentFlags().String("name", "foobar", "name")
-
-	// TODO: Cobra also supports local flags, which will only run when this action is called directly.
-	c.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	c.PersistentFlags().String("trello-dev-key", "", "override Trello developer key")
+	c.PersistentFlags().String("trello-app-name", "", "override Trello app name")
 	return c.Flags()
 }
 
 func runRootCmd(c *cobra.Command, _ []string) {
 	log.Info().Msg("Hello, world")
-	log.Info().Str("SomeProperty", container.Conf.SomeProperty).Msg("reading config")
-	types, err := c.Flags().GetStringSlice("types")
-	if err != nil {
-		log.Fatal().Err(err).Msg("could not read flag")
-	}
-	log.Info().Strs("types", types).Msg("reading flag")
-	toggle, err := c.Flags().GetBool("toggle")
-	if err != nil {
-		log.Fatal().Err(err).Msg("could not read flag")
-	}
-	log.Info().Bool("toggle", toggle).Msg("reading flag")
 }
 
 func initializeIocContainer(c *cobra.Command, _ []string) {
 	fp := flagParser{Command: c}
 	inputs := ioc.Inputs{
-		Viper:    viper.New(),
-		Debug:    fp.GetDebug(),
-		File:     fp.GetConfigFile(),
-		UserName: fp.GetUserName(),
+		Viper:         viper.New(),
+		Debug:         fp.GetDebug(),
+		File:          fp.GetConfigFile(),
+		TrelloDevKey:  fp.GetTrelloDevKey(),
+		TrelloAppName: fp.GetTrelloAppName(),
 	}
 	container = ioc.Boostrap(inputs)
 }

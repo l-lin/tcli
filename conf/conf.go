@@ -1,24 +1,35 @@
 package conf
 
-import "os"
+import (
+	"os"
+)
+
+const (
+	defaultTrelloApiBaseURL = "https://trello.com/1/"
+)
 
 // Conf of the application
 type Conf struct {
-	// TODO: add the properties needed for your app
-	SomeProperty string `yaml:"some_property"`
-	Email        string `yaml:"email"`
-	URL          string `yaml:"url"`
+	Trello `json:"trello"`
+}
+
+type Trello struct {
+	ApiKey      string `yaml:"api_key"`
+	AccessToken string `yaml:"access_token"`
+	AppName     string `yaml:"-"`
+	BaseURL     string `yaml:"-"`
 }
 
 func NewConf() *Conf {
 	return &Conf{
-		URL: "https://httpbin.org",
+		Trello{
+			BaseURL: defaultTrelloApiBaseURL,
+		},
 	}
 }
 
 func (c *Conf) areMandatoryFieldsFilled() bool {
-	// TODO: set your mandatory fields
-	return c.SomeProperty != "" && c.Email != ""
+	return c.Trello.ApiKey != "" && c.Trello.AccessToken != ""
 }
 
 type Provider interface {
@@ -26,12 +37,18 @@ type Provider interface {
 	Get() *Conf
 }
 
-func NewProvider(r Repository) Provider {
-	return &provider{r: r}
+func NewProvider(r Repository, trelloDevKey, trelloAppName string) Provider {
+	return &provider{
+		r:             r,
+		trelloDevKey:  trelloDevKey,
+		trelloAppName: trelloAppName,
+	}
 }
 
 type provider struct {
-	r Repository
+	r             Repository
+	trelloDevKey  string
+	trelloAppName string
 }
 
 func (p *provider) Init() error {
@@ -60,8 +77,9 @@ func (p *provider) createIfNotExists() error {
 	}
 	var err error
 	c, err = confCreator.
-		askSomeProperty().
-		askEmail().
+		setTrelloApiKey(p.trelloDevKey).
+		setTrelloAppName(p.trelloAppName).
+		askTrelloAccessToken().
 		create()
 	if err != nil {
 		return err

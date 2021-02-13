@@ -1,12 +1,14 @@
-package user
+package trello
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/l-lin/tcli/conf"
 	wrappedhttp "github.com/l-lin/tcli/http"
 	"github.com/rs/zerolog/log"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 )
 
 func NewHttpRepository(c conf.Conf, debug bool) Repository {
@@ -18,15 +20,18 @@ type HttpRepository struct {
 	client *wrappedhttp.Client
 }
 
-func (h HttpRepository) Get(_ string) (*User, error) {
-	url := h.URL + "/uuid"
+func (h HttpRepository) GetBoards() (Boards, error) {
+	v := url.Values{}
+	v.Set("key", h.ApiKey)
+	v.Set("token", h.AccessToken)
+	u := fmt.Sprintf("%s/members/me/boards?%v", h.BaseURL, v.Encode())
 
-	request, err := http.NewRequest("GET", url, nil)
+	request, err := http.NewRequest("GET", u, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Debug().Str("url", url).Msg("getting user")
+	log.Debug().Str("url", u).Msg("getting user")
 	response, err := h.client.DoOnlyOk(request)
 	if err != nil {
 		return nil, err
@@ -34,9 +39,9 @@ func (h HttpRepository) Get(_ string) (*User, error) {
 
 	defer response.Body.Close()
 	body, err := ioutil.ReadAll(response.Body)
-	var u *User
-	if err = json.Unmarshal(body, &u); err != nil {
+	var boards Boards
+	if err = json.Unmarshal(body, &boards); err != nil {
 		return nil, err
 	}
-	return u, nil
+	return boards, nil
 }
