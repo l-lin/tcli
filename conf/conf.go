@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	defaultTrelloApiBaseURL = "https://trello.com/1/"
+	defaultTrelloApiBaseURL = "https://trello.com/1"
 )
 
 // Conf of the application
@@ -16,8 +16,7 @@ type Conf struct {
 type Trello struct {
 	ApiKey      string `yaml:"api_key"`
 	AccessToken string `yaml:"access_token"`
-	AppName     string `yaml:"-"`
-	BaseURL     string `yaml:"-"`
+	BaseURL     string `yaml:"base_url"`
 }
 
 func NewConf() *Conf {
@@ -29,7 +28,7 @@ func NewConf() *Conf {
 }
 
 func (c *Conf) areMandatoryFieldsFilled() bool {
-	return c.Trello.ApiKey != "" && c.Trello.AccessToken != ""
+	return c.Trello.ApiKey != "" && c.Trello.AccessToken != "" && c.Trello.BaseURL != ""
 }
 
 type Provider interface {
@@ -37,17 +36,17 @@ type Provider interface {
 	Get() *Conf
 }
 
-func NewProvider(r Repository, trelloDevKey, trelloAppName string) Provider {
+func NewProvider(r Repository, trelloApiKey, trelloAppName string) Provider {
 	return &provider{
 		r:             r,
-		trelloDevKey:  trelloDevKey,
+		trelloApiKey:  trelloApiKey,
 		trelloAppName: trelloAppName,
 	}
 }
 
 type provider struct {
 	r             Repository
-	trelloDevKey  string
+	trelloApiKey  string
 	trelloAppName string
 }
 
@@ -77,7 +76,7 @@ func (p *provider) createIfNotExists() error {
 	}
 	var err error
 	c, err = confCreator.
-		setTrelloApiKey(p.trelloDevKey).
+		setTrelloApiKey(p.trelloApiKey).
 		setTrelloAppName(p.trelloAppName).
 		askTrelloAccessToken().
 		create()

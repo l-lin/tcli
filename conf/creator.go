@@ -3,7 +3,6 @@ package conf
 import (
 	"errors"
 	"fmt"
-	wrappedhttp "github.com/l-lin/tcli/http"
 	"github.com/manifoldco/promptui"
 	"github.com/rs/zerolog/log"
 	"io"
@@ -21,10 +20,10 @@ const (
 // creator is used as a builder to create a new Conf by asking the user the needed information
 type creator struct {
 	*Conf
-	client *wrappedhttp.Client
-	Err    error
-	stdin  io.ReadCloser
-	stdout io.WriteCloser
+	AppName string
+	Err     error
+	stdin   io.ReadCloser
+	stdout  io.WriteCloser
 }
 
 func (creator *creator) askTrelloAccessToken() *creator {

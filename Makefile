@@ -59,7 +59,7 @@ fmt:
 
 generate:
 	@echo "  >  Go generate"
-	@if type "stringer" > /dev/null 2>&1; then go generate ./...; else GO111MODULE=off go get golang.org/x/tools/cmd/stringer && go generate ./...; fi
+	@if type "mockgen" > /dev/null 2>&1; then go generate ./...; else GO111MODULE=off go get github.com/golang/mock/mockgen && go generate ./...; fi
 
 mod-download:
 	@echo "  >  Download dependencies..."

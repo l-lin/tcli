@@ -36,8 +36,8 @@ func (fp flagParser) GetDebug() bool {
 	return fp.GetBool("debug", true)
 }
 
-func (fp flagParser) GetTrelloDevKey() string {
-	return fp.GetString("trello-dev-key", false)
+func (fp flagParser) GetTrelloApiKey() string {
+	return fp.GetString("trello-api-key", false)
 }
 
 func (fp flagParser) GetTrelloAppName() string {

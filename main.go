@@ -13,6 +13,10 @@ func main() {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 
 	rootCmd := cmd.NewRootCmd(version, buildDate)
+	lsCmd := cmd.NewLSCmd()
+	lsCmd.AddCommand(cmd.NewLSBoardCmd())
+	lsCmd.AddCommand(cmd.NewLSListsCmd())
+	rootCmd.AddCommand(lsCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		log.Err(err).Msg("error when executing the root command")

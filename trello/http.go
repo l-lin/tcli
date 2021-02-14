@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/l-lin/tcli/conf"
 	wrappedhttp "github.com/l-lin/tcli/http"
-	"github.com/rs/zerolog/log"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -21,27 +20,100 @@ type HttpRepository struct {
 }
 
 func (h HttpRepository) GetBoards() (Boards, error) {
-	v := url.Values{}
-	v.Set("key", h.ApiKey)
-	v.Set("token", h.AccessToken)
+	v := h.buildQueries("id,name,shortUrl,dateLastActivity")
 	u := fmt.Sprintf("%s/members/me/boards?%v", h.BaseURL, v.Encode())
 
-	request, err := http.NewRequest("GET", u, nil)
+	var boards Boards
+	if err := h.get(u, &boards); err != nil {
+		return nil, err
+	}
+	return boards, nil
+}
+
+func (h HttpRepository) FindBoard(name string) (*Board, error) {
+	boards, err := h.GetBoards()
 	if err != nil {
 		return nil, err
 	}
+	for _, board := range boards {
+		if board.Name == name {
+			return &board, nil
+		}
+	}
+	return nil, fmt.Errorf("no board found with name %s", name)
+}
 
-	log.Debug().Str("url", u).Msg("getting user")
-	response, err := h.client.DoOnlyOk(request)
+func (h HttpRepository) GetLists(idBoard string) (Lists, error) {
+	v := h.buildQueries("id,name,idBoard")
+	u := fmt.Sprintf("%s/boards/%s/lists?%v", h.BaseURL, idBoard, v.Encode())
+
+	var lists Lists
+	if err := h.get(u, &lists); err != nil {
+		return nil, err
+	}
+	return lists, nil
+}
+
+func (h HttpRepository) FindList(idBoard string, name string) (*List, error) {
+	lists, err := h.GetLists(idBoard)
 	if err != nil {
 		return nil, err
+	}
+	for _, list := range lists {
+		if list.Name == name {
+			return &list, nil
+		}
+	}
+	return nil, fmt.Errorf("no list found with name %s", name)
+}
+
+func (h HttpRepository) GetCards(idList string) (Cards, error) {
+	v := h.buildQueries("id,name,desc,idBoard,idList,labels")
+	u := fmt.Sprintf("%s/lists/%s/cards?%v", h.BaseURL, idList, v.Encode())
+
+	var cards Cards
+	if err := h.get(u, &cards); err != nil {
+		return nil, err
+	}
+	return cards, nil
+}
+
+func (h HttpRepository) FindCard(idList string, name string) (*Card, error) {
+	cards, err := h.GetCards(idList)
+	if err != nil {
+		return nil, err
+	}
+	for _, card := range cards {
+		if card.Name == name {
+			return &card, nil
+		}
+	}
+	return nil, fmt.Errorf("no card found with name %s", name)
+}
+
+func (h HttpRepository) get(url string, t interface{}) error {
+	request, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return err
+	}
+
+	response, err := h.client.DoOnlyOk(request)
+	if err != nil {
+		return err
 	}
 
 	defer response.Body.Close()
 	body, err := ioutil.ReadAll(response.Body)
-	var boards Boards
-	if err = json.Unmarshal(body, &boards); err != nil {
-		return nil, err
+	if err != nil {
+		return err
 	}
-	return boards, nil
+	return json.Unmarshal(body, t)
+}
+
+func (h HttpRepository) buildQueries(fields string) url.Values {
+	v := url.Values{}
+	v.Set("key", h.ApiKey)
+	v.Set("token", h.AccessToken)
+	v.Set("fields", fields)
+	return v
 }

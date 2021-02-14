@@ -2,6 +2,8 @@ package ioc
 
 import (
 	"github.com/l-lin/tcli/conf"
+	"github.com/l-lin/tcli/renderer"
+	"github.com/l-lin/tcli/session"
 	"github.com/l-lin/tcli/trello"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -12,6 +14,8 @@ type Container struct {
 	Inputs
 	*conf.Conf
 	TrelloRepository trello.Repository
+	Renderer         renderer.Renderer
+	*session.Session
 }
 
 // Bootstrap the beans from the given user inputs
@@ -21,6 +25,8 @@ func Boostrap(inputs Inputs) *Container {
 	}
 	container.registerConf()
 	container.registerTrelloRepository()
+	container.registerRenderer()
+	container.registerSession()
 
 	container.setLogLevel()
 	return container
@@ -29,14 +35,18 @@ func Boostrap(inputs Inputs) *Container {
 func (c *Container) registerTrelloRepository() {
 	var tr trello.Repository
 	tr = trello.NewHttpRepository(*c.Conf, c.Debug)
-	c.TrelloRepository = tr
+
+	var cacheTr trello.Repository
+	cacheTr = trello.NewCacheInMemory(tr)
+
+	c.TrelloRepository = cacheTr
 }
 
 func (c *Container) registerConf() {
 	var cr conf.Repository
 	cr = conf.NewFileRepository(c.File, c.Viper)
 	var cp conf.Provider
-	cp = conf.NewProvider(cr, c.Inputs.TrelloDevKey, c.Inputs.TrelloAppName)
+	cp = conf.NewProvider(cr, c.Inputs.TrelloApiKey, c.Inputs.TrelloAppName)
 	if err := cp.Init(); err != nil {
 		log.Fatal().
 			Err(err).
@@ -53,4 +63,14 @@ func (c *Container) setLogLevel() {
 			Msg("using config file")
 		c.Viper.Debug()
 	}
+}
+
+func (c *Container) registerRenderer() {
+	var r renderer.Renderer
+	r = renderer.NewInTableRenderer()
+	c.Renderer = r
+}
+
+func (c *Container) registerSession() {
+	c.Session = session.NewSession(c.TrelloRepository, c.Renderer)
 }
