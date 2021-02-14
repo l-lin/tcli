@@ -8,7 +8,7 @@ import (
 func NewLSBoardCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "boards",
-		Short: "display boards info",
+		Short: "Display boards info",
 		Run:   runLSBoards,
 	}
 }

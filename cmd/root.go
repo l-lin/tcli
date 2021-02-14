@@ -17,7 +17,7 @@ var container *ioc.Container
 func NewRootCmd(version, buildDate string) *cobra.Command {
 	c := &cobra.Command{
 		Use:              "tcli",
-		Short:            "Trello interactive CLI",
+		Short:            "Start Trello interactive CLI",
 		Run:              runRootCmd,
 		PersistentPreRun: initializeIocContainer,
 	}

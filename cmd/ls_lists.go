@@ -10,7 +10,7 @@ import (
 func NewLSListsCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "lists",
-		Short: "display lists info",
+		Short: "Display lists info",
 		Run:   runLSLists,
 		Args:  cobra.MinimumNArgs(1),
 	}
