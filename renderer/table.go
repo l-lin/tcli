@@ -4,19 +4,22 @@ import (
 	"bytes"
 	"github.com/cheynewallace/tabby"
 	"github.com/l-lin/tcli/trello"
-	"github.com/logrusorgru/aurora/v3"
-	"strings"
+	"github.com/rs/zerolog/log"
 	"text/tabwriter"
 )
 
 type InTable struct {
+	lr                          Labels
+	cdr                         Description
 	minWidth, tabWidth, padding int
 	padChar                     byte
 	flags                       uint
 }
 
-func NewInTableRenderer() Renderer {
+func NewInTableRenderer(lr Labels, cdr Description) Renderer {
 	return InTable{
+		lr:       lr,
+		cdr:      cdr,
 		minWidth: 0,
 		tabWidth: 0,
 		padding:  4,
@@ -66,7 +69,7 @@ func (b InTable) RenderCards(cards trello.Cards) string {
 		line := make([]interface{}, 3)
 		line[0] = card.Name
 		line[1] = card.ID
-		line[2] = renderLabels(card)
+		line[2] = b.lr.Render(card.Labels)
 		t.AddLine(line...)
 	}
 	t.Print()
@@ -79,23 +82,17 @@ func (b InTable) RenderCard(card trello.Card) string {
 	t := tabby.NewCustom(w)
 	t.AddLine("ID:", card.ID)
 	t.AddLine("Name:", card.Name)
-	t.AddLine("Labels:", renderLabels(card))
-	descriptions := strings.Split(card.Description, "\n")
-	for i, description := range descriptions {
-		if i == 0 {
-			t.AddLine("Description:", description)
-		} else {
-			t.AddLine("", description)
-		}
+	t.AddLine("Labels:", b.lr.Render(card.Labels))
+	t.AddLine("Description:", "")
+	renderedDescription, err := b.cdr.Render(card.Description)
+	if err != nil {
+		log.Debug().
+			Err(err).
+			Str("idCard", card.ID).
+			Msg("could not render card description")
+	} else {
+		t.AddLine(renderedDescription)
 	}
 	t.Print()
 	return buffer.String()
-}
-
-func renderLabels(card trello.Card) string {
-	sb := strings.Builder{}
-	for _, label := range card.Labels {
-		sb.WriteString(aurora.Sprintf(label.Colorize("██%s "), " "+label.Name))
-	}
-	return sb.String()
 }

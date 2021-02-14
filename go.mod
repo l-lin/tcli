@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/c-bata/go-prompt v0.2.5
+	github.com/charmbracelet/glamour v0.2.0
 	github.com/cheynewallace/tabby v1.1.1
 	github.com/golang/mock v1.3.1
 	github.com/henvic/httpretty v0.0.6

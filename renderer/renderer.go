@@ -1,6 +1,8 @@
 package renderer
 
-import "github.com/l-lin/tcli/trello"
+import (
+	"github.com/l-lin/tcli/trello"
+)
 
 type Renderer interface {
 	RenderBoards(trello.Boards) string

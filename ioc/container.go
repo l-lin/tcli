@@ -1,6 +1,7 @@
 package ioc
 
 import (
+	"github.com/charmbracelet/glamour"
 	"github.com/l-lin/tcli/conf"
 	"github.com/l-lin/tcli/renderer"
 	"github.com/l-lin/tcli/session"
@@ -66,8 +67,19 @@ func (c *Container) setLogLevel() {
 }
 
 func (c *Container) registerRenderer() {
+	var cdr renderer.Description
+	var err error
+	if cdr, err = glamour.NewTermRenderer(glamour.WithStylePath("dark")); err != nil {
+		log.Fatal().
+			Err(err).
+			Msg("could not create Description")
+	}
+
+	var lr renderer.Labels
+	lr = renderer.AuroraLabel{}
+
 	var r renderer.Renderer
-	r = renderer.NewInTableRenderer()
+	r = renderer.NewInTableRenderer(lr, cdr)
 	c.Renderer = r
 }
 

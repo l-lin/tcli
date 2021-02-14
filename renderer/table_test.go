@@ -1,7 +1,6 @@
 package renderer
 
 import (
-	"fmt"
 	"github.com/l-lin/tcli/trello"
 	"github.com/logrusorgru/aurora/v3"
 	"testing"
@@ -47,7 +46,7 @@ Board 2    2     https://trello.com/b/popo      2021-02-08T21:02:58.117Z
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			r := NewInTableRenderer()
+			r := NewInTableRenderer(PlainLabel{}, PlainDescription{})
 			actual := r.RenderBoards(tt.given())
 			if actual != tt.expected {
 				t.Errorf("expected:\n%v\nactual:\n%v", tt.expected, actual)
@@ -92,7 +91,7 @@ List 2    2
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			r := NewInTableRenderer()
+			r := NewInTableRenderer(PlainLabel{}, PlainDescription{})
 			actual := r.RenderLists(tt.given())
 			if actual != tt.expected {
 				t.Errorf("expected:\n%v\nactual:\n%v", tt.expected, actual)
@@ -137,23 +136,17 @@ func TestInTable_RenderCards(t *testing.T) {
 							},
 							trello.Label{
 								ID:    "21",
-								Name:  "Label 21",
 								Color: "sky",
 							},
 						},
 					},
 				}
 			},
-			expected: aurora.Sprintf(`Name      ID    Labels
+			expected: `Name      ID    Labels
 ----      --    ------
-Card 1    1     %s%s
-Card 2    2     %s%s
+Card 1    1     Label 10 Label 11 
+Card 2    2     Label 20 sky 
 `,
-				aurora.BrightGreen("██ Label 10 "),
-				aurora.BrightYellow("██ Label 11 "),
-				aurora.BrightBlack("██ Label 20 "),
-				aurora.BrightCyan("██ Label 21 "),
-			),
 		},
 		"two cards without label": {
 			given: func() trello.Cards {
@@ -187,7 +180,7 @@ Card 2    2
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			r := NewInTableRenderer()
+			r := NewInTableRenderer(PlainLabel{}, PlainDescription{})
 			actual := r.RenderCards(tt.given())
 			if actual != tt.expected {
 				t.Errorf("expected:\n%v\nactual:\n%v", tt.expected, actual)
@@ -201,7 +194,7 @@ func TestInTable_RenderCard(t *testing.T) {
 		given    trello.Card
 		expected string
 	}{
-		"card with labe": {
+		"card with labels": {
 			given: trello.Card{
 				ID:   "1",
 				Name: "Card 1",
@@ -223,18 +216,16 @@ Here are some markdown contents`,
 					},
 				},
 			},
-			expected: fmt.Sprintf(`ID:             1
+			expected: `ID:             1
 Name:           Card 1
-Labels:         %s%s
-Description:    # Card title
-                
-                > some context
-                
-                Here are some markdown contents
+Labels:         Label 10 Label 11 
+Description:    
+# Card title
+
+> some context
+
+Here are some markdown contents
 `,
-				aurora.BrightGreen("██ Label 10 "),
-				aurora.BrightYellow("██ Label 11 "),
-			),
 		},
 		"card without label": {
 			given: trello.Card{
@@ -250,17 +241,18 @@ Here are some markdown contents`,
 			expected: `ID:             2
 Name:           Card 2
 Labels:         
-Description:    # Card title
-                
-                > some context
-                
-                Here are some markdown contents
+Description:    
+# Card title
+
+> some context
+
+Here are some markdown contents
 `,
 		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			r := NewInTableRenderer()
+			r := NewInTableRenderer(PlainLabel{}, PlainDescription{})
 			actual := r.RenderCard(tt.given)
 			if actual != tt.expected {
 				t.Errorf("expected:\n%v\nactual:\n%v", tt.expected, actual)

@@ -3,16 +3,16 @@ package trello
 import "github.com/logrusorgru/aurora/v3"
 
 var mapColors = map[string]func(interface{}) aurora.Value{
-	"black":  aurora.BrightBlack,
-	"blue":   aurora.BrightBlue,
-	"green":  aurora.BrightGreen,
-	"lime":   aurora.Green,
-	"orange": aurora.Yellow,
-	"pink":   aurora.Magenta,
-	"purple": aurora.BrightMagenta,
-	"red":    aurora.BrightRed,
-	"sky":    aurora.BrightCyan,
-	"yellow": aurora.BrightYellow,
+	"black":  aurora.BgBrightBlack,
+	"blue":   aurora.BgBrightBlue,
+	"green":  aurora.BgBrightGreen,
+	"lime":   aurora.BgGreen,
+	"orange": aurora.BgYellow,
+	"pink":   aurora.BgMagenta,
+	"purple": aurora.BgBrightMagenta,
+	"red":    aurora.BgBrightRed,
+	"sky":    aurora.BgBrightCyan,
+	"yellow": aurora.BgBrightYellow,
 }
 
 type Boards []Board
