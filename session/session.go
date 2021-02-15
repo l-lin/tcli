@@ -13,6 +13,8 @@ import (
 
 const maxCardDescriptionLength = 20
 
+var exitCommands = []string{"quit", "q", "exit"}
+
 func NewSession(tr trello.Repository, r renderer.Renderer) *Session {
 	return &Session{tr: tr, r: r}
 }
@@ -29,9 +31,11 @@ func (s *Session) Executor(input string) {
 	if input == "" {
 		return
 	}
-	if input == "quit" || input == "exit" {
-		os.Exit(0)
-		return
+	for _, exitCommand := range exitCommands {
+		if input == exitCommand {
+			os.Exit(0)
+			return
+		}
 	}
 
 	cmd, found := getCmd(input)
@@ -43,31 +47,12 @@ func (s *Session) Executor(input string) {
 		Str("cmd", cmd).
 		Str("arg", arg).
 		Msg("executing command")
-	// TODO: might want to refactor the following
-	if s.CurrentList != nil {
-		if e := executor.NewCardExecutor(cmd, s.tr, s.r, *s.CurrentBoard, *s.CurrentList); e != nil {
-			s.CurrentBoard, s.CurrentList = e.Execute(arg)
-		} else {
-			log.Error().
-				Str("cmd", cmd).
-				Msg("could not find executor")
-		}
-	} else if s.CurrentBoard != nil {
-		if e := executor.NewListsExecutor(cmd, s.tr, s.r, *s.CurrentBoard); e != nil {
-			s.CurrentBoard, s.CurrentList = e.Execute(arg)
-		} else {
-			log.Error().
-				Str("cmd", cmd).
-				Msg("could not find executor")
-		}
+	if e := executor.New(cmd, s.tr, s.r, s.CurrentBoard, s.CurrentList); e != nil {
+		s.CurrentBoard, s.CurrentList = e.Execute(arg)
 	} else {
-		if e := executor.NewBoardsExecutor(cmd, s.tr, s.r); e != nil {
-			s.CurrentBoard = e.Execute(arg)
-		} else {
-			log.Error().
-				Str("cmd", cmd).
-				Msg("could not find executor")
-		}
+		log.Error().
+			Str("cmd", cmd).
+			Msg("executor not found")
 	}
 }
 

@@ -40,7 +40,7 @@ func (h HttpRepository) FindBoard(name string) (*Board, error) {
 			return &board, nil
 		}
 	}
-	return nil, fmt.Errorf("no board found with name %s", name)
+	return nil, nil
 }
 
 func (h HttpRepository) GetLists(idBoard string) (Lists, error) {
@@ -64,7 +64,7 @@ func (h HttpRepository) FindList(idBoard string, name string) (*List, error) {
 			return &list, nil
 		}
 	}
-	return nil, fmt.Errorf("no list found with name %s", name)
+	return nil, nil
 }
 
 func (h HttpRepository) GetCards(idList string) (Cards, error) {
@@ -88,7 +88,7 @@ func (h HttpRepository) FindCard(idList string, name string) (*Card, error) {
 			return &card, nil
 		}
 	}
-	return nil, fmt.Errorf("no card found with name %s", name)
+	return nil, nil
 }
 
 func (h HttpRepository) get(url string, t interface{}) error {
