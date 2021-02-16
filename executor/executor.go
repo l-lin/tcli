@@ -15,8 +15,8 @@ type executor struct {
 	r            renderer.Renderer
 	currentBoard *trello.Board
 	currentList  *trello.List
-	stdout       io.Writer
-	stderr       io.Writer
+	output       io.Writer
+	errOutput    io.Writer
 }
 
 func New(cmd string, tr trello.Repository, r renderer.Renderer, currentBoard *trello.Board, currentList *trello.List) Executor {

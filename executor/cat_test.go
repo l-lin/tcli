@@ -106,7 +106,7 @@ func TestCat_Execute(t *testing.T) {
 				executor{
 					tr:     tt.given.buildTrelloRepository(),
 					r:      tt.given.buildRenderer(),
-					stdout: &buf,
+					output: &buf,
 				},
 			}
 			c.Execute(tt.given.arg)

@@ -34,8 +34,8 @@ var Factories = []Factory{
 				r:            r,
 				currentBoard: currentBoard,
 				currentList:  currentList,
-				stdout:       os.Stdout,
-				stderr:       os.Stderr,
+				output:       os.Stdout,
+				errOutput:    os.Stderr,
 			}}
 		},
 	},
@@ -48,8 +48,8 @@ var Factories = []Factory{
 				r:            r,
 				currentBoard: currentBoard,
 				currentList:  currentList,
-				stdout:       os.Stdout,
-				stderr:       os.Stderr,
+				output:       os.Stdout,
+				errOutput:    os.Stderr,
 			}}
 		},
 	},
@@ -62,8 +62,8 @@ var Factories = []Factory{
 				r:            r,
 				currentBoard: currentBoard,
 				currentList:  currentList,
-				stdout:       os.Stdout,
-				stderr:       os.Stderr,
+				output:       os.Stdout,
+				errOutput:    os.Stderr,
 			}}
 		},
 	},

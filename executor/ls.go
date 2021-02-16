@@ -31,10 +31,7 @@ func (l ls) Execute(arg string) (currentBoard *trello.Board, currentList *trello
 
 	var board *trello.Board
 	if board, err = l.tr.FindBoard(boardName); err != nil || board == nil {
-		log.Debug().
-			Err(err).
-			Str("boardName", boardName).
-			Msg("could not find board")
+		fmt.Fprintf(l.errOutput, "no board found with name '%s'", boardName)
 		return
 	}
 
@@ -45,11 +42,7 @@ func (l ls) Execute(arg string) (currentBoard *trello.Board, currentList *trello
 
 	var list *trello.List
 	if list, err = l.tr.FindList(board.ID, listName); err != nil || list == nil {
-		log.Debug().
-			Err(err).
-			Str("idBoard", board.ID).
-			Str("name", arg).
-			Msg("no list found")
+		fmt.Fprintf(l.errOutput, "no list found with name '%s'", listName)
 		return
 	}
 
@@ -60,11 +53,7 @@ func (l ls) Execute(arg string) (currentBoard *trello.Board, currentList *trello
 
 	var card *trello.Card
 	if card, err = l.tr.FindCard(list.ID, cardName); err != nil || card == nil {
-		log.Debug().
-			Err(err).
-			Str("idList", list.ID).
-			Str("name", arg).
-			Msg("no list found")
+		fmt.Fprintf(l.errOutput, "no card found with name '%s'", cardName)
 		return
 	}
 	l.renderCard(*card)
@@ -74,38 +63,30 @@ func (l ls) Execute(arg string) (currentBoard *trello.Board, currentList *trello
 func (l ls) renderBoards() {
 	boards, err := l.tr.GetBoards()
 	if err != nil {
-		log.Debug().
-			Err(err).
-			Msg("could not fetch boards")
+		fmt.Fprintf(l.errOutput, "could not fetch boards: %v", err)
 	} else {
-		fmt.Printf("%s", l.r.RenderBoards(boards))
+		fmt.Fprintf(l.output, "%s", l.r.RenderBoards(boards))
 	}
 }
 
 func (l ls) renderLists(board trello.Board) {
 	lists, err := l.tr.GetLists(board.ID)
 	if err != nil {
-		log.Debug().
-			Err(err).
-			Str("idBoard", board.ID).
-			Msg("could not fetch lists")
+		fmt.Fprintf(l.errOutput, "could not fetch lists for board '%s': %v", board.Name, err)
 	} else {
-		fmt.Printf("%s", l.r.RenderLists(lists))
+		fmt.Fprintf(l.output, "%s", l.r.RenderLists(lists))
 	}
 }
 
 func (l ls) renderCards(list trello.List) {
 	cards, err := l.tr.GetCards(list.ID)
 	if err != nil {
-		log.Debug().
-			Err(err).
-			Str("idList", list.ID).
-			Msg("could not fetch cards")
+		fmt.Fprintf(l.errOutput, "could not fetch cards for list '%s': %v", list.Name, err)
 	} else {
-		fmt.Printf("%s", l.r.RenderCards(cards))
+		fmt.Fprintf(l.output, "%s", l.r.RenderCards(cards))
 	}
 }
 
 func (l ls) renderCard(card trello.Card) {
-	fmt.Printf("%s", l.r.RenderCards(trello.Cards{card}))
+	fmt.Fprintf(l.output, "%s", l.r.RenderCards(trello.Cards{card}))
 }

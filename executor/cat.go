@@ -37,7 +37,7 @@ func (c cat) Execute(arg string) (currentBoard *trello.Board, currentList *trell
 	}
 
 	if listName == "" {
-		fmt.Fprintf(c.stdout, "%s", c.r.RenderBoard(*board))
+		fmt.Fprintf(c.output, "%s", c.r.RenderBoard(*board))
 		return
 	}
 
@@ -52,7 +52,7 @@ func (c cat) Execute(arg string) (currentBoard *trello.Board, currentList *trell
 	}
 
 	if cardName == "" {
-		fmt.Fprintf(c.stdout, "%s", c.r.RenderList(*list))
+		fmt.Fprintf(c.output, "%s", c.r.RenderList(*list))
 		return
 	}
 
@@ -65,6 +65,6 @@ func (c cat) Execute(arg string) (currentBoard *trello.Board, currentList *trell
 			Msg("no list found")
 		return
 	}
-	fmt.Fprintf(c.stdout, "%s", c.r.RenderCard(*card))
+	fmt.Fprintf(c.output, "%s", c.r.RenderCard(*card))
 	return
 }
