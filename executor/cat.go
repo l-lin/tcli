@@ -29,10 +29,7 @@ func (c cat) Execute(arg string) (currentBoard *trello.Board, currentList *trell
 
 	board, err := c.tr.FindBoard(boardName)
 	if err != nil {
-		log.Debug().
-			Err(err).
-			Str("boardName", boardName).
-			Msg("could not find board")
+		fmt.Fprintf(c.errOutput, "no board found with name '%s'", boardName)
 		return
 	}
 
@@ -43,11 +40,7 @@ func (c cat) Execute(arg string) (currentBoard *trello.Board, currentList *trell
 
 	var list *trello.List
 	if list, err = c.tr.FindList(board.ID, listName); err != nil || list == nil {
-		log.Debug().
-			Err(err).
-			Str("idBoard", board.ID).
-			Str("name", arg).
-			Msg("no list found")
+		fmt.Fprintf(c.errOutput, "no list found with name '%s'", listName)
 		return
 	}
 
@@ -58,11 +51,7 @@ func (c cat) Execute(arg string) (currentBoard *trello.Board, currentList *trell
 
 	var card *trello.Card
 	if card, err = c.tr.FindCard(list.ID, cardName); err != nil || card == nil {
-		log.Debug().
-			Err(err).
-			Str("idList", list.ID).
-			Str("name", arg).
-			Msg("no list found")
+		fmt.Fprintf(c.errOutput, "no card found with name '%s'", cardName)
 		return
 	}
 	fmt.Fprintf(c.output, "%s", c.r.RenderCard(*card))

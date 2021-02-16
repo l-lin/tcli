@@ -14,6 +14,7 @@ func main() {
 
 	rootCmd := cmd.NewRootCmd(version, buildDate)
 	rootCmd.AddCommand(cmd.NewLSCmd())
+	rootCmd.AddCommand(cmd.NewCatCmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		log.Err(err).Msg("error when executing the root command")

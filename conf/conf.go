@@ -10,7 +10,7 @@ const (
 
 // Conf of the application
 type Conf struct {
-	Trello `json:"trello"`
+	Trello `yaml:"trello"`
 }
 
 type Trello struct {

@@ -2,6 +2,7 @@ package executor
 
 import (
 	"bytes"
+	"errors"
 	"github.com/golang/mock/gomock"
 	"github.com/l-lin/tcli/renderer"
 	"github.com/l-lin/tcli/trello"
@@ -17,9 +18,13 @@ func TestCat_Execute(t *testing.T) {
 		buildTrelloRepository func() trello.Repository
 		buildRenderer         func() renderer.Renderer
 	}
+	type expected struct {
+		output    string
+		errOutput string
+	}
 	var tests = map[string]struct {
 		given    given
-		expected string
+		expected expected
 	}{
 		"no arg": {
 			given: given{
@@ -27,7 +32,7 @@ func TestCat_Execute(t *testing.T) {
 				buildTrelloRepository: func() trello.Repository { return nil },
 				buildRenderer:         func() renderer.Renderer { return nil },
 			},
-			expected: "",
+			expected: expected{output: ""},
 		},
 		"show board info": {
 			given: given{
@@ -47,7 +52,7 @@ func TestCat_Execute(t *testing.T) {
 					return r
 				},
 			},
-			expected: "board content",
+			expected: expected{output: "board content"},
 		},
 		"show list info": {
 			given: given{
@@ -70,7 +75,7 @@ func TestCat_Execute(t *testing.T) {
 					return r
 				},
 			},
-			expected: "list content",
+			expected: expected{output: "list content"},
 		},
 		"show card info": {
 			given: given{
@@ -96,24 +101,94 @@ func TestCat_Execute(t *testing.T) {
 					return r
 				},
 			},
-			expected: "card content",
+			expected: expected{output: "card content"},
+		},
+		// ERRORS
+		"unknown-board": {
+			given: given{
+				arg: "unknown-board",
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard("unknown-board").
+						Return(nil, errors.New("not found"))
+					return tr
+				},
+				buildRenderer: func() renderer.Renderer {
+					return nil
+				},
+			},
+			expected: expected{
+				errOutput: "no board found with name 'unknown-board'",
+			},
+		},
+		"unknown list": {
+			given: given{
+				arg: "board/unknown-list",
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard("board").
+						Return(&trello.Board{ID: "board 1", Name: "board"}, nil)
+					tr.EXPECT().
+						FindList("board 1", "unknown-list").
+						Return(nil, errors.New("not found"))
+					return tr
+				},
+				buildRenderer: func() renderer.Renderer {
+					return nil
+				},
+			},
+			expected: expected{
+				errOutput: "no list found with name 'unknown-list'",
+			},
+		},
+		"unknown card": {
+			given: given{
+				arg: "board/list/unknown-card",
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard("board").
+						Return(&trello.Board{ID: "board 1", Name: "board"}, nil)
+					tr.EXPECT().
+						FindList("board 1", "list").
+						Return(&trello.List{ID: "list 1", Name: "list"}, nil)
+					tr.EXPECT().
+						FindCard("list 1", "unknown-card").
+						Return(nil, errors.New("not found"))
+					return tr
+				},
+				buildRenderer: func() renderer.Renderer {
+					return nil
+				},
+			},
+			expected: expected{
+				errOutput: "no card found with name 'unknown-card'",
+			},
 		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			buf := bytes.Buffer{}
+			outputBuf := bytes.Buffer{}
+			errOutputBuf := bytes.Buffer{}
 			c := cat{
 				executor{
-					tr:     tt.given.buildTrelloRepository(),
-					r:      tt.given.buildRenderer(),
-					output: &buf,
+					tr:        tt.given.buildTrelloRepository(),
+					r:         tt.given.buildRenderer(),
+					output:    &outputBuf,
+					errOutput: &errOutputBuf,
 				},
 			}
 			c.Execute(tt.given.arg)
 
-			actual := buf.String()
-			if actual != tt.expected {
-				t.Errorf("expected %v, actual %v", tt.expected, actual)
+			actualOutput := outputBuf.String()
+			if actualOutput != tt.expected.output {
+				t.Errorf("expected output %v, actual output %v", tt.expected.output, actualOutput)
+			}
+			actualErrOutput := errOutputBuf.String()
+			if actualErrOutput != tt.expected.errOutput {
+				t.Errorf("expected errOutput %v, actual errOutput %v", tt.expected.errOutput, actualErrOutput)
 			}
 		})
 	}

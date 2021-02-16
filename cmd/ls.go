@@ -10,9 +10,18 @@ import (
 func NewLSCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "ls",
-		Short: "Display info",
+		Short: "List resource content",
 		Run:   runLS,
-		Args:  cobra.MinimumNArgs(1),
+		Example: `
+  # show all boards
+  tcli ls
+  tcli ls /
+
+  # show 'my-board' lists
+  tcli ls /my-board
+
+  # show 'my-list' cards
+  tcli ls /my-board/my-list`,
 	}
 }
 
