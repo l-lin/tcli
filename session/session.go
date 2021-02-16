@@ -3,17 +3,13 @@ package session
 import (
 	"fmt"
 	"github.com/c-bata/go-prompt"
+	"github.com/l-lin/tcli/completer"
 	"github.com/l-lin/tcli/executor"
 	"github.com/l-lin/tcli/renderer"
 	"github.com/l-lin/tcli/trello"
 	"github.com/rs/zerolog/log"
-	"os"
 	"strings"
 )
-
-const maxCardDescriptionLength = 20
-
-var exitCommands = []string{"quit", "q", "exit"}
 
 func NewSession(tr trello.Repository, r renderer.Renderer) *Session {
 	return &Session{tr: tr, r: r}
@@ -26,16 +22,10 @@ type Session struct {
 	CurrentList  *trello.List
 }
 
-func (s *Session) Executor(input string) {
-	input = strings.TrimSpace(input)
+func (s *Session) Executor(in string) {
+	input := strings.TrimSpace(in)
 	if input == "" {
 		return
-	}
-	for _, exitCommand := range exitCommands {
-		if input == exitCommand {
-			os.Exit(0)
-			return
-		}
 	}
 
 	cmd, found := getCmd(input)
@@ -57,17 +47,11 @@ func (s *Session) Executor(input string) {
 }
 
 func (s *Session) Completer(d prompt.Document) []prompt.Suggest {
-	cmd, found := getCmd(d.TextBeforeCursor())
-	if !found {
-		return []prompt.Suggest{}
-	}
-	if s.CurrentList != nil {
-		return completerAtCardsLevel(cmd, s.CurrentList.ID, s.tr)(d)
-	}
-	if s.CurrentBoard != nil {
-		return completerAtListsLevel(cmd, s.CurrentBoard.ID, s.tr)(d)
-	}
-	return completerAtBoardsLevel(cmd, s.tr)(d)
+	c := completer.New(s.tr, s.CurrentBoard, s.CurrentList)
+	input := strings.TrimSpace(d.TextBeforeCursor())
+	cmd, _ := getCmd(input)
+	arg := getArg(input)
+	return c.Complete(cmd, arg)
 }
 
 func (s *Session) LivePrefix() (string, bool) {

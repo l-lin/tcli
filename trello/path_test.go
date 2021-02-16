@@ -163,6 +163,32 @@ func TestPathResolver_Resolve(t *testing.T) {
 				err:       nil,
 			},
 		},
+		".. in relativePath from /board/list": {
+			given: given{
+				currentBoard: "board",
+				currentList:  "list",
+				relativePath: "..",
+			},
+			expected: expected{
+				boardName: "board",
+				listName:  "",
+				cardName:  "",
+				err:       nil,
+			},
+		},
+		".. in relativePath from /board": {
+			given: given{
+				currentBoard: "board",
+				currentList:  "",
+				relativePath: "..",
+			},
+			expected: expected{
+				boardName: "",
+				listName:  "",
+				cardName:  "",
+				err:       nil,
+			},
+		},
 		// ERRORS --------------------------------------------------
 		"more than 4 components": {
 			given: given{

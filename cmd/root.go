@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"github.com/c-bata/go-prompt"
+	"github.com/c-bata/go-prompt/completer"
 	"github.com/l-lin/tcli/ioc"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -55,6 +56,7 @@ func runRootCmd(_ *cobra.Command, _ []string) {
 				os.Exit(0)
 			},
 		}),
+		prompt.OptionCompletionWordSeparator(completer.FilePathCompletionSeparator),
 	)
 	p.Run()
 }

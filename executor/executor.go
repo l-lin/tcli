@@ -17,17 +17,10 @@ type executor struct {
 }
 
 func New(cmd string, tr trello.Repository, r renderer.Renderer, currentBoard *trello.Board, currentList *trello.List) Executor {
-	e := executor{
-		tr:           tr,
-		r:            r,
-		currentBoard: currentBoard,
-		currentList:  currentList,
-	}
-	switch cmd {
-	case "cd":
-		return &cd{executor: e}
-	case "ls":
-		return &ls{executor: e}
+	for _, factory := range Factories {
+		if factory.Cmd == cmd {
+			return factory.Create(tr, r, currentBoard, currentList)
+		}
 	}
 	return nil
 }

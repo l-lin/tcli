@@ -3,6 +3,7 @@ package trello
 import (
 	"errors"
 	"github.com/rs/zerolog/log"
+	"path"
 	"path/filepath"
 	"strings"
 )
@@ -33,16 +34,21 @@ func (r *PathResolver) Resolve(relativePath string) (boardName, listName, cardNa
 	if relativePath == "" {
 		boardName = r.currentBoardName
 		listName = r.currentListName
+		r.logResolved(boardName, listName, cardName)
 		return
 	}
 	var resolvedPath string
-	if strings.HasPrefix(relativePath, "/") {
+	if path.IsAbs(relativePath) {
 		resolvedPath = strings.Trim(relativePath, "/")
 	} else {
 		resolvedPath = strings.Trim(filepath.Join(r.currentBoardName, r.currentListName, relativePath), "/")
 	}
-	if strings.HasPrefix(resolvedPath, "..") {
+	if isInvalid(resolvedPath) {
 		err = invalidPathErr
+		return
+	}
+	if isTopLevel(resolvedPath) {
+		r.logResolved(boardName, listName, cardName)
 		return
 	}
 	paths := strings.Split(resolvedPath, "/")
@@ -60,10 +66,24 @@ func (r *PathResolver) Resolve(relativePath string) (boardName, listName, cardNa
 	default:
 		err = invalidPathErr
 	}
+	r.logResolved(boardName, listName, cardName)
+	return
+}
+
+func (r *PathResolver) logResolved(boardName string, listName string, cardName string) {
 	log.Debug().
+		Str("currentBoardName", r.currentBoardName).
+		Str("currentListName", r.currentListName).
 		Str("boardName", boardName).
 		Str("listName", listName).
 		Str("cardName", cardName).
 		Msg("resolved path")
-	return
+}
+
+func isInvalid(resolvedPath string) bool {
+	return strings.HasPrefix(resolvedPath, "..")
+}
+
+func isTopLevel(resolvedPath string) bool {
+	return resolvedPath == "."
 }
