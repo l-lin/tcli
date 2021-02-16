@@ -144,7 +144,7 @@ func TestCd_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errOutput: "cannot cd on card",
+				errOutput: "cannot cd on card\n",
 			},
 		},
 		"/ > cd ..": {
@@ -155,7 +155,7 @@ func TestCd_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errOutput: "invalid path",
+				errOutput: "invalid path\n",
 				board:     nil,
 				list:      nil,
 			},
@@ -170,7 +170,7 @@ func TestCd_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errOutput: "invalid path",
+				errOutput: "invalid path\n",
 				board:     &trello.Board{ID: "board 1", Name: "board"},
 				list:      &trello.List{ID: "list 1", Name: "list"},
 			},

@@ -19,7 +19,7 @@ func (c cd) Execute(arg string) (*trello.Board, *trello.List) {
 	pathResolver := trello.NewPathResolver(c.currentBoard, c.currentList)
 	boardName, listName, cardName, err := pathResolver.Resolve(arg)
 	if err != nil {
-		fmt.Fprintf(c.errOutput, err.Error())
+		fmt.Fprintf(c.errOutput, "%v\n", err)
 		return c.currentBoard, c.currentList
 	}
 
@@ -29,7 +29,7 @@ func (c cd) Execute(arg string) (*trello.Board, *trello.List) {
 
 	var board *trello.Board
 	if board, err = c.tr.FindBoard(boardName); err != nil || board == nil {
-		fmt.Fprintf(c.errOutput, "no board found with name '%s'", boardName)
+		fmt.Fprintf(c.errOutput, "no board found with name '%s'\n", boardName)
 		return c.currentBoard, c.currentList
 	}
 
@@ -39,12 +39,12 @@ func (c cd) Execute(arg string) (*trello.Board, *trello.List) {
 
 	var list *trello.List
 	if list, err = c.tr.FindList(board.ID, listName); err != nil || list == nil {
-		fmt.Fprintf(c.errOutput, "no list found with name '%s'", listName)
+		fmt.Fprintf(c.errOutput, "no list found with name '%s'\n", listName)
 		return board, c.currentList
 	}
 
 	if cardName != "" {
-		fmt.Fprintf(c.errOutput, "cannot cd on card")
+		fmt.Fprintf(c.errOutput, "cannot cd on card\n")
 		return c.currentBoard, c.currentList
 	}
 

@@ -52,7 +52,7 @@ func TestCat_Execute(t *testing.T) {
 					return r
 				},
 			},
-			expected: expected{output: "board content"},
+			expected: expected{output: "board content\n"},
 		},
 		"show list info": {
 			given: given{
@@ -75,7 +75,7 @@ func TestCat_Execute(t *testing.T) {
 					return r
 				},
 			},
-			expected: expected{output: "list content"},
+			expected: expected{output: "list content\n"},
 		},
 		"show card info": {
 			given: given{
@@ -101,7 +101,7 @@ func TestCat_Execute(t *testing.T) {
 					return r
 				},
 			},
-			expected: expected{output: "card content"},
+			expected: expected{output: "card content\n"},
 		},
 		// ERRORS
 		"unknown-board": {
@@ -119,10 +119,10 @@ func TestCat_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errOutput: "no board found with name 'unknown-board'",
+				errOutput: "no board found with name 'unknown-board'\n",
 			},
 		},
-		"unknown list": {
+		"unknown-list": {
 			given: given{
 				arg: "board/unknown-list",
 				buildTrelloRepository: func() trello.Repository {
@@ -140,10 +140,10 @@ func TestCat_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errOutput: "no list found with name 'unknown-list'",
+				errOutput: "no list found with name 'unknown-list'\n",
 			},
 		},
-		"unknown card": {
+		"unknown-card": {
 			given: given{
 				arg: "board/list/unknown-card",
 				buildTrelloRepository: func() trello.Repository {
@@ -164,7 +164,7 @@ func TestCat_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errOutput: "no card found with name 'unknown-card'",
+				errOutput: "no card found with name 'unknown-card'\n",
 			},
 		},
 	}

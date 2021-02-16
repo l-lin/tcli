@@ -50,7 +50,7 @@ func TestLs_Execute(t *testing.T) {
 					return r
 				},
 			},
-			expected: expected{output: "boards content"},
+			expected: expected{output: "boards content\n"},
 		},
 		"show lists": {
 			given: given{
@@ -79,7 +79,7 @@ func TestLs_Execute(t *testing.T) {
 					return r
 				},
 			},
-			expected: expected{output: "lists content"},
+			expected: expected{output: "lists content\n"},
 		},
 		"show cards": {
 			given: given{
@@ -111,7 +111,7 @@ func TestLs_Execute(t *testing.T) {
 					return r
 				},
 			},
-			expected: expected{output: "cards content"},
+			expected: expected{output: "cards content\n"},
 		},
 		"show single card": {
 			given: given{
@@ -137,7 +137,7 @@ func TestLs_Execute(t *testing.T) {
 					return r
 				},
 			},
-			expected: expected{output: "card 1 content"},
+			expected: expected{output: "card 1 content\n"},
 		},
 		// ERRORS
 		"unknown-board": {
@@ -155,10 +155,10 @@ func TestLs_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errOutput: "no board found with name 'unknown-board'",
+				errOutput: "no board found with name 'unknown-board'\n",
 			},
 		},
-		"unknown list": {
+		"unknown-list": {
 			given: given{
 				arg: "board/unknown-list",
 				buildTrelloRepository: func() trello.Repository {
@@ -176,10 +176,10 @@ func TestLs_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errOutput: "no list found with name 'unknown-list'",
+				errOutput: "no list found with name 'unknown-list'\n",
 			},
 		},
-		"unknown card": {
+		"unknown-card": {
 			given: given{
 				arg: "board/list/unknown-card",
 				buildTrelloRepository: func() trello.Repository {
@@ -200,7 +200,7 @@ func TestLs_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errOutput: "no card found with name 'unknown-card'",
+				errOutput: "no card found with name 'unknown-card'\n",
 			},
 		},
 		"cannot find boards": {
@@ -218,7 +218,7 @@ func TestLs_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errOutput: "could not fetch boards: unexpected error",
+				errOutput: "could not fetch boards: unexpected error\n",
 			},
 		},
 		"cannot find lists": {
@@ -239,7 +239,7 @@ func TestLs_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errOutput: "could not fetch lists for board 'board': unexpected error",
+				errOutput: "could not fetch lists for board 'board': unexpected error\n",
 			},
 		},
 		"cannot find cards": {
@@ -263,7 +263,7 @@ func TestLs_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errOutput: "could not fetch cards for list 'list': unexpected error",
+				errOutput: "could not fetch cards for list 'list': unexpected error\n",
 			},
 		},
 	}

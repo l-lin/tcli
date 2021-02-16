@@ -44,7 +44,7 @@ func (s *Session) Executor(in string) {
 	if e := executor.New(cmd, s.tr, s.r, s.CurrentBoard, s.CurrentList); e != nil {
 		s.CurrentBoard, s.CurrentList = e.Execute(arg)
 	} else {
-		fmt.Fprintf(s.errOutput, "command not found: %s", cmd)
+		fmt.Fprintf(s.errOutput, "command not found: %s\n", cmd)
 	}
 }
 

@@ -23,6 +23,6 @@ func (h help) Execute(_ string) (*trello.Board, *trello.List) {
 		t.AddLine(executorFactory.Cmd, executorFactory.Description)
 	}
 	t.Print()
-	fmt.Fprintf(h.stdout, "%s", buffer.String())
+	fmt.Fprintf(h.stdout, "%s\n", buffer.String())
 	return h.currentBoard, h.currentList
 }
