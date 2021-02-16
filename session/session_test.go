@@ -1,17 +1,49 @@
 package session
 
-import "testing"
-
-func TestSession_Executor(t *testing.T) {
-	// TODO
-}
-
-func TestSession_Completer(t *testing.T) {
-	// TODO
-}
+import (
+	"github.com/l-lin/tcli/trello"
+	"testing"
+)
 
 func TestSession_LivePrefix(t *testing.T) {
-	// TODO
+	type given struct {
+		currentBoard *trello.Board
+		currentList  *trello.List
+	}
+	var tests = map[string]struct {
+		given    given
+		expected string
+	}{
+		"/board/list": {
+			given: given{
+				currentBoard: &trello.Board{Name: "board"},
+				currentList:  &trello.List{Name: "list"},
+			},
+			expected: "/board/list> ",
+		},
+		"/board": {
+			given: given{
+				currentBoard: &trello.Board{Name: "board"},
+			},
+			expected: "/board> ",
+		},
+		"/": {
+			given:    given{},
+			expected: "/> ",
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			s := Session{
+				CurrentBoard: tt.given.currentBoard,
+				CurrentList:  tt.given.currentList,
+			}
+			actual, _ := s.LivePrefix()
+			if actual != tt.expected {
+				t.Errorf("expected %v, actual %v", tt.expected, actual)
+			}
+		})
+	}
 }
 
 func TestGetCmd(t *testing.T) {

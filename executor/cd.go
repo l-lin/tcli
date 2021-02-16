@@ -1,6 +1,7 @@
 package executor
 
 import (
+	"fmt"
 	"github.com/l-lin/tcli/trello"
 	"github.com/rs/zerolog/log"
 )
@@ -18,12 +19,7 @@ func (c cd) Execute(arg string) (*trello.Board, *trello.List) {
 	pathResolver := trello.NewPathResolver(c.currentBoard, c.currentList)
 	boardName, listName, cardName, err := pathResolver.Resolve(arg)
 	if err != nil {
-		log.Debug().Err(err).Str("arg", arg).Msg("could not resolve path")
-		return c.currentBoard, c.currentList
-	}
-
-	if cardName != "" {
-		log.Error().Str("cardName", cardName).Msg("cannot cd on card")
+		fmt.Fprintf(c.errOutput, err.Error())
 		return c.currentBoard, c.currentList
 	}
 
@@ -33,10 +29,7 @@ func (c cd) Execute(arg string) (*trello.Board, *trello.List) {
 
 	var board *trello.Board
 	if board, err = c.tr.FindBoard(boardName); err != nil || board == nil {
-		log.Debug().
-			Err(err).
-			Str("boardName", boardName).
-			Msg("could not find board")
+		fmt.Fprintf(c.errOutput, "no board found with name '%s'", boardName)
 		return c.currentBoard, c.currentList
 	}
 
@@ -46,12 +39,14 @@ func (c cd) Execute(arg string) (*trello.Board, *trello.List) {
 
 	var list *trello.List
 	if list, err = c.tr.FindList(board.ID, listName); err != nil || list == nil {
-		log.Debug().
-			Err(err).
-			Str("idBoard", board.ID).
-			Str("listName", listName).
-			Msg("could not find list")
+		fmt.Fprintf(c.errOutput, "no list found with name '%s'", listName)
 		return board, c.currentList
 	}
+
+	if cardName != "" {
+		fmt.Fprintf(c.errOutput, "cannot cd on card")
+		return c.currentBoard, c.currentList
+	}
+
 	return board, list
 }

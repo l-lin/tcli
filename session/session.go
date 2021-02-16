@@ -8,11 +8,13 @@ import (
 	"github.com/l-lin/tcli/renderer"
 	"github.com/l-lin/tcli/trello"
 	"github.com/rs/zerolog/log"
+	"io"
+	"os"
 	"strings"
 )
 
 func NewSession(tr trello.Repository, r renderer.Renderer) *Session {
-	return &Session{tr: tr, r: r}
+	return &Session{tr: tr, r: r, output: os.Stdout, errOutput: os.Stderr}
 }
 
 type Session struct {
@@ -20,6 +22,8 @@ type Session struct {
 	r            renderer.Renderer
 	CurrentBoard *trello.Board
 	CurrentList  *trello.List
+	output       io.Writer
+	errOutput    io.Writer
 }
 
 func (s *Session) Executor(in string) {
@@ -40,9 +44,7 @@ func (s *Session) Executor(in string) {
 	if e := executor.New(cmd, s.tr, s.r, s.CurrentBoard, s.CurrentList); e != nil {
 		s.CurrentBoard, s.CurrentList = e.Execute(arg)
 	} else {
-		log.Error().
-			Str("cmd", cmd).
-			Msg("executor not found")
+		fmt.Fprintf(s.errOutput, "command not found: %s", cmd)
 	}
 }
 
@@ -56,8 +58,9 @@ func (s *Session) Completer(d prompt.Document) []prompt.Suggest {
 
 func (s *Session) LivePrefix() (string, bool) {
 	builder := strings.Builder{}
+	builder.WriteString("/")
 	if s.CurrentBoard != nil {
-		builder.WriteString(fmt.Sprintf("/%s", s.CurrentBoard.Name))
+		builder.WriteString(fmt.Sprintf("%s", s.CurrentBoard.Name))
 	}
 	if s.CurrentList != nil {
 		builder.WriteString(fmt.Sprintf("/%s", s.CurrentList.Name))
