@@ -20,7 +20,7 @@ type HttpRepository struct {
 }
 
 func (h HttpRepository) GetBoards() (Boards, error) {
-	v := h.buildQueries("id,name,shortUrl,dateLastActivity")
+	v := h.buildQueries("id,name,shortUrl,dateLastActivity,labelNames")
 	u := fmt.Sprintf("%s/members/me/boards?%v", h.BaseURL, v.Encode())
 
 	var boards Boards

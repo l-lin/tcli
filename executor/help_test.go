@@ -8,7 +8,7 @@ import (
 func TestHelp_Execute(t *testing.T) {
 	// GIVEN
 	buf := bytes.Buffer{}
-	h := help{out: &buf}
+	h := help{stdout: &buf}
 
 	// WHEN
 	h.Execute("")
@@ -18,6 +18,7 @@ func TestHelp_Execute(t *testing.T) {
 exit    exit CLI
 cd      change level in the hierarchy
 ls      list resource content
+cat     show resource content info
 `
 	actual := buf.String()
 	if actual != expected {

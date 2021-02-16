@@ -3,6 +3,7 @@ package executor
 import (
 	"github.com/l-lin/tcli/renderer"
 	"github.com/l-lin/tcli/trello"
+	"io"
 )
 
 type Executor interface {
@@ -14,6 +15,8 @@ type executor struct {
 	r            renderer.Renderer
 	currentBoard *trello.Board
 	currentList  *trello.List
+	stdout       io.Writer
+	stderr       io.Writer
 }
 
 func New(cmd string, tr trello.Repository, r renderer.Renderer, currentBoard *trello.Board, currentList *trello.List) Executor {

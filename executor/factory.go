@@ -12,7 +12,7 @@ var Factories = []Factory{
 		Description: "display help",
 		Create: func(tr trello.Repository, r renderer.Renderer, currentBoard *trello.Board, currentList *trello.List) Executor {
 			return &help{
-				out:          os.Stdout,
+				stdout:       os.Stdout,
 				currentBoard: currentBoard,
 				currentList:  currentList,
 			}
@@ -34,6 +34,8 @@ var Factories = []Factory{
 				r:            r,
 				currentBoard: currentBoard,
 				currentList:  currentList,
+				stdout:       os.Stdout,
+				stderr:       os.Stderr,
 			}}
 		},
 	},
@@ -46,6 +48,22 @@ var Factories = []Factory{
 				r:            r,
 				currentBoard: currentBoard,
 				currentList:  currentList,
+				stdout:       os.Stdout,
+				stderr:       os.Stderr,
+			}}
+		},
+	},
+	{
+		Cmd:         "cat",
+		Description: "show resource content info",
+		Create: func(tr trello.Repository, r renderer.Renderer, currentBoard *trello.Board, currentList *trello.List) Executor {
+			return &cat{executor{
+				tr:           tr,
+				r:            r,
+				currentBoard: currentBoard,
+				currentList:  currentList,
+				stdout:       os.Stdout,
+				stderr:       os.Stderr,
 			}}
 		},
 	},

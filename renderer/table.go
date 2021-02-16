@@ -45,6 +45,17 @@ func (b InTable) RenderBoards(boards trello.Boards) string {
 	return buffer.String()
 }
 
+func (b InTable) RenderBoard(board trello.Board) string {
+	var buffer bytes.Buffer
+	w := tabwriter.NewWriter(&buffer, b.minWidth, b.tabWidth, b.padding, b.padChar, b.flags)
+	t := tabby.NewCustom(w)
+	t.AddLine("ID:", board.ID)
+	t.AddLine("Name:", board.Name)
+	t.AddLine("Last activity date:", board.DateLastActivity)
+	t.Print()
+	return buffer.String()
+}
+
 func (b InTable) RenderLists(lists trello.Lists) string {
 	var buffer bytes.Buffer
 	w := tabwriter.NewWriter(&buffer, b.minWidth, b.tabWidth, b.padding, b.padChar, b.flags)
@@ -56,6 +67,16 @@ func (b InTable) RenderLists(lists trello.Lists) string {
 		line[1] = list.ID
 		t.AddLine(line...)
 	}
+	t.Print()
+	return buffer.String()
+}
+
+func (b InTable) RenderList(list trello.List) string {
+	var buffer bytes.Buffer
+	w := tabwriter.NewWriter(&buffer, b.minWidth, b.tabWidth, b.padding, b.padChar, b.flags)
+	t := tabby.NewCustom(w)
+	t.AddLine("ID:", list.ID)
+	t.AddLine("Name:", list.Name)
 	t.Print()
 	return buffer.String()
 }

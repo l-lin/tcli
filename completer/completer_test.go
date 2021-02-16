@@ -47,7 +47,10 @@ func TestCompleter_Complete(t *testing.T) {
 					return nil
 				},
 			},
-			expected: []prompt.Suggest{{Text: "cd", Description: "change level in the hierarchy"}},
+			expected: []prompt.Suggest{
+				{Text: "cd", Description: "change level in the hierarchy"},
+				{Text: "cat", Description: "show resource content info"},
+			},
 		},
 		// RELATIVE PATHS
 		"typing 'cd '": {
