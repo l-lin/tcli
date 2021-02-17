@@ -1,7 +1,12 @@
-FROM scratch
+FROM alpine:3.12
 
-COPY tcli .
+RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
 
 ENTRYPOINT [ "/tcli" ]
-CMD ["--help"]
 
+WORKDIR /
+
+COPY tcli .
