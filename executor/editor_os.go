@@ -2,7 +2,6 @@ package executor
 
 import (
 	"github.com/rs/zerolog/log"
-	"io/ioutil"
 	"os"
 	"os/exec"
 )
@@ -17,7 +16,7 @@ type OsEditor struct {
 }
 
 func (o OsEditor) Edit(in []byte) (out []byte, err error) {
-	tmpFile, err := ioutil.TempFile(os.TempDir(), "tcli-*.yaml")
+	tmpFile, err := os.CreateTemp(os.TempDir(), "tcli-*.yaml")
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +27,7 @@ func (o OsEditor) Edit(in []byte) (out []byte, err error) {
 		Msg("writing content in temp file")
 
 	// first write the content of the card in the temp file
-	if err = ioutil.WriteFile(tmpFile.Name(), in, 0644); err != nil {
+	if err = os.WriteFile(tmpFile.Name(), in, 0644); err != nil {
 		return nil, err
 	}
 
@@ -40,5 +39,5 @@ func (o OsEditor) Edit(in []byte) (out []byte, err error) {
 		return nil, err
 	}
 
-	return ioutil.ReadFile(tmpFile.Name())
+	return os.ReadFile(tmpFile.Name())
 }

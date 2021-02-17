@@ -3,7 +3,7 @@ package http
 import (
 	"fmt"
 	"github.com/henvic/httpretty"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -40,7 +40,7 @@ func (c Client) DoOnlyOk(request *http.Request) (*http.Response, error) {
 	if response.StatusCode != http.StatusOK {
 		defer response.Body.Close()
 		var body []byte
-		body, err = ioutil.ReadAll(response.Body)
+		body, err = io.ReadAll(response.Body)
 		if err != nil {
 			return nil, err
 		}

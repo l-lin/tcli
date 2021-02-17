@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/l-lin/tcli/conf"
 	wrappedhttp "github.com/l-lin/tcli/http"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -118,7 +118,7 @@ func (h HttpRepository) get(url string, ret interface{}) error {
 	}
 
 	defer response.Body.Close()
-	respBody, err := ioutil.ReadAll(response.Body)
+	respBody, err := io.ReadAll(response.Body)
 	if err != nil {
 		return err
 	}
@@ -143,7 +143,7 @@ func (h HttpRepository) put(url string, reqBody interface{}, ret interface{}) er
 
 	defer response.Body.Close()
 	var respBody []byte
-	respBody, err = ioutil.ReadAll(response.Body)
+	respBody, err = io.ReadAll(response.Body)
 	if err != nil {
 		return err
 	}
