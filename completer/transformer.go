@@ -10,7 +10,7 @@ func boardsToSuggestions(boards trello.Boards) []prompt.Suggest {
 	suggestions := make([]prompt.Suggest, len(boards))
 	for i, board := range boards {
 		suggestions[i] = prompt.Suggest{
-			Text: fmt.Sprintf("%s", board.Name),
+			Text: fmt.Sprintf("%s", board.TCliID()),
 		}
 	}
 	return suggestions
@@ -30,7 +30,7 @@ func cardsToSuggestions(cards trello.Cards) []prompt.Suggest {
 	suggestions := make([]prompt.Suggest, len(cards))
 	for i, card := range cards {
 		suggestions[i] = prompt.Suggest{
-			Text:        fmt.Sprintf("%s", card.Name),
+			Text:        fmt.Sprintf("%s", card.TCliID()),
 			Description: truncateCardDescription(card.Description),
 		}
 	}

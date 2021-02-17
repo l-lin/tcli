@@ -65,15 +65,15 @@ func TestCompleter_Complete(t *testing.T) {
 					tr.EXPECT().
 						GetBoards().
 						Return(trello.Boards{
-							{Name: "board"},
-							{Name: "another board"},
+							{Name: "board", ShortLink: "shortLink"},
+							{Name: "another board", ShortLink: "another shortLink"},
 						}, nil)
 					return tr
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: "board"},
-				{Text: "another board"},
+				{Text: "board [shortLink]"},
+				{Text: "another board [another shortLink]"},
 			},
 		},
 		"typing 'cd b'": {
@@ -88,14 +88,14 @@ func TestCompleter_Complete(t *testing.T) {
 					tr.EXPECT().
 						GetBoards().
 						Return(trello.Boards{
-							{Name: "board"},
-							{Name: "another board"},
+							{Name: "board", ShortLink: "shortLink"},
+							{Name: "another board", ShortLink: "another shortLink"},
 						}, nil)
 					return tr
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: "board"},
+				{Text: "board [shortLink]"},
 			},
 		},
 		"typing 'cd board/'": {
@@ -164,15 +164,15 @@ func TestCompleter_Complete(t *testing.T) {
 					tr.EXPECT().
 						GetCards("list 1").
 						Return(trello.Cards{
-							{Name: "card"},
-							{Name: "another card"},
+							{Name: "card", ShortLink: "shortLink"},
+							{Name: "another card", ShortLink: "another shortLink"},
 						}, nil)
 					return tr
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: "card"},
-				{Text: "another card"},
+				{Text: "card [shortLink]"},
+				{Text: "another card [another shortLink]"},
 			},
 		},
 		"typing 'cd board/list/ca'": {
@@ -190,14 +190,14 @@ func TestCompleter_Complete(t *testing.T) {
 					tr.EXPECT().
 						GetCards("list 1").
 						Return(trello.Cards{
-							{Name: "card"},
-							{Name: "another card"},
+							{Name: "card", ShortLink: "shortLink"},
+							{Name: "another card", ShortLink: "another shortLink"},
 						}, nil)
 					return tr
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: "card"},
+				{Text: "card [shortLink]"},
 			},
 		},
 		// WITH CURRENT BOARD
@@ -271,15 +271,15 @@ func TestCompleter_Complete(t *testing.T) {
 					tr.EXPECT().
 						GetCards("list 1").
 						Return(trello.Cards{
-							{Name: "card"},
-							{Name: "another card"},
+							{Name: "card", ShortLink: "shortLink"},
+							{Name: "another card", ShortLink: "another shortLink"},
 						}, nil)
 					return tr
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: "card"},
-				{Text: "another card"},
+				{Text: "card [shortLink]"},
+				{Text: "another card [another shortLink]"},
 			},
 		},
 		"has current board & current list & typing 'cd c'": {
@@ -299,14 +299,14 @@ func TestCompleter_Complete(t *testing.T) {
 					tr.EXPECT().
 						GetCards("list 1").
 						Return(trello.Cards{
-							{Name: "card"},
-							{Name: "another card"},
+							{Name: "card", ShortLink: "shortLink"},
+							{Name: "another card", ShortLink: "another short link"},
 						}, nil)
 					return tr
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: "card"},
+				{Text: "card [shortLink]"},
 			},
 		},
 		"has current board & typing 'cd ../a'": {
@@ -322,14 +322,14 @@ func TestCompleter_Complete(t *testing.T) {
 					tr.EXPECT().
 						GetBoards().
 						Return(trello.Boards{
-							{Name: "board"},
-							{Name: "another board"},
+							{Name: "board", ShortLink: "shortLink"},
+							{Name: "another board", ShortLink: "another shortLink"},
 						}, nil)
 					return tr
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: "another board"},
+				{Text: "another board [another shortLink]"},
 			},
 		},
 		"has current board & current list & typing 'cd ../a'": {
@@ -372,15 +372,15 @@ func TestCompleter_Complete(t *testing.T) {
 					tr.EXPECT().
 						GetBoards().
 						Return(trello.Boards{
-							{Name: "board"},
-							{Name: "another board"},
+							{Name: "board", ShortLink: "shortLink"},
+							{Name: "another board", ShortLink: "another shortLink"},
 						}, nil)
 					return tr
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: "board"},
-				{Text: "another board"},
+				{Text: "board [shortLink]"},
+				{Text: "another board [another shortLink]"},
 			},
 		},
 		"has current board & typing 'cd /a'": {
@@ -396,14 +396,14 @@ func TestCompleter_Complete(t *testing.T) {
 					tr.EXPECT().
 						GetBoards().
 						Return(trello.Boards{
-							{Name: "board"},
-							{Name: "another board"},
+							{Name: "board", ShortLink: "shortLink"},
+							{Name: "another board", ShortLink: "another shortLink"},
 						}, nil)
 					return tr
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: "another board"},
+				{Text: "another board [another shortLink]"},
 			},
 		},
 	}

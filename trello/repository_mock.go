@@ -34,48 +34,48 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 }
 
 // FindBoard mocks base method.
-func (m *MockRepository) FindBoard(name string) (*Board, error) {
+func (m *MockRepository) FindBoard(query string) (*Board, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindBoard", name)
+	ret := m.ctrl.Call(m, "FindBoard", query)
 	ret0, _ := ret[0].(*Board)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FindBoard indicates an expected call of FindBoard.
-func (mr *MockRepositoryMockRecorder) FindBoard(name interface{}) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) FindBoard(query interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindBoard", reflect.TypeOf((*MockRepository)(nil).FindBoard), name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindBoard", reflect.TypeOf((*MockRepository)(nil).FindBoard), query)
 }
 
 // FindCard mocks base method.
-func (m *MockRepository) FindCard(idList, name string) (*Card, error) {
+func (m *MockRepository) FindCard(idList, query string) (*Card, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindCard", idList, name)
+	ret := m.ctrl.Call(m, "FindCard", idList, query)
 	ret0, _ := ret[0].(*Card)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FindCard indicates an expected call of FindCard.
-func (mr *MockRepositoryMockRecorder) FindCard(idList, name interface{}) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) FindCard(idList, query interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindCard", reflect.TypeOf((*MockRepository)(nil).FindCard), idList, name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindCard", reflect.TypeOf((*MockRepository)(nil).FindCard), idList, query)
 }
 
 // FindList mocks base method.
-func (m *MockRepository) FindList(idBoard, name string) (*List, error) {
+func (m *MockRepository) FindList(idBoard, query string) (*List, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindList", idBoard, name)
+	ret := m.ctrl.Call(m, "FindList", idBoard, query)
 	ret0, _ := ret[0].(*List)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FindList indicates an expected call of FindList.
-func (mr *MockRepositoryMockRecorder) FindList(idBoard, name interface{}) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) FindList(idBoard, query interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindList", reflect.TypeOf((*MockRepository)(nil).FindList), idBoard, name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindList", reflect.TypeOf((*MockRepository)(nil).FindList), idBoard, query)
 }
 
 // GetBoards mocks base method.

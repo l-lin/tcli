@@ -31,17 +31,15 @@ func (c *CacheInMemory) GetBoards() (Boards, error) {
 	return boards, err
 }
 
-func (c *CacheInMemory) FindBoard(name string) (*Board, error) {
+func (c *CacheInMemory) FindBoard(query string) (*Board, error) {
 	boards, err := c.GetBoards()
 	if err != nil {
 		return nil, err
 	}
-	for _, board := range boards {
-		if board.Name == name {
-			return &board, nil
-		}
+	if board := FindBoard(boards, query); board != nil {
+		return board, nil
 	}
-	return nil, fmt.Errorf("no board found with name %s", name)
+	return nil, fmt.Errorf("no board found with query %s", query)
 }
 
 func (c *CacheInMemory) GetLists(idBoard string) (Lists, error) {
@@ -55,17 +53,15 @@ func (c *CacheInMemory) GetLists(idBoard string) (Lists, error) {
 	return lists, err
 }
 
-func (c *CacheInMemory) FindList(idBoard string, name string) (*List, error) {
+func (c *CacheInMemory) FindList(idBoard string, query string) (*List, error) {
 	lists, err := c.GetLists(idBoard)
 	if err != nil {
 		return nil, err
 	}
-	for _, list := range lists {
-		if list.Name == name {
-			return &list, nil
-		}
+	if list := FindList(lists, query); list != nil {
+		return list, nil
 	}
-	return nil, fmt.Errorf("no list found with name %s", name)
+	return nil, fmt.Errorf("no list found with query %s", query)
 }
 
 func (c *CacheInMemory) GetCards(idList string) (Cards, error) {
@@ -79,17 +75,15 @@ func (c *CacheInMemory) GetCards(idList string) (Cards, error) {
 	return cards, err
 }
 
-func (c *CacheInMemory) FindCard(idList string, name string) (*Card, error) {
+func (c *CacheInMemory) FindCard(idList string, query string) (*Card, error) {
 	cards, err := c.GetCards(idList)
 	if err != nil {
 		return nil, err
 	}
-	for _, card := range cards {
-		if card.Name == name {
-			return &card, nil
-		}
+	if card := FindCard(cards, query); card != nil {
+		return card, nil
 	}
-	return nil, fmt.Errorf("no card found with name %s", name)
+	return nil, fmt.Errorf("no card found with query %s", query)
 }
 
 func (c *CacheInMemory) UpdateCard(updateCard UpdateCard) (*Card, error) {

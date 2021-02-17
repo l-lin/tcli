@@ -3,10 +3,10 @@ package trello
 
 type Repository interface {
 	GetBoards() (Boards, error)
-	FindBoard(name string) (*Board, error)
+	FindBoard(query string) (*Board, error)
 	GetLists(idBoard string) (Lists, error)
-	FindList(idBoard string, name string) (*List, error)
+	FindList(idBoard string, query string) (*List, error)
 	GetCards(idList string) (Cards, error)
-	FindCard(idList string, name string) (*Card, error)
+	FindCard(idList string, query string) (*Card, error)
 	UpdateCard(updateCard UpdateCard) (*Card, error)
 }

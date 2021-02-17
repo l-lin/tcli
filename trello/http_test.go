@@ -158,8 +158,8 @@ func TestHttpRepository_FindBoard(t *testing.T) {
 				},
 			},
 			test: func(actual *Board, err error) {
-				if err != nil {
-					t.Errorf("expected no error, got: %v", err)
+				if err == nil {
+					t.Errorf("expected error")
 					t.FailNow()
 				}
 				if actual != nil {
@@ -318,7 +318,7 @@ func TestHttpRepository_FindList(t *testing.T) {
 				}
 			},
 		},
-		"no board found": {
+		"no list found": {
 			given: given{
 				tsFn: func() *httptest.Server {
 					return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -332,8 +332,8 @@ func TestHttpRepository_FindList(t *testing.T) {
 				},
 			},
 			test: func(actual *List, err error) {
-				if err != nil {
-					t.Errorf("expected no error, got: %v", err)
+				if err == nil {
+					t.Errorf("expected error")
 					t.FailNow()
 				}
 				if actual != nil {
@@ -492,7 +492,7 @@ func TestHttpRepository_FindCard(t *testing.T) {
 				}
 			},
 		},
-		"no board found": {
+		"no card found": {
 			given: given{
 				tsFn: func() *httptest.Server {
 					return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -506,8 +506,8 @@ func TestHttpRepository_FindCard(t *testing.T) {
 				},
 			},
 			test: func(actual *Card, err error) {
-				if err != nil {
-					t.Errorf("expected no error, got: %v", err)
+				if err == nil {
+					t.Errorf("expected error")
 					t.FailNow()
 				}
 				if actual != nil {

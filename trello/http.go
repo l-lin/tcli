@@ -31,17 +31,15 @@ func (h HttpRepository) GetBoards() (Boards, error) {
 	return boards, nil
 }
 
-func (h HttpRepository) FindBoard(name string) (*Board, error) {
+func (h HttpRepository) FindBoard(query string) (*Board, error) {
 	boards, err := h.GetBoards()
 	if err != nil {
 		return nil, err
 	}
-	for _, board := range boards {
-		if board.Name == name {
-			return &board, nil
-		}
+	if board := FindBoard(boards, query); board != nil {
+		return board, nil
 	}
-	return nil, nil
+	return nil, fmt.Errorf("no board found with query %s", query)
 }
 
 func (h HttpRepository) GetLists(idBoard string) (Lists, error) {
@@ -55,19 +53,17 @@ func (h HttpRepository) GetLists(idBoard string) (Lists, error) {
 	return lists, nil
 }
 
-func (h HttpRepository) FindList(idBoard string, name string) (*List, error) {
+func (h HttpRepository) FindList(idBoard string, query string) (*List, error) {
 	// maybe use adequate API instead of getting all lists?
 	// https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-id-lists-filter-get
 	lists, err := h.GetLists(idBoard)
 	if err != nil {
 		return nil, err
 	}
-	for _, list := range lists {
-		if list.Name == name {
-			return &list, nil
-		}
+	if list := FindList(lists, query); list != nil {
+		return list, nil
 	}
-	return nil, nil
+	return nil, fmt.Errorf("no list found with query %s", query)
 }
 
 func (h HttpRepository) GetCards(idList string) (Cards, error) {
@@ -81,19 +77,17 @@ func (h HttpRepository) GetCards(idList string) (Cards, error) {
 	return cards, nil
 }
 
-func (h HttpRepository) FindCard(idList string, name string) (*Card, error) {
+func (h HttpRepository) FindCard(idList string, query string) (*Card, error) {
 	// maybe use adequate API instead of getting all cards?
 	// https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-id-cards-filter-get
 	cards, err := h.GetCards(idList)
 	if err != nil {
 		return nil, err
 	}
-	for _, card := range cards {
-		if card.Name == name {
-			return &card, nil
-		}
+	if card := FindCard(cards, query); card != nil {
+		return card, nil
 	}
-	return nil, nil
+	return nil, fmt.Errorf("no card found with query %s", query)
 }
 
 func (h HttpRepository) UpdateCard(updateCard UpdateCard) (*Card, error) {

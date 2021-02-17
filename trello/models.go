@@ -1,6 +1,9 @@
 package trello
 
-import "github.com/logrusorgru/aurora/v3"
+import (
+	"fmt"
+	"github.com/logrusorgru/aurora/v3"
+)
 
 var mapColors = map[string]func(interface{}) aurora.Value{
 	"black":  aurora.BgBrightBlack,
@@ -15,6 +18,18 @@ var mapColors = map[string]func(interface{}) aurora.Value{
 	"yellow": aurora.BgBrightYellow,
 }
 
+func FindBoard(boards Boards, query string) *Board {
+	for _, board := range boards {
+		if board.TCliID() == query ||
+			board.ID == query ||
+			board.ShortLink == query ||
+			board.Name == query {
+			return &board
+		}
+	}
+	return nil
+}
+
 type Boards []Board
 type Board struct {
 	ID               string `json:"id"`
@@ -24,11 +39,37 @@ type Board struct {
 	DateLastActivity string `json:"dateLastActivity"`
 }
 
+func (b Board) TCliID() string {
+	return toTCliID(b.Name, b.ShortLink)
+}
+
+func FindList(lists Lists, query string) *List {
+	for _, list := range lists {
+		if list.ID == query ||
+			list.Name == query {
+			return &list
+		}
+	}
+	return nil
+}
+
 type Lists []List
 type List struct {
 	ID      string `json:"id"`
 	Name    string `json:"name"`
 	IDBoard string `json:"idBoard"`
+}
+
+func FindCard(cards Cards, query string) *Card {
+	for _, card := range cards {
+		if card.TCliID() == query ||
+			card.ID == query ||
+			card.ShortLink == query ||
+			card.Name == query {
+			return &card
+		}
+	}
+	return nil
 }
 
 type Cards []Card
@@ -42,6 +83,10 @@ type Card struct {
 	ShortLink   string `json:"shortLink"`
 	ShortURL    string `json:"shortUrl"`
 	Labels      `json:"labels"`
+}
+
+func (c Card) TCliID() string {
+	return toTCliID(c.Name, c.ShortLink)
 }
 
 type Labels []Label
@@ -87,4 +132,11 @@ func CopyUpdateCard(updateCard UpdateCard) UpdateCard {
 		IDList:      updateCard.IDList,
 		Closed:      updateCard.Closed,
 	}
+}
+
+// toTCliID converts a Trello entity into a unique ID understandable by tcli
+// it's using the name, for the user experience in the completion, and the short link
+// instead of the id to prevent having long lines in the completion.
+func toTCliID(name, shortLink string) string {
+	return fmt.Sprintf("%s [%s]", name, shortLink)
 }
