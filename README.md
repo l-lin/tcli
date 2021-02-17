@@ -2,9 +2,22 @@
 
 ![Go](https://github.com/l-lin/tcli/workflows/Go/badge.svg)
 
-> Trello interactive CLI
+> An interactive Trello client with auto-completion feature
 
-## Getting started
+![tcli](./tcli.gif)
+
+## Installation
+### Downloading standalone binary
+
+Binaries are available from [Github releases](https://github.com/l-lin/tcli/releases).
+
+### Using cURL
+
+```bash
+curl -sf https://gobinaries.com/l-lin/tcli | sh;
+```
+
+### Building from source
 
 ```bash
 # Build
@@ -14,8 +27,12 @@ make compile
 ## Usage
 
 ```bash
-# Run binary
-./bin/tcli -h
-# Or directly using go
-go run .
+# explore the CLI with the help command
+tcli -h
+
+# start interactive mode
+tcli
+
+# you can also use it as a CLI
+tcli ls /
 ```

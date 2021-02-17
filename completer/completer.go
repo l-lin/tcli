@@ -19,6 +19,7 @@ func New(tr trello.Repository, currentBoard *trello.Board, currentList *trello.L
 	}
 }
 
+// Completer used to provide the content of the auto-completion for go-prompt
 type Completer struct {
 	tr           trello.Repository
 	currentBoard *trello.Board

@@ -1,5 +1,6 @@
 package renderer
 
+// Description rendering entity descriptions
 type Description interface {
 	Render(description string) (string, error)
 }

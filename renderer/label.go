@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// Labels rendering labels
 type Labels interface {
 	Render(labels trello.Labels) string
 }

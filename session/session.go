@@ -22,6 +22,7 @@ func NewSession(tr trello.Repository, r renderer.Renderer) *Session {
 	}
 }
 
+// Session of the terminal to navigate seamlessly in interactive mode
 type Session struct {
 	tr           trello.Repository
 	r            renderer.Renderer

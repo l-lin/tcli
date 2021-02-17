@@ -15,6 +15,7 @@ func NewHttpRepository(c conf.Conf, debug bool) Repository {
 	return HttpRepository{Conf: c, client: wrappedhttp.NewClient(debug)}
 }
 
+// HttpRepository fetches the results from Trello APIs
 type HttpRepository struct {
 	conf.Conf
 	client *wrappedhttp.Client

@@ -5,6 +5,7 @@ import (
 	"github.com/l-lin/tcli/trello"
 )
 
+// Renderer for displaying Trello entities in human friendly way
 type Renderer interface {
 	RenderBoards(trello.Boards) string
 	RenderBoard(trello.Board) string

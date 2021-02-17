@@ -5,6 +5,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// CacheInMemory is a decorator that caches the results of the proxified Repository
+// in memory
 type CacheInMemory struct {
 	r Repository
 	*Boards
