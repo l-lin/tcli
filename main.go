@@ -13,6 +13,7 @@ func main() {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 
 	rootCmd := cmd.NewRootCmd(version, buildDate)
+	rootCmd.AddCommand(cmd.NewCompletionCmd())
 	rootCmd.AddCommand(cmd.NewLSCmd())
 	rootCmd.AddCommand(cmd.NewCatCmd())
 	rootCmd.AddCommand(cmd.NewEditCmd())
