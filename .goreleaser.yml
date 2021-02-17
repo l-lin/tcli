@@ -30,3 +30,7 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+dockers:
+  - image_templates:
+    - "ghcr.io/l-lin/tcli:latest"
+    - "ghcr.io/l-lin/tcli:{{ .Tag }}"

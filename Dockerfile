@@ -1,18 +1,7 @@
-FROM golang:1.16 AS builder
-
-WORKDIR /opt/app
-
-COPY go.mod go.sum ./
-RUN go mod download
-
-COPY . .
-RUN make clean build-alpine-scratch
-# --------
 FROM scratch
 
-WORKDIR /
+COPY tcli .
 
-COPY --from=builder /opt/app/bin/amd64/scratch .
-
-ENTRYPOINT [ "/app" ]
+ENTRYPOINT [ "/tcli" ]
 CMD ["--help"]
+
