@@ -8,15 +8,15 @@ import (
 type CacheInMemory struct {
 	r Repository
 	*Boards
-	MapLists map[string]Lists
-	MapCards map[string]Cards
+	mapLists map[string]Lists
+	mapCards map[string]Cards
 }
 
 func NewCacheInMemory(r Repository) Repository {
 	return &CacheInMemory{
 		r:        r,
-		MapLists: map[string]Lists{},
-		MapCards: map[string]Cards{},
+		mapLists: map[string]Lists{},
+		mapCards: map[string]Cards{},
 	}
 }
 
@@ -45,13 +45,13 @@ func (c *CacheInMemory) FindBoard(name string) (*Board, error) {
 }
 
 func (c *CacheInMemory) GetLists(idBoard string) (Lists, error) {
-	if c.MapLists[idBoard] != nil {
+	if c.mapLists[idBoard] != nil {
 		log.Debug().Str("idBoard", idBoard).Msg("fetching lists from cache")
-		return c.MapLists[idBoard], nil
+		return c.mapLists[idBoard], nil
 	}
 	log.Debug().Str("idBoard", idBoard).Msg("fetching lists from remote")
 	lists, err := c.r.GetLists(idBoard)
-	c.MapLists[idBoard] = lists
+	c.mapLists[idBoard] = lists
 	return lists, err
 }
 
@@ -69,13 +69,13 @@ func (c *CacheInMemory) FindList(idBoard string, name string) (*List, error) {
 }
 
 func (c *CacheInMemory) GetCards(idList string) (Cards, error) {
-	if c.MapCards[idList] != nil {
+	if c.mapCards[idList] != nil {
 		log.Debug().Str("idList", idList).Msg("fetching cards from cache")
-		return c.MapCards[idList], nil
+		return c.mapCards[idList], nil
 	}
 	log.Debug().Str("idList", idList).Msg("fetching cards from remote")
 	cards, err := c.r.GetCards(idList)
-	c.MapCards[idList] = cards
+	c.mapCards[idList] = cards
 	return cards, err
 }
 
@@ -90,4 +90,20 @@ func (c *CacheInMemory) FindCard(idList string, name string) (*Card, error) {
 		}
 	}
 	return nil, fmt.Errorf("no card found with name %s", name)
+}
+
+func (c *CacheInMemory) UpdateCard(updateCard UpdateCard) (*Card, error) {
+	card, err := c.r.UpdateCard(updateCard)
+	if err != nil {
+		return nil, err
+	}
+
+	// replace card
+	for i, cachedCard := range c.mapCards[updateCard.IDList] {
+		if cachedCard.ID == card.ID {
+			c.mapCards[updateCard.IDList][i] = *card
+			break
+		}
+	}
+	return card, nil
 }

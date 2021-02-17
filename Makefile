@@ -67,7 +67,7 @@ mod-download:
 
 test:
 	@echo "  >  Executing unit tests"
-	@go test -v -timeout 60s -race ./...
+	@go test -v -timeout 60s ./...
 
 test-colorized:
 	@echo "  >  Executing unit tests"

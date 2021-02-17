@@ -194,3 +194,42 @@ func TestCacheInMemory_FindCard(t *testing.T) {
 		t.Errorf("expected %v, actual %v", expected, actual)
 	}
 }
+
+func TestCacheInMemory_UpdateCard(t *testing.T) {
+	// GIVEN
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	r := NewMockRepository(ctrl)
+	cardToUpdate := Card{ID: "card 1", Name: "card", IDList: "list 1"}
+	expected := Card{ID: "card 1", Name: "updated card", IDList: "list 1"}
+	r.EXPECT().
+		UpdateCard(NewUpdateCard(cardToUpdate)).
+		Return(&expected, nil)
+	cr := &CacheInMemory{
+		r:        r,
+		mapLists: map[string]Lists{},
+		mapCards: map[string]Cards{
+			cardToUpdate.IDList: {
+				{ID: "card 2", Name: "another card", IDList: cardToUpdate.IDList},
+				cardToUpdate,
+			},
+		},
+	}
+
+	// WHEN
+	actual, err := cr.UpdateCard(NewUpdateCard(cardToUpdate))
+
+	// THEN
+	if err != nil {
+		t.Error("expected no error")
+	}
+	if actual == nil {
+		t.Error("expected no nil card returned")
+		t.FailNow()
+	}
+	cardInCache := cr.mapCards[cardToUpdate.IDList][1]
+	if cardInCache.ID != expected.ID && cardInCache.Name != expected.Name &&
+		actual.ID != expected.ID && actual.Name != expected.Name {
+		t.Errorf("expected %v, actual %v, card in cache %v", expected, actual, cardInCache)
+	}
+}

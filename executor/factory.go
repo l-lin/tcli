@@ -34,8 +34,8 @@ var Factories = []Factory{
 				r:            r,
 				currentBoard: currentBoard,
 				currentList:  currentList,
-				output:       os.Stdout,
-				errOutput:    os.Stderr,
+				stdout:       os.Stdout,
+				stderr:       os.Stderr,
 			}}
 		},
 	},
@@ -48,8 +48,8 @@ var Factories = []Factory{
 				r:            r,
 				currentBoard: currentBoard,
 				currentList:  currentList,
-				output:       os.Stdout,
-				errOutput:    os.Stderr,
+				stdout:       os.Stdout,
+				stderr:       os.Stderr,
 			}}
 		},
 	},
@@ -62,9 +62,27 @@ var Factories = []Factory{
 				r:            r,
 				currentBoard: currentBoard,
 				currentList:  currentList,
-				output:       os.Stdout,
-				errOutput:    os.Stderr,
+				stdout:       os.Stdout,
+				stderr:       os.Stderr,
 			}}
+		},
+	},
+	{
+		Cmd:         "edit",
+		Description: "edit resource content",
+		Create: func(tr trello.Repository, r renderer.Renderer, currentBoard *trello.Board, currentList *trello.List) Executor {
+			return &edit{
+				executor: executor{
+					tr:           tr,
+					r:            r,
+					currentBoard: currentBoard,
+					currentList:  currentList,
+					stdout:       os.Stdout,
+					stderr:       os.Stderr,
+				},
+				stdin:  os.Stdin,
+				editor: NewOsEditor(),
+			}
 		},
 	},
 }

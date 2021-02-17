@@ -29,31 +29,31 @@ func (c cat) Execute(arg string) (currentBoard *trello.Board, currentList *trell
 
 	board, err := c.tr.FindBoard(boardName)
 	if err != nil {
-		fmt.Fprintf(c.errOutput, "no board found with name '%s'\n", boardName)
+		fmt.Fprintf(c.stderr, "no board found with name '%s'\n", boardName)
 		return
 	}
 
 	if listName == "" {
-		fmt.Fprintf(c.output, "%s\n", c.r.RenderBoard(*board))
+		fmt.Fprintf(c.stdout, "%s\n", c.r.RenderBoard(*board))
 		return
 	}
 
 	var list *trello.List
 	if list, err = c.tr.FindList(board.ID, listName); err != nil || list == nil {
-		fmt.Fprintf(c.errOutput, "no list found with name '%s'\n", listName)
+		fmt.Fprintf(c.stderr, "no list found with name '%s'\n", listName)
 		return
 	}
 
 	if cardName == "" {
-		fmt.Fprintf(c.output, "%s\n", c.r.RenderList(*list))
+		fmt.Fprintf(c.stdout, "%s\n", c.r.RenderList(*list))
 		return
 	}
 
 	var card *trello.Card
 	if card, err = c.tr.FindCard(list.ID, cardName); err != nil || card == nil {
-		fmt.Fprintf(c.errOutput, "no card found with name '%s'\n", cardName)
+		fmt.Fprintf(c.stderr, "no card found with name '%s'\n", cardName)
 		return
 	}
-	fmt.Fprintf(c.output, "%s\n", c.r.RenderCard(*card))
+	fmt.Fprintf(c.stdout, "%s\n", c.r.RenderCard(*card))
 	return
 }

@@ -13,7 +13,7 @@ type flagParser struct {
 func (fp flagParser) GetString(key string, panicIfError bool) string {
 	s, err := fp.Flags().GetString(key)
 	if err != nil && panicIfError {
-		log.Fatal().Err(err).Msg("could not parse flag")
+		log.Fatal().Stack().Err(err).Msg("could not parse flag")
 		panic(err)
 	}
 	return s
@@ -22,7 +22,7 @@ func (fp flagParser) GetString(key string, panicIfError bool) string {
 func (fp flagParser) GetBool(key string, panicIfError bool) bool {
 	b, err := fp.Flags().GetBool(key)
 	if err != nil && panicIfError {
-		log.Fatal().Err(err).Msg("could not parse flag")
+		log.Fatal().Stack().Err(err).Msg("could not parse flag")
 		panic(err)
 	}
 	return b

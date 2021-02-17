@@ -18,9 +18,9 @@ func TestCd_Execute(t *testing.T) {
 		currentList           *trello.List
 	}
 	type expected struct {
-		errOutput string
-		board     *trello.Board
-		list      *trello.List
+		stderr string
+		board  *trello.Board
+		list   *trello.List
 	}
 
 	var tests = map[string]struct {
@@ -144,7 +144,7 @@ func TestCd_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errOutput: "cannot cd on card\n",
+				stderr: "cannot cd on card\n",
 			},
 		},
 		"/ > cd ..": {
@@ -155,9 +155,9 @@ func TestCd_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errOutput: "invalid path\n",
-				board:     nil,
-				list:      nil,
+				stderr: "invalid path\n",
+				board:  nil,
+				list:   nil,
 			},
 		},
 		"/board/list > cd ../../..": {
@@ -170,21 +170,21 @@ func TestCd_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errOutput: "invalid path\n",
-				board:     &trello.Board{ID: "board 1", Name: "board"},
-				list:      &trello.List{ID: "list 1", Name: "list"},
+				stderr: "invalid path\n",
+				board:  &trello.Board{ID: "board 1", Name: "board"},
+				list:   &trello.List{ID: "list 1", Name: "list"},
 			},
 		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			errBuf := bytes.Buffer{}
+			stderrBuf := bytes.Buffer{}
 			c := cd{
 				executor{
 					tr:           tt.given.buildTrelloRepository(),
 					currentBoard: tt.given.currentBoard,
 					currentList:  tt.given.currentList,
-					errOutput:    &errBuf,
+					stderr:       &stderrBuf,
 				},
 			}
 			actualBoard, actualList := c.Execute(tt.given.arg)
@@ -206,9 +206,9 @@ func TestCd_Execute(t *testing.T) {
 					t.Errorf("expected list %v, actual list %v", tt.expected.list, actualList)
 				}
 			}
-			actualErrOutput := errBuf.String()
-			if actualErrOutput != tt.expected.errOutput {
-				t.Errorf("expected errOutput %v, actual errOutput %v", tt.expected.errOutput, actualErrOutput)
+			actualStderr := stderrBuf.String()
+			if actualStderr != tt.expected.stderr {
+				t.Errorf("expected stderr %v, actual stderr %v", tt.expected.stderr, actualStderr)
 			}
 		})
 	}

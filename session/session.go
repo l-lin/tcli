@@ -14,7 +14,12 @@ import (
 )
 
 func NewSession(tr trello.Repository, r renderer.Renderer) *Session {
-	return &Session{tr: tr, r: r, output: os.Stdout, errOutput: os.Stderr}
+	return &Session{
+		tr:     tr,
+		r:      r,
+		stdout: os.Stdout,
+		stderr: os.Stderr,
+	}
 }
 
 type Session struct {
@@ -22,8 +27,8 @@ type Session struct {
 	r            renderer.Renderer
 	CurrentBoard *trello.Board
 	CurrentList  *trello.List
-	output       io.Writer
-	errOutput    io.Writer
+	stdout       io.Writer
+	stderr       io.Writer
 }
 
 func (s *Session) Executor(in string) {
@@ -44,7 +49,7 @@ func (s *Session) Executor(in string) {
 	if e := executor.New(cmd, s.tr, s.r, s.CurrentBoard, s.CurrentList); e != nil {
 		s.CurrentBoard, s.CurrentList = e.Execute(arg)
 	} else {
-		fmt.Fprintf(s.errOutput, "command not found: %s\n", cmd)
+		fmt.Fprintf(s.stderr, "command not found: %s\n", cmd)
 	}
 }
 

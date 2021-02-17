@@ -19,6 +19,7 @@ type Boards []Board
 type Board struct {
 	ID               string `json:"id"`
 	Name             string `json:"name"`
+	ShortLink        string `json:"shortLink"`
 	ShortURL         string `json:"shortUrl"`
 	DateLastActivity string `json:"dateLastActivity"`
 }
@@ -37,6 +38,9 @@ type Card struct {
 	Description string `json:"desc"`
 	IDBoard     string `json:"idBoard"`
 	IDList      string `json:"idList"`
+	Closed      bool   `json:"closed"`
+	ShortLink   string `json:"shortLink"`
+	ShortURL    string `json:"shortUrl"`
 	Labels      `json:"labels"`
 }
 
@@ -52,4 +56,35 @@ func (l Label) Colorize(s string) aurora.Value {
 		return c(s)
 	}
 	return aurora.White(s)
+}
+
+type UpdateCard struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"desc"`
+	IDBoard     string `json:"idBoard"`
+	IDList      string `json:"idList"`
+	Closed      bool   `json:"closed"`
+}
+
+func NewUpdateCard(card Card) UpdateCard {
+	return UpdateCard{
+		ID:          card.ID,
+		Name:        card.Name,
+		Description: card.Description,
+		IDBoard:     card.IDBoard,
+		IDList:      card.IDList,
+		Closed:      card.Closed,
+	}
+}
+
+func CopyUpdateCard(updateCard UpdateCard) UpdateCard {
+	return UpdateCard{
+		ID:          updateCard.ID,
+		Name:        updateCard.Name,
+		Description: updateCard.Description,
+		IDBoard:     updateCard.IDBoard,
+		IDList:      updateCard.IDList,
+		Closed:      updateCard.Closed,
+	}
 }

@@ -50,6 +50,7 @@ func (c *Container) registerConf() {
 	cp = conf.NewProvider(cr, c.Inputs.TrelloApiKey, c.Inputs.TrelloAppName)
 	if err := cp.Init(); err != nil {
 		log.Fatal().
+			Stack().
 			Err(err).
 			Msg("could not initialize config")
 	}
@@ -69,10 +70,11 @@ func (c *Container) setLogLevel() {
 func (c *Container) registerRenderer() {
 	var cdr renderer.Description
 	var err error
-	if cdr, err = glamour.NewTermRenderer(glamour.WithStylePath("dark")); err != nil {
+	if cdr, err = glamour.NewTermRenderer(glamour.WithAutoStyle()); err != nil {
 		log.Fatal().
+			Stack().
 			Err(err).
-			Msg("could not create Description")
+			Msg("could not create description renderer")
 	}
 
 	var lr renderer.Labels

@@ -528,3 +528,71 @@ func TestHttpRepository_FindCard(t *testing.T) {
 		})
 	}
 }
+
+func TestHttpRepository_UpdateCard(t *testing.T) {
+	type given struct {
+		tsFn func() *httptest.Server
+	}
+	type expected struct {
+		hasError bool
+		card     *Card
+	}
+	var tests = map[string]struct {
+		given    given
+		expected expected
+	}{
+		"happy path": {
+			given: given{
+				tsFn: func() *httptest.Server {
+					return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						w.WriteHeader(http.StatusOK)
+						w.Write([]byte(`
+{
+  "id": "card 1",
+  "name": "updated card"
+}`))
+					}))
+				},
+			},
+			expected: expected{
+				hasError: false,
+				card:     &Card{ID: "card 1", Name: "updated card"},
+			},
+		},
+		"server error": {
+			given: given{
+				tsFn: func() *httptest.Server {
+					return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						w.WriteHeader(http.StatusInternalServerError)
+					}))
+				},
+			},
+			expected: expected{
+				hasError: true,
+				card:     nil,
+			},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			ts := tt.given.tsFn()
+			repository := NewHttpRepository(conf.Conf{
+				Trello: conf.Trello{
+					BaseURL: ts.URL,
+				},
+			}, false)
+			actual, actualErr := repository.UpdateCard(UpdateCard{ID: "card 1", Name: "card"})
+			if tt.expected.hasError && actualErr == nil || !tt.expected.hasError && actualErr != nil {
+				t.Errorf("expected err %v, actual err %v", tt.expected.hasError, actualErr != nil)
+			}
+			if tt.expected.card != nil && actual == nil || tt.expected.card == nil && actual != nil {
+				t.Errorf("expected %v, actual %v", tt.expected.card, actual)
+			}
+			if tt.expected.card != nil {
+				if tt.expected.card.ID != actual.ID && tt.expected.card.Name != actual.Name {
+					t.Errorf("expected %v, actual %v", tt.expected.card, actual)
+				}
+			}
+		})
+	}
+}

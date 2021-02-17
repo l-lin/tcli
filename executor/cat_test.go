@@ -19,8 +19,8 @@ func TestCat_Execute(t *testing.T) {
 		buildRenderer         func() renderer.Renderer
 	}
 	type expected struct {
-		output    string
-		errOutput string
+		stdout string
+		stderr string
 	}
 	var tests = map[string]struct {
 		given    given
@@ -32,7 +32,7 @@ func TestCat_Execute(t *testing.T) {
 				buildTrelloRepository: func() trello.Repository { return nil },
 				buildRenderer:         func() renderer.Renderer { return nil },
 			},
-			expected: expected{output: ""},
+			expected: expected{stdout: ""},
 		},
 		"show board info": {
 			given: given{
@@ -52,7 +52,7 @@ func TestCat_Execute(t *testing.T) {
 					return r
 				},
 			},
-			expected: expected{output: "board content\n"},
+			expected: expected{stdout: "board content\n"},
 		},
 		"show list info": {
 			given: given{
@@ -75,7 +75,7 @@ func TestCat_Execute(t *testing.T) {
 					return r
 				},
 			},
-			expected: expected{output: "list content\n"},
+			expected: expected{stdout: "list content\n"},
 		},
 		"show card info": {
 			given: given{
@@ -101,7 +101,7 @@ func TestCat_Execute(t *testing.T) {
 					return r
 				},
 			},
-			expected: expected{output: "card content\n"},
+			expected: expected{stdout: "card content\n"},
 		},
 		// ERRORS
 		"unknown-board": {
@@ -119,7 +119,7 @@ func TestCat_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errOutput: "no board found with name 'unknown-board'\n",
+				stderr: "no board found with name 'unknown-board'\n",
 			},
 		},
 		"unknown-list": {
@@ -140,7 +140,7 @@ func TestCat_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errOutput: "no list found with name 'unknown-list'\n",
+				stderr: "no list found with name 'unknown-list'\n",
 			},
 		},
 		"unknown-card": {
@@ -164,31 +164,31 @@ func TestCat_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errOutput: "no card found with name 'unknown-card'\n",
+				stderr: "no card found with name 'unknown-card'\n",
 			},
 		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			outputBuf := bytes.Buffer{}
-			errOutputBuf := bytes.Buffer{}
+			stdoutBuf := bytes.Buffer{}
+			stderrBuf := bytes.Buffer{}
 			c := cat{
 				executor{
-					tr:        tt.given.buildTrelloRepository(),
-					r:         tt.given.buildRenderer(),
-					output:    &outputBuf,
-					errOutput: &errOutputBuf,
+					tr:     tt.given.buildTrelloRepository(),
+					r:      tt.given.buildRenderer(),
+					stdout: &stdoutBuf,
+					stderr: &stderrBuf,
 				},
 			}
 			c.Execute(tt.given.arg)
 
-			actualOutput := outputBuf.String()
-			if actualOutput != tt.expected.output {
-				t.Errorf("expected output %v, actual output %v", tt.expected.output, actualOutput)
+			actualStdout := stdoutBuf.String()
+			if actualStdout != tt.expected.stdout {
+				t.Errorf("expected stdout %v, actual stdout %v", tt.expected.stdout, actualStdout)
 			}
-			actualErrOutput := errOutputBuf.String()
-			if actualErrOutput != tt.expected.errOutput {
-				t.Errorf("expected errOutput %v, actual errOutput %v", tt.expected.errOutput, actualErrOutput)
+			actualStderr := stderrBuf.String()
+			if actualStderr != tt.expected.stderr {
+				t.Errorf("expected stderr %v, actual stderr %v", tt.expected.stderr, actualStderr)
 			}
 		})
 	}

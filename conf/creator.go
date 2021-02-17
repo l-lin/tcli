@@ -93,6 +93,6 @@ func openBrowser(url string) {
 		err = fmt.Errorf("unsupported platform")
 	}
 	if err != nil {
-		log.Fatal().Err(err)
+		log.Fatal().Stack().Err(err).Msg("could not open browser")
 	}
 }

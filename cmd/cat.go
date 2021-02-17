@@ -30,6 +30,7 @@ func runCat(_ *cobra.Command, args []string) {
 		e.Execute(strings.Join(args, " "))
 	} else {
 		log.Fatal().
+			Stack().
 			Str("cmd", "cat").
 			Msg("executor not found")
 	}

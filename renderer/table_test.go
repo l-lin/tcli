@@ -110,8 +110,9 @@ func TestInTable_RenderCards(t *testing.T) {
 			given: func() trello.Cards {
 				return trello.Cards{
 					trello.Card{
-						ID:   "1",
-						Name: "Card 1",
+						ID:       "1",
+						ShortURL: "https://trello.com/c/abcd1",
+						Name:     "Card 1",
 						Labels: trello.Labels{
 							trello.Label{
 								ID:    "10",
@@ -126,8 +127,9 @@ func TestInTable_RenderCards(t *testing.T) {
 						},
 					},
 					trello.Card{
-						ID:   "2",
-						Name: "Card 2",
+						ID:       "2",
+						ShortURL: "https://trello.com/c/abcd2",
+						Name:     "Card 2",
 						Labels: trello.Labels{
 							trello.Label{
 								ID:    "20",
@@ -142,39 +144,41 @@ func TestInTable_RenderCards(t *testing.T) {
 					},
 				}
 			},
-			expected: `Name      ID    Labels
-----      --    ------
-Card 1    1     Label 10 Label 11 
-Card 2    2     Label 20 sky 
+			expected: `Name      ID    Short URL                     Labels
+----      --    ---------                     ------
+Card 1    1     https://trello.com/c/abcd1    Label 10 Label 11 
+Card 2    2     https://trello.com/c/abcd2    Label 20 sky 
 `,
 		},
 		"two cards without label": {
 			given: func() trello.Cards {
 				return trello.Cards{
 					trello.Card{
-						ID:     "1",
-						Name:   "Card 1",
-						Labels: trello.Labels{},
+						ID:       "1",
+						ShortURL: "https://trello.com/c/abcd1",
+						Name:     "Card 1",
+						Labels:   trello.Labels{},
 					},
 					trello.Card{
-						ID:     "2",
-						Name:   "Card 2",
-						Labels: trello.Labels{},
+						ID:       "2",
+						ShortURL: "https://trello.com/c/abcd2",
+						Name:     "Card 2",
+						Labels:   trello.Labels{},
 					},
 				}
 			},
-			expected: aurora.Sprintf(`Name      ID    Labels
-----      --    ------
-Card 1    1     
-Card 2    2     
+			expected: aurora.Sprintf(`Name      ID    Short URL                     Labels
+----      --    ---------                     ------
+Card 1    1     https://trello.com/c/abcd1    
+Card 2    2     https://trello.com/c/abcd2    
 `),
 		},
 		"no card": {
 			given: func() trello.Cards {
 				return trello.Cards{}
 			},
-			expected: `Name    ID    Labels
-----    --    ------
+			expected: `Name    ID    Short URL    Labels
+----    --    ---------    ------
 `,
 		},
 	}
@@ -196,8 +200,10 @@ func TestInTable_RenderCard(t *testing.T) {
 	}{
 		"card with labels": {
 			given: trello.Card{
-				ID:   "1",
-				Name: "Card 1",
+				ID:        "1",
+				ShortLink: "abcd1234",
+				ShortURL:  "https://trello.com/c/abcd1234",
+				Name:      "Card 1",
 				Description: `# Card title
 
 > some context
@@ -217,6 +223,8 @@ Here are some markdown contents`,
 				},
 			},
 			expected: `ID:             1
+Short link:     abcd1234
+Short URL:      https://trello.com/c/abcd1234
 Name:           Card 1
 Labels:         Label 10 Label 11 
 Description:    
@@ -229,8 +237,10 @@ Here are some markdown contents
 		},
 		"card without label": {
 			given: trello.Card{
-				ID:   "2",
-				Name: "Card 2",
+				ID:        "2",
+				ShortLink: "abcd1234",
+				ShortURL:  "https://trello.com/c/abcd1234",
+				Name:      "Card 2",
 				Description: `# Card title
 
 > some context
@@ -239,6 +249,8 @@ Here are some markdown contents`,
 				Labels: trello.Labels{},
 			},
 			expected: `ID:             2
+Short link:     abcd1234
+Short URL:      https://trello.com/c/abcd1234
 Name:           Card 2
 Labels:         
 Description:    

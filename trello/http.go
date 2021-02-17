@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 func NewHttpRepository(c conf.Conf, debug bool) Repository {
@@ -20,7 +21,7 @@ type HttpRepository struct {
 }
 
 func (h HttpRepository) GetBoards() (Boards, error) {
-	v := h.buildQueries("id,name,shortUrl,dateLastActivity,labelNames")
+	v := h.buildQueries("id,name,shortLink,shortUrl,dateLastActivity")
 	u := fmt.Sprintf("%s/members/me/boards?%v", h.BaseURL, v.Encode())
 
 	var boards Boards
@@ -55,6 +56,8 @@ func (h HttpRepository) GetLists(idBoard string) (Lists, error) {
 }
 
 func (h HttpRepository) FindList(idBoard string, name string) (*List, error) {
+	// maybe use adequate API instead of getting all lists?
+	// https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-id-lists-filter-get
 	lists, err := h.GetLists(idBoard)
 	if err != nil {
 		return nil, err
@@ -68,7 +71,7 @@ func (h HttpRepository) FindList(idBoard string, name string) (*List, error) {
 }
 
 func (h HttpRepository) GetCards(idList string) (Cards, error) {
-	v := h.buildQueries("id,name,desc,idBoard,idList,labels")
+	v := h.buildQueries("id,name,desc,idBoard,idList,labels,closed,shortLink,shortUrl")
 	u := fmt.Sprintf("%s/lists/%s/cards?%v", h.BaseURL, idList, v.Encode())
 
 	var cards Cards
@@ -79,6 +82,8 @@ func (h HttpRepository) GetCards(idList string) (Cards, error) {
 }
 
 func (h HttpRepository) FindCard(idList string, name string) (*Card, error) {
+	// maybe use adequate API instead of getting all cards?
+	// https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-id-cards-filter-get
 	cards, err := h.GetCards(idList)
 	if err != nil {
 		return nil, err
@@ -91,7 +96,17 @@ func (h HttpRepository) FindCard(idList string, name string) (*Card, error) {
 	return nil, nil
 }
 
-func (h HttpRepository) get(url string, t interface{}) error {
+func (h HttpRepository) UpdateCard(updateCard UpdateCard) (*Card, error) {
+	v := h.buildQueries("")
+	u := fmt.Sprintf("%s/cards/%s?%v", h.BaseURL, updateCard.ID, v.Encode())
+	var card Card
+	if err := h.put(u, updateCard, &card); err != nil {
+		return nil, err
+	}
+	return &card, nil
+}
+
+func (h HttpRepository) get(url string, ret interface{}) error {
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return err
@@ -103,17 +118,44 @@ func (h HttpRepository) get(url string, t interface{}) error {
 	}
 
 	defer response.Body.Close()
-	body, err := ioutil.ReadAll(response.Body)
+	respBody, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return err
 	}
-	return json.Unmarshal(body, t)
+	return json.Unmarshal(respBody, ret)
+}
+
+func (h HttpRepository) put(url string, reqBody interface{}, ret interface{}) error {
+	b, err := json.Marshal(reqBody)
+	if err != nil {
+		return err
+	}
+	request, err := http.NewRequest("PUT", url, strings.NewReader(string(b)))
+	if err != nil {
+		return err
+	}
+	request.Header.Add("Content-Type", "application/json")
+
+	response, err := h.client.DoOnlyOk(request)
+	if err != nil {
+		return err
+	}
+
+	defer response.Body.Close()
+	var respBody []byte
+	respBody, err = ioutil.ReadAll(response.Body)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(respBody, ret)
 }
 
 func (h HttpRepository) buildQueries(fields string) url.Values {
 	v := url.Values{}
 	v.Set("key", h.ApiKey)
 	v.Set("token", h.AccessToken)
-	v.Set("fields", fields)
+	if fields != "" {
+		v.Set("fields", fields)
+	}
 	return v
 }

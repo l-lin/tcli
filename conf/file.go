@@ -56,7 +56,7 @@ func (fr *FileRepository) Get() *Conf {
 		config.TagName = "yaml"
 		config.WeaklyTypedInput = true
 	}); err != nil {
-		log.Fatal().Err(err).Msg("could not unmarshal config")
+		log.Fatal().Stack().Err(err).Msg("could not unmarshal config")
 		os.Exit(1)
 	}
 	return conf

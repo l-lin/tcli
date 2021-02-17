@@ -50,6 +50,8 @@ func (b InTable) RenderBoard(board trello.Board) string {
 	w := tabwriter.NewWriter(&buffer, b.minWidth, b.tabWidth, b.padding, b.padChar, b.flags)
 	t := tabby.NewCustom(w)
 	t.AddLine("ID:", board.ID)
+	t.AddLine("Short link:", board.ShortLink)
+	t.AddLine("Short URL:", board.ShortURL)
 	t.AddLine("Name:", board.Name)
 	t.AddLine("Last activity date:", board.DateLastActivity)
 	t.Print()
@@ -85,12 +87,13 @@ func (b InTable) RenderCards(cards trello.Cards) string {
 	var buffer bytes.Buffer
 	w := tabwriter.NewWriter(&buffer, b.minWidth, b.tabWidth, b.padding, b.padChar, b.flags)
 	t := tabby.NewCustom(w)
-	t.AddHeader("Name", "ID", "Labels")
+	t.AddHeader("Name", "ID", "Short URL", "Labels")
 	for _, card := range cards {
-		line := make([]interface{}, 3)
+		line := make([]interface{}, 4)
 		line[0] = card.Name
 		line[1] = card.ID
-		line[2] = b.lr.Render(card.Labels)
+		line[2] = card.ShortURL
+		line[3] = b.lr.Render(card.Labels)
 		t.AddLine(line...)
 	}
 	t.Print()
@@ -102,6 +105,8 @@ func (b InTable) RenderCard(card trello.Card) string {
 	w := tabwriter.NewWriter(&buffer, b.minWidth, b.tabWidth, b.padding, b.padChar, b.flags)
 	t := tabby.NewCustom(w)
 	t.AddLine("ID:", card.ID)
+	t.AddLine("Short link:", card.ShortLink)
+	t.AddLine("Short URL:", card.ShortURL)
 	t.AddLine("Name:", card.Name)
 	t.AddLine("Labels:", b.lr.Render(card.Labels))
 	t.AddLine("Description:", "")

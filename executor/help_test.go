@@ -19,6 +19,7 @@ exit    exit CLI
 cd      change level in the hierarchy
 ls      list resource content
 cat     show resource content info
+edit    edit resource content
 
 `
 	actual := buf.String()

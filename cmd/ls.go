@@ -30,6 +30,7 @@ func runLS(_ *cobra.Command, args []string) {
 		e.Execute(strings.Join(args, " "))
 	} else {
 		log.Fatal().
+			Stack().
 			Str("cmd", "ls").
 			Msg("executor not found")
 	}

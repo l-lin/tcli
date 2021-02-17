@@ -122,3 +122,18 @@ func (mr *MockRepositoryMockRecorder) GetLists(idBoard interface{}) *gomock.Call
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLists", reflect.TypeOf((*MockRepository)(nil).GetLists), idBoard)
 }
+
+// UpdateCard mocks base method.
+func (m *MockRepository) UpdateCard(updateCard UpdateCard) (*Card, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateCard", updateCard)
+	ret0, _ := ret[0].(*Card)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateCard indicates an expected call of UpdateCard.
+func (mr *MockRepositoryMockRecorder) UpdateCard(updateCard interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCard", reflect.TypeOf((*MockRepository)(nil).UpdateCard), updateCard)
+}

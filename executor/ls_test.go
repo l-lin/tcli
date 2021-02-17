@@ -19,8 +19,8 @@ func TestLs_Execute(t *testing.T) {
 		buildRenderer         func() renderer.Renderer
 	}
 	type expected struct {
-		output    string
-		errOutput string
+		stdout string
+		stderr string
 	}
 	var tests = map[string]struct {
 		given    given
@@ -50,7 +50,7 @@ func TestLs_Execute(t *testing.T) {
 					return r
 				},
 			},
-			expected: expected{output: "boards content\n"},
+			expected: expected{stdout: "boards content\n"},
 		},
 		"show lists": {
 			given: given{
@@ -79,7 +79,7 @@ func TestLs_Execute(t *testing.T) {
 					return r
 				},
 			},
-			expected: expected{output: "lists content\n"},
+			expected: expected{stdout: "lists content\n"},
 		},
 		"show cards": {
 			given: given{
@@ -111,7 +111,7 @@ func TestLs_Execute(t *testing.T) {
 					return r
 				},
 			},
-			expected: expected{output: "cards content\n"},
+			expected: expected{stdout: "cards content\n"},
 		},
 		"show single card": {
 			given: given{
@@ -137,7 +137,7 @@ func TestLs_Execute(t *testing.T) {
 					return r
 				},
 			},
-			expected: expected{output: "card 1 content\n"},
+			expected: expected{stdout: "card 1 content\n"},
 		},
 		// ERRORS
 		"unknown-board": {
@@ -155,7 +155,7 @@ func TestLs_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errOutput: "no board found with name 'unknown-board'\n",
+				stderr: "no board found with name 'unknown-board'\n",
 			},
 		},
 		"unknown-list": {
@@ -176,7 +176,7 @@ func TestLs_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errOutput: "no list found with name 'unknown-list'\n",
+				stderr: "no list found with name 'unknown-list'\n",
 			},
 		},
 		"unknown-card": {
@@ -200,7 +200,7 @@ func TestLs_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errOutput: "no card found with name 'unknown-card'\n",
+				stderr: "no card found with name 'unknown-card'\n",
 			},
 		},
 		"cannot find boards": {
@@ -218,7 +218,7 @@ func TestLs_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errOutput: "could not fetch boards: unexpected error\n",
+				stderr: "could not fetch boards: unexpected error\n",
 			},
 		},
 		"cannot find lists": {
@@ -239,7 +239,7 @@ func TestLs_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errOutput: "could not fetch lists for board 'board': unexpected error\n",
+				stderr: "could not fetch lists for board 'board': unexpected error\n",
 			},
 		},
 		"cannot find cards": {
@@ -263,31 +263,31 @@ func TestLs_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{
-				errOutput: "could not fetch cards for list 'list': unexpected error\n",
+				stderr: "could not fetch cards for list 'list': unexpected error\n",
 			},
 		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			outBuf := bytes.Buffer{}
-			errBuf := bytes.Buffer{}
+			stdoutBuf := bytes.Buffer{}
+			stderrBuf := bytes.Buffer{}
 			l := ls{
 				executor{
-					tr:        tt.given.buildTrelloRepository(),
-					r:         tt.given.buildRenderer(),
-					output:    &outBuf,
-					errOutput: &errBuf,
+					tr:     tt.given.buildTrelloRepository(),
+					r:      tt.given.buildRenderer(),
+					stdout: &stdoutBuf,
+					stderr: &stderrBuf,
 				},
 			}
 			l.Execute(tt.given.arg)
 
-			actualOutput := outBuf.String()
-			if actualOutput != tt.expected.output {
-				t.Errorf("expected output %v, actual output %v", tt.expected.output, actualOutput)
+			actualStdout := stdoutBuf.String()
+			if actualStdout != tt.expected.stdout {
+				t.Errorf("expected stdout %v, actual stdout %v", tt.expected.stdout, actualStdout)
 			}
-			actualErrOutput := errBuf.String()
-			if actualErrOutput != tt.expected.errOutput {
-				t.Errorf("expected errOutput %v, actual errOutput %v", tt.expected.errOutput, actualErrOutput)
+			actualStderr := stderrBuf.String()
+			if actualStderr != tt.expected.stderr {
+				t.Errorf("expected stderr %v, actual stderr %v", tt.expected.stderr, actualStderr)
 			}
 		})
 	}
