@@ -17,5 +17,5 @@ changelog:
       - '^build:'
 dockers:
   - image_templates:
-    - "ghcr.io/l-lin/tcli:latest"
-    - "ghcr.io/l-lin/tcli:{{ .Tag }}"
+    - "ghcr.io/l-lin/{{ .ProjectName }}:latest"
+    - "ghcr.io/l-lin/{{ .ProjectName }}:{{ .Tag }}"
