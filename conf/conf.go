@@ -14,6 +14,7 @@ type Conf struct {
 }
 
 type Trello struct {
+	AppName     string `yaml:"-"`
 	ApiKey      string `yaml:"api_key"`
 	AccessToken string `yaml:"access_token"`
 	BaseURL     string `yaml:"base_url"`
@@ -36,18 +37,12 @@ type Provider interface {
 	Get() *Conf
 }
 
-func NewProvider(r Repository, trelloApiKey, trelloAppName string) Provider {
-	return &provider{
-		r:             r,
-		trelloApiKey:  trelloApiKey,
-		trelloAppName: trelloAppName,
-	}
+func NewProvider(r Repository) Provider {
+	return &provider{r: r}
 }
 
 type provider struct {
-	r             Repository
-	trelloApiKey  string
-	trelloAppName string
+	r Repository
 }
 
 func (p *provider) Init() error {
@@ -76,8 +71,8 @@ func (p *provider) createIfNotExists() error {
 	}
 	var err error
 	c, err = confCreator.
-		setTrelloApiKey(p.trelloApiKey).
-		setTrelloAppName(p.trelloAppName).
+		askTrelloAppName().
+		askTrelloApiKey().
 		askTrelloAccessToken().
 		create()
 	if err != nil {

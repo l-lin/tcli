@@ -35,11 +35,3 @@ func (fp flagParser) GetConfigFile() string {
 func (fp flagParser) GetDebug() bool {
 	return fp.GetBool("debug", true)
 }
-
-func (fp flagParser) GetTrelloApiKey() string {
-	return fp.GetString("trello-api-key", false)
-}
-
-func (fp flagParser) GetTrelloAppName() string {
-	return fp.GetString("trello-app-name", false)
-}

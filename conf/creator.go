@@ -51,21 +51,27 @@ func (creator *creator) askTrelloAccessToken() *creator {
 	return creator
 }
 
-func (creator *creator) setTrelloApiKey(trelloApiKey string) *creator {
-	if trelloApiKey != "" {
-		creator.ApiKey = trelloApiKey
-	} else {
-		creator.ApiKey = defaultTrelloApiKey
+func (creator *creator) askTrelloApiKey() *creator {
+	prompt := promptui.Prompt{
+		Label:    "Trello API key",
+		Default:  defaultTrelloApiKey,
+		Validate: validateNotEmpty,
+		Stdin:    creator.stdin,
+		Stdout:   creator.stdout,
 	}
+	creator.ApiKey, creator.Err = prompt.Run()
 	return creator
 }
 
-func (creator *creator) setTrelloAppName(appName string) *creator {
-	if appName != "" {
-		creator.AppName = appName
-	} else {
-		creator.AppName = defaultTrelloAppName
+func (creator *creator) askTrelloAppName() *creator {
+	prompt := promptui.Prompt{
+		Label:    "Trello app name",
+		Default:  defaultTrelloAppName,
+		Validate: validateNotEmpty,
+		Stdin:    creator.stdin,
+		Stdout:   creator.stdout,
 	}
+	creator.AppName, creator.Err = prompt.Run()
 	return creator
 }
 

@@ -38,8 +38,6 @@ func initRootCmd(c *cobra.Command, version, buildDate string) *pflag.FlagSet {
 	c.SetVersionTemplate(`{{printf "%s" .Version}}`)
 	c.PersistentFlags().String("config", "", "config file (default will look at $PWD/.tcli.yml then at $HOME/.tcli.yml)")
 	c.PersistentFlags().Bool("debug", false, "debug mode")
-	c.PersistentFlags().String("trello-api-key", "", "override Trello API key")
-	c.PersistentFlags().String("trello-app-name", "", "override Trello app name")
 	return c.Flags()
 }
 
@@ -64,11 +62,9 @@ func runRootCmd(_ *cobra.Command, _ []string) {
 func initializeIocContainer(c *cobra.Command, _ []string) {
 	fp := flagParser{Command: c}
 	inputs := ioc.Inputs{
-		Viper:         viper.New(),
-		Debug:         fp.GetDebug(),
-		File:          fp.GetConfigFile(),
-		TrelloApiKey:  fp.GetTrelloApiKey(),
-		TrelloAppName: fp.GetTrelloAppName(),
+		Viper: viper.New(),
+		Debug: fp.GetDebug(),
+		File:  fp.GetConfigFile(),
 	}
 	container = ioc.Boostrap(inputs)
 }

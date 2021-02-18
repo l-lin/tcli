@@ -47,7 +47,7 @@ func (c *Container) registerConf() {
 	var cr conf.Repository
 	cr = conf.NewFileRepository(c.File, c.Viper)
 	var cp conf.Provider
-	cp = conf.NewProvider(cr, c.Inputs.TrelloApiKey, c.Inputs.TrelloAppName)
+	cp = conf.NewProvider(cr)
 	if err := cp.Init(); err != nil {
 		log.Fatal().
 			Stack().
