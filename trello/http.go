@@ -68,7 +68,7 @@ func (h HttpRepository) FindList(idBoard string, query string) (*List, error) {
 }
 
 func (h HttpRepository) FindCards(idList string) (Cards, error) {
-	v := h.buildQueries("id,name,desc,idBoard,idList,labels,closed,shortLink,shortUrl")
+	v := h.buildQueries("id,name,desc,idBoard,idList,labels,closed,shortLink,shortUrl,pos")
 	u := fmt.Sprintf("%s/lists/%s/cards?%v", h.BaseURL, idList, v.Encode())
 
 	var cards Cards

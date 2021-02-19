@@ -3,6 +3,7 @@ package trello
 import (
 	"fmt"
 	"github.com/logrusorgru/aurora/v3"
+	"strconv"
 )
 
 var mapColors = map[string]func(interface{}) aurora.Value{
@@ -74,15 +75,15 @@ func FindCard(cards Cards, query string) *Card {
 
 type Cards []Card
 type Card struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"desc"`
-	IDBoard     string `json:"idBoard"`
-	IDList      string `json:"idList"`
-	Closed      bool   `json:"closed"`
-	ShortLink   string `json:"shortLink"`
-	ShortURL    string `json:"shortUrl"`
-	Pos         int    `json:"pos"`
+	ID          string  `json:"id"`
+	Name        string  `json:"name"`
+	Description string  `json:"desc"`
+	IDBoard     string  `json:"idBoard"`
+	IDList      string  `json:"idList"`
+	Closed      bool    `json:"closed"`
+	ShortLink   string  `json:"shortLink"`
+	ShortURL    string  `json:"shortUrl"`
+	Pos         float64 `json:"pos"`
 	Labels      `json:"labels"`
 }
 
@@ -107,14 +108,14 @@ func (l Label) Colorize(s string) aurora.Value {
 // UpdateCard represents the resources used to update a card
 // See https://developer.atlassian.com/cloud/trello/rest/api-group-cards/#api-cards-id-put for more info
 type UpdateCard struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"desc"`
-	IDBoard     string `json:"idBoard"`
-	IDList      string `json:"idList"`
-	IDLabels    string `json:"idLabels,omitempty"`
-	Closed      bool   `json:"closed,omitempty"`
-	Pos         string `json:"pos,omitempty"` // "top", "bottom" or a positive float
+	ID          string      `json:"id"`
+	Name        string      `json:"name"`
+	Description string      `json:"desc"`
+	IDBoard     string      `json:"idBoard"`
+	IDList      string      `json:"idList"`
+	IDLabels    string      `json:"idLabels,omitempty"`
+	Closed      bool        `json:"closed,omitempty"`
+	Pos         interface{} `json:"pos,omitempty"` // "top", "bottom" or a positive float
 }
 
 func NewUpdateCard(card Card) UpdateCard {
@@ -125,6 +126,7 @@ func NewUpdateCard(card Card) UpdateCard {
 		IDBoard:     card.IDBoard,
 		IDList:      card.IDList,
 		Closed:      card.Closed,
+		Pos:         card.Pos,
 	}
 }
 
@@ -136,6 +138,7 @@ type CardToEdit struct {
 	Desc   string `yaml:"desc"`
 	Closed bool   `yaml:"closed"`
 	IDList string `yaml:"idList"`
+	Pos    string `yaml:"pos,omitempty"` // "top", "bottom" or a positive float
 }
 
 func NewCardToEdit(card Card) CardToEdit {
@@ -144,6 +147,7 @@ func NewCardToEdit(card Card) CardToEdit {
 		Desc:   card.Description,
 		Closed: card.Closed,
 		IDList: card.IDList,
+		Pos:    strconv.FormatFloat(card.Pos, 'f', 4, 64),
 	}
 }
 

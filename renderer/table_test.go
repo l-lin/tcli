@@ -173,6 +173,31 @@ Card 1    1     https://trello.com/c/abcd1
 Card 2    2     https://trello.com/c/abcd2    
 `),
 		},
+		"display cards by position order": {
+			given: func() trello.Cards {
+				return trello.Cards{
+					trello.Card{
+						ID:       "1",
+						ShortURL: "https://trello.com/c/abcd1",
+						Name:     "Card 1",
+						Labels:   trello.Labels{},
+						Pos:      10,
+					},
+					trello.Card{
+						ID:       "2",
+						ShortURL: "https://trello.com/c/abcd2",
+						Name:     "Card 2",
+						Labels:   trello.Labels{},
+						Pos:      1,
+					},
+				}
+			},
+			expected: aurora.Sprintf(`Name      ID    Short URL                     Labels
+----      --    ---------                     ------
+Card 2    2     https://trello.com/c/abcd2    
+Card 1    1     https://trello.com/c/abcd1    
+`),
+		},
 		"no card": {
 			given: func() trello.Cards {
 				return trello.Cards{}
@@ -201,9 +226,10 @@ func TestInTable_RenderCard(t *testing.T) {
 		"card with labels": {
 			given: trello.Card{
 				ID:        "1",
+				Name:      "Card 1",
+				Pos:       1234,
 				ShortLink: "abcd1234",
 				ShortURL:  "https://trello.com/c/abcd1234",
-				Name:      "Card 1",
 				Description: `# Card title
 
 > some context
@@ -223,9 +249,10 @@ Here are some markdown contents`,
 				},
 			},
 			expected: `ID:             1
+Name:           Card 1
+Position:       1234
 Short link:     abcd1234
 Short URL:      https://trello.com/c/abcd1234
-Name:           Card 1
 Labels:         Label 10 Label 11 
 Description:    
 # Card title
@@ -238,9 +265,10 @@ Here are some markdown contents
 		"card without label": {
 			given: trello.Card{
 				ID:        "2",
+				Name:      "Card 2",
+				Pos:       1234,
 				ShortLink: "abcd1234",
 				ShortURL:  "https://trello.com/c/abcd1234",
-				Name:      "Card 2",
 				Description: `# Card title
 
 > some context
@@ -249,9 +277,10 @@ Here are some markdown contents`,
 				Labels: trello.Labels{},
 			},
 			expected: `ID:             2
+Name:           Card 2
+Position:       1234
 Short link:     abcd1234
 Short URL:      https://trello.com/c/abcd1234
-Name:           Card 2
 Labels:         
 Description:    
 # Card title

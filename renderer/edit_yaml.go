@@ -31,6 +31,8 @@ closed: {{.Card.Closed}}
 # available board lists:{{if .Lists}}
 {{range $list := .Lists}}# {{$list.ID}}: {{$list.Name}}
 {{end}}{{end}}idList: "{{.Card.IDList}}"
+# the position of the card in its list: "top", "bottom" or a positive float
+pos: {{.Card.Pos}}
 desc: |-
 {{htmlSafe .CardDescription}}`
 	tpl := template.Must(template.New("edit-card").Funcs(template.FuncMap{

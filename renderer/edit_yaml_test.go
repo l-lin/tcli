@@ -29,6 +29,7 @@ func TestEditInYaml_RenderCardToEdit(t *testing.T) {
 foobar`,
 					Closed: false,
 					IDList: "list 1",
+					Pos:    "123",
 				},
 				boardLists: trello.Lists{
 					{ID: "list 1", Name: "list name 1"},
@@ -46,6 +47,8 @@ closed: false
 # list 2: list name 2
 # list 3: list name 3
 idList: "list 1"
+# the position of the card in its list: "top", "bottom" or a positive float
+pos: 123
 desc: |-
   # card description
 
@@ -89,6 +92,8 @@ closed: false
 # list 2: list name 2
 # list 3: list name 3
 idList: "list 1"
+# the position of the card in its list: "top", "bottom" or a positive float
+pos: "top"
 desc: |-
   # card description
 
@@ -107,6 +112,7 @@ desc: |-
 foobar`,
 					Closed: false,
 					IDList: "list 1",
+					Pos:    "top",
 				},
 			},
 		},

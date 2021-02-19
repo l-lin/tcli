@@ -5,6 +5,7 @@ import (
 	"github.com/cheynewallace/tabby"
 	"github.com/l-lin/tcli/trello"
 	"github.com/rs/zerolog/log"
+	"sort"
 	"text/tabwriter"
 )
 
@@ -88,6 +89,9 @@ func (b InTable) RenderCards(cards trello.Cards) string {
 	w := tabwriter.NewWriter(&buffer, b.minWidth, b.tabWidth, b.padding, b.padChar, b.flags)
 	t := tabby.NewCustom(w)
 	t.AddHeader("Name", "ID", "Short URL", "Labels")
+	sort.Slice(cards, func(i, j int) bool {
+		return cards[i].Pos < cards[j].Pos
+	})
 	for _, card := range cards {
 		line := make([]interface{}, 4)
 		line[0] = card.Name
@@ -105,9 +109,10 @@ func (b InTable) RenderCard(card trello.Card) string {
 	w := tabwriter.NewWriter(&buffer, b.minWidth, b.tabWidth, b.padding, b.padChar, b.flags)
 	t := tabby.NewCustom(w)
 	t.AddLine("ID:", card.ID)
+	t.AddLine("Name:", card.Name)
+	t.AddLine("Position:", card.Pos)
 	t.AddLine("Short link:", card.ShortLink)
 	t.AddLine("Short URL:", card.ShortURL)
-	t.AddLine("Name:", card.Name)
 	t.AddLine("Labels:", b.lr.Render(card.Labels))
 	t.AddLine("Description:", "")
 	renderedDescription, err := b.cdr.Render(card.Description)
