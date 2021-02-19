@@ -86,5 +86,5 @@ func (c *Container) registerRenderer() {
 }
 
 func (c *Container) registerSession() {
-	c.Session = session.NewSession(c.TrelloRepository, c.Renderer)
+	c.Session = session.NewSession(*c.Conf, c.TrelloRepository, c.Renderer)
 }

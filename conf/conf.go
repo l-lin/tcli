@@ -6,11 +6,13 @@ import (
 
 const (
 	defaultTrelloApiBaseURL = "https://trello.com/1"
+	defaultEditor           = "editor"
 )
 
 // Conf of the application
 type Conf struct {
 	Trello `yaml:"trello"`
+	Editor string `yaml:"editor"`
 }
 
 type Trello struct {
@@ -22,9 +24,10 @@ type Trello struct {
 
 func NewConf() *Conf {
 	return &Conf{
-		Trello{
+		Trello: Trello{
 			BaseURL: defaultTrelloApiBaseURL,
 		},
+		Editor: defaultEditor,
 	}
 }
 

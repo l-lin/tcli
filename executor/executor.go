@@ -1,6 +1,7 @@
 package executor
 
 import (
+	"github.com/l-lin/tcli/conf"
 	"github.com/l-lin/tcli/renderer"
 	"github.com/l-lin/tcli/trello"
 	"io"
@@ -19,10 +20,10 @@ type executor struct {
 	stderr       io.Writer
 }
 
-func New(cmd string, tr trello.Repository, r renderer.Renderer, currentBoard *trello.Board, currentList *trello.List) Executor {
+func New(conf conf.Conf, cmd string, tr trello.Repository, r renderer.Renderer, currentBoard *trello.Board, currentList *trello.List) Executor {
 	for _, factory := range Factories {
 		if factory.Cmd == cmd {
-			return factory.Create(tr, r, currentBoard, currentList)
+			return factory.Create(conf, tr, r, currentBoard, currentList)
 		}
 	}
 	return nil

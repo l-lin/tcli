@@ -26,7 +26,7 @@ func NewCatCmd() *cobra.Command {
 }
 
 func runCat(_ *cobra.Command, args []string) {
-	if e := executor.New("cat", container.TrelloRepository, container.Renderer, nil, nil); e != nil {
+	if e := executor.New(*container.Conf, "cat", container.TrelloRepository, container.Renderer, nil, nil); e != nil {
 		e.Execute(strings.Join(args, " "))
 	} else {
 		log.Fatal().

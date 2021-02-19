@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/c-bata/go-prompt"
 	"github.com/l-lin/tcli/completer"
+	"github.com/l-lin/tcli/conf"
 	"github.com/l-lin/tcli/executor"
 	"github.com/l-lin/tcli/renderer"
 	"github.com/l-lin/tcli/trello"
@@ -13,8 +14,9 @@ import (
 	"strings"
 )
 
-func NewSession(tr trello.Repository, r renderer.Renderer) *Session {
+func NewSession(conf conf.Conf, tr trello.Repository, r renderer.Renderer) *Session {
 	return &Session{
+		conf:   conf,
 		tr:     tr,
 		r:      r,
 		stdout: os.Stdout,
@@ -24,6 +26,7 @@ func NewSession(tr trello.Repository, r renderer.Renderer) *Session {
 
 // Session of the terminal to navigate seamlessly in interactive mode
 type Session struct {
+	conf         conf.Conf
 	tr           trello.Repository
 	r            renderer.Renderer
 	CurrentBoard *trello.Board
@@ -47,7 +50,7 @@ func (s *Session) Executor(in string) {
 		Str("cmd", cmd).
 		Str("arg", arg).
 		Msg("executing command")
-	if e := executor.New(cmd, s.tr, s.r, s.CurrentBoard, s.CurrentList); e != nil {
+	if e := executor.New(s.conf, cmd, s.tr, s.r, s.CurrentBoard, s.CurrentList); e != nil {
 		s.CurrentBoard, s.CurrentList = e.Execute(arg)
 	} else {
 		fmt.Fprintf(s.stderr, "command not found: %s\n", cmd)

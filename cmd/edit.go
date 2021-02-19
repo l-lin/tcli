@@ -19,7 +19,7 @@ func NewEditCmd() *cobra.Command {
 }
 
 func runEdit(_ *cobra.Command, args []string) {
-	if e := executor.New("edit", container.TrelloRepository, container.Renderer, nil, nil); e != nil {
+	if e := executor.New(*container.Conf, "edit", container.TrelloRepository, container.Renderer, nil, nil); e != nil {
 		e.Execute(strings.Join(args, " "))
 	} else {
 		log.Fatal().

@@ -26,7 +26,7 @@ func NewLSCmd() *cobra.Command {
 }
 
 func runLS(_ *cobra.Command, args []string) {
-	if e := executor.New("ls", container.TrelloRepository, container.Renderer, nil, nil); e != nil {
+	if e := executor.New(*container.Conf, "ls", container.TrelloRepository, container.Renderer, nil, nil); e != nil {
 		e.Execute(strings.Join(args, " "))
 	} else {
 		log.Fatal().

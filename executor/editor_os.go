@@ -6,9 +6,9 @@ import (
 	"os/exec"
 )
 
-func NewOsEditor() Editor {
+func NewOsEditor(editorCommand string) Editor {
 	// works on other platforms (i.e. Windows, MacOS)?
-	return OsEditor{Command: "editor"}
+	return OsEditor{Command: editorCommand}
 }
 
 type OsEditor struct {
