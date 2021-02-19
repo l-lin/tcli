@@ -33,6 +33,21 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 	return m.recorder
 }
 
+// CreateCard mocks base method.
+func (m *MockRepository) CreateCard(createCard CreateCard) (*Card, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateCard", createCard)
+	ret0, _ := ret[0].(*Card)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateCard indicates an expected call of CreateCard.
+func (mr *MockRepositoryMockRecorder) CreateCard(createCard interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCard", reflect.TypeOf((*MockRepository)(nil).CreateCard), createCard)
+}
+
 // FindBoard mocks base method.
 func (m *MockRepository) FindBoard(query string) (*Board, error) {
 	m.ctrl.T.Helper()

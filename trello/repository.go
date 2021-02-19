@@ -8,5 +8,6 @@ type Repository interface {
 	FindList(idBoard string, query string) (*List, error)
 	FindCards(idList string) (Cards, error)
 	FindCard(idList string, query string) (*Card, error)
+	CreateCard(createCard CreateCard) (*Card, error)
 	UpdateCard(updateCard UpdateCard) (*Card, error)
 }

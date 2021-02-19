@@ -38,16 +38,59 @@ func TestEdit_Execute(t *testing.T) {
 	list3 := trello.List{ID: "list 3", Name: "list name 3"}
 	lists := trello.Lists{list1, list2, list3}
 	card1 := trello.Card{ID: "card 1", Name: "card", Description: "card description", Closed: true, IDBoard: board1.ID, IDList: list1.ID, Pos: float64(123)}
+	createdCard1 := trello.Card{ID: "card 1", Name: "created card", Description: "created card description", Closed: false, IDBoard: board1.ID, IDList: list1.ID, Pos: card1.Pos}
 	updatedCard1 := trello.Card{ID: "card 1", Name: "updated card", Description: "updated card description", Closed: true, IDBoard: board1.ID, IDList: list1.ID, Pos: card1.Pos}
 	cte1 := trello.NewCardToEdit(card1)
 
-	editRenderer := renderer.EditInYaml{}
+	editRenderer := renderer.NewEditInYaml()
 	var tests = map[string]struct {
 		given    given
 		expected expected
 	}{
 		// CARD
-		"edit /board/list/card - happy path": {
+		"edit /board/list/card - card creation": {
+			given: given{
+				arg: "/board/list/card",
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board1.Name).
+						Return(&board1, nil)
+					tr.EXPECT().
+						FindList(board1.ID, list1.Name).
+						Return(&list1, nil)
+					tr.EXPECT().
+						FindCard(list1.ID, card1.Name).
+						Return(nil, errors.New("not found"))
+					tr.EXPECT().
+						FindLists(board1.ID).
+						Return(lists, nil)
+					tr.EXPECT().
+						CreateCard(trello.NewCreateCard(createdCard1)).
+						Return(&createdCard1, nil)
+					return tr
+				},
+				buildEditor: func() Editor {
+					ctc1 := trello.NewCardToCreate(trello.Card{
+						Name:   card1.Name,
+						IDList: card1.IDList,
+					})
+					in, _ := editRenderer.MarshalCardToCreate(ctc1, nil)
+					out, _ := yaml.Marshal(trello.NewCardToCreate(createdCard1))
+					e := NewMockEditor(ctrl)
+					e.EXPECT().
+						Edit(in).
+						Return(out, nil)
+					return e
+				},
+				stdin: acceptStdin(),
+			},
+			expected: expected{
+				stdout: "",
+				stderr: "",
+			},
+		},
+		"edit /board/list/card - card edition": {
 			given: given{
 				arg: "/board/list/card",
 				buildTrelloRepository: func() trello.Repository {
@@ -70,7 +113,7 @@ func TestEdit_Execute(t *testing.T) {
 					return tr
 				},
 				buildEditor: func() Editor {
-					in, _ := editRenderer.Marshal(cte1, nil)
+					in, _ := editRenderer.MarshalCardToEdit(cte1, nil)
 					out, _ := yaml.Marshal(trello.NewCardToEdit(updatedCard1))
 					e := NewMockEditor(ctrl)
 					e.EXPECT().
@@ -109,7 +152,7 @@ func TestEdit_Execute(t *testing.T) {
 					return tr
 				},
 				buildEditor: func() Editor {
-					in, _ := editRenderer.Marshal(cte1, nil)
+					in, _ := editRenderer.MarshalCardToEdit(cte1, nil)
 					e := NewMockEditor(ctrl)
 					e.EXPECT().
 						Edit(in).
@@ -146,7 +189,7 @@ func TestEdit_Execute(t *testing.T) {
 					return tr
 				},
 				buildEditor: func() Editor {
-					in, _ := editRenderer.Marshal(cte1, nil)
+					in, _ := editRenderer.MarshalCardToEdit(cte1, nil)
 					e := NewMockEditor(ctrl)
 					e.EXPECT().
 						Edit(in).

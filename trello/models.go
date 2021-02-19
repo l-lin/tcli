@@ -106,6 +106,50 @@ func (l Label) Colorize(s string) aurora.Value {
 	return aurora.White(s)
 }
 
+// UpdateCard represents the resources used to create a new card
+// See https://developer.atlassian.com/cloud/trello/rest/api-group-cards/#api-cards-post for more info
+type CreateCard struct {
+	Name        string      `json:"name"`
+	Description string      `json:"desc"`
+	IDList      string      `json:"idList"`
+	IDLabels    string      `json:"idLabels,omitempty"`
+	Closed      bool        `json:"closed,omitempty"`
+	Pos         interface{} `json:"pos,omitempty"` // "top", "bottom" or a positive float
+}
+
+func NewCreateCard(card Card) CreateCard {
+	return CreateCard{
+		Name:        card.Name,
+		Description: card.Description,
+		IDList:      card.IDList,
+		Closed:      card.Closed,
+		Pos:         card.Pos,
+	}
+}
+
+func NewCardToCreate(card Card) CardToCreate {
+	return CardToCreate{
+		Name:   card.Name,
+		Desc:   card.Description,
+		IDList: card.IDList,
+		Pos:    strconv.FormatFloat(card.Pos, 'f', 2, 64),
+	}
+}
+
+// CardToCreate is the representation used in the card creation
+// it's different from the other card representation because we do not want to expose everything to the user
+// like for instance, the card ID as the user
+type CardToCreate struct {
+	Name   string `yaml:"name"`
+	Desc   string `yaml:"desc"`
+	IDList string `yaml:"idList"`
+	Pos    string `yaml:"pos,omitempty"` // "top", "bottom" or a positive float
+}
+
+func (c CardToCreate) GetPos() interface{} {
+	return getPos(c.Pos)
+}
+
 // UpdateCard represents the resources used to update a card
 // See https://developer.atlassian.com/cloud/trello/rest/api-group-cards/#api-cards-id-put for more info
 type UpdateCard struct {
@@ -153,16 +197,21 @@ type CardToEdit struct {
 }
 
 func (cte CardToEdit) GetPos() interface{} {
-	if cte.Pos == "top" || cte.Pos == "bottom" {
-		return cte.Pos
+	return getPos(cte.Pos)
+}
+
+// getPos convert the given pos into appropriate type supported by Trello: either a string or a float
+func getPos(in string) interface{} {
+	if in == "top" || in == "bottom" {
+		return in
 	}
-	pos, err := strconv.ParseFloat(cte.Pos, 64)
+	pos, err := strconv.ParseFloat(in, 64)
 	if err != nil {
 		log.Debug().
-			Str("pos", cte.Pos).
+			Str("pos", in).
 			Err(err).
 			Msg("could not parse pos to float")
-		return cte.Pos
+		return in
 	}
 	return pos
 }

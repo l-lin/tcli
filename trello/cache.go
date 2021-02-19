@@ -88,6 +88,17 @@ func (c *CacheInMemory) FindCard(idList string, query string) (*Card, error) {
 	return nil, fmt.Errorf("no card found with query %s", query)
 }
 
+func (c *CacheInMemory) CreateCard(createCard CreateCard) (*Card, error) {
+	card, err := c.r.CreateCard(createCard)
+	if err != nil {
+		return nil, err
+	}
+
+	// add card to cache
+	c.mapCards[createCard.IDList] = append(c.mapCards[createCard.IDList], *card)
+	return card, nil
+}
+
 func (c *CacheInMemory) UpdateCard(updateCard UpdateCard) (*Card, error) {
 	card, err := c.r.UpdateCard(updateCard)
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 	"github.com/l-lin/tcli/renderer"
 	"github.com/l-lin/tcli/trello"
 	"github.com/manifoldco/promptui"
+	"github.com/rs/zerolog/log"
 	"io"
 )
 
@@ -55,12 +56,63 @@ func (e edit) Execute(arg string) (currentBoard *trello.Board, currentList *trel
 
 	var card *trello.Card
 	if card, err = e.tr.FindCard(list.ID, cardName); err != nil || card == nil {
-		fmt.Fprintf(e.stderr, "no card found with name '%s'\n", cardName)
+		log.Debug().
+			Str("cardName", cardName).
+			Msg("no card found => creating new card")
+		card = &trello.Card{
+			Name:        cardName,
+			Description: "",
+			IDBoard:     board.ID,
+			IDList:      list.ID,
+		}
+		if err = e.createCard(*card); err != nil {
+			fmt.Fprintf(e.stderr, "could not create card '%s': %v\n", cardName, err)
+		}
+	} else {
+		if err = e.editCard(*card); err != nil {
+			fmt.Fprintf(e.stderr, "could not edit card '%s': %v\n", cardName, err)
+		}
+	}
+	return
+}
+
+func (e edit) createCard(card trello.Card) (err error) {
+	var lists trello.Lists
+	if lists, err = e.tr.FindLists(card.IDBoard); err != nil {
 		return
 	}
-	if err = e.editCard(*card); err != nil {
-		fmt.Fprintf(e.stderr, "could not edit card '%s': %v\n", cardName, err)
+
+	ctc := trello.NewCardToCreate(card)
+	var in []byte
+	if in, err = e.editRenderer.MarshalCardToCreate(ctc, lists); err != nil {
+		return
 	}
+
+	var out []byte
+	if out, err = e.editor.Edit(in); err != nil {
+		return
+	}
+
+	var editedCard trello.CardToCreate
+	if err = e.editRenderer.Unmarshal(out, &editedCard); err != nil {
+		return
+	}
+	createdCard := trello.NewCreateCard(card)
+	createdCard.Name = editedCard.Name
+	createdCard.Description = editedCard.Desc
+	createdCard.IDList = editedCard.IDList
+	createdCard.Pos = editedCard.GetPos()
+
+	prompt := promptui.Prompt{
+		Label:     "Do you want to create the card?",
+		IsConfirm: true,
+		Stdin:     e.stdin,
+	}
+	if _, err = prompt.Run(); err != nil {
+		fmt.Fprintf(e.stdout, "card '%s' not created\n", card.Name)
+		return nil
+	}
+	_, err = e.tr.CreateCard(createdCard)
 	return
 }
 
@@ -72,7 +124,7 @@ func (e edit) editCard(card trello.Card) (err error) {
 
 	cte := trello.NewCardToEdit(card)
 	var in []byte
-	if in, err = e.editRenderer.Marshal(cte, lists); err != nil {
+	if in, err = e.editRenderer.MarshalCardToEdit(cte, lists); err != nil {
 		return
 	}
 

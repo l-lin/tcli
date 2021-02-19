@@ -91,6 +91,16 @@ func (h HttpRepository) FindCard(idList string, query string) (*Card, error) {
 	return nil, fmt.Errorf("no card found with query %s", query)
 }
 
+func (h HttpRepository) CreateCard(createCard CreateCard) (*Card, error) {
+	v := h.buildQueries("")
+	u := fmt.Sprintf("%s/cards?%v", h.BaseURL, v.Encode())
+	var card Card
+	if err := h.post(u, createCard, &card); err != nil {
+		return nil, err
+	}
+	return &card, nil
+}
+
 func (h HttpRepository) UpdateCard(updateCard UpdateCard) (*Card, error) {
 	v := h.buildQueries("")
 	u := fmt.Sprintf("%s/cards/%s?%v", h.BaseURL, updateCard.ID, v.Encode())
@@ -120,12 +130,20 @@ func (h HttpRepository) get(url string, ret interface{}) error {
 	return json.Unmarshal(respBody, ret)
 }
 
+func (h HttpRepository) post(url string, reqBody interface{}, ret interface{}) error {
+	return h.performRequest("POST", url, reqBody, ret)
+}
+
 func (h HttpRepository) put(url string, reqBody interface{}, ret interface{}) error {
+	return h.performRequest("PUT", url, reqBody, ret)
+}
+
+func (h HttpRepository) performRequest(method, url string, reqBody interface{}, ret interface{}) error {
 	b, err := json.Marshal(reqBody)
 	if err != nil {
 		return err
 	}
-	request, err := http.NewRequest("PUT", url, strings.NewReader(string(b)))
+	request, err := http.NewRequest(method, url, strings.NewReader(string(b)))
 	if err != nil {
 		return err
 	}

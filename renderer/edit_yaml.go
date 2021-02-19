@@ -10,12 +10,20 @@ import (
 
 type EditInYaml struct{}
 
-func (e EditInYaml) Marshal(cte trello.CardToEdit, _ trello.Lists) ([]byte, error) {
+func NewEditInYaml() Edit {
+	return EditInYaml{}
+}
+
+func (e EditInYaml) MarshalCardToEdit(cte trello.CardToEdit, _ trello.Lists) ([]byte, error) {
 	return yaml.Marshal(cte)
 }
 
-func (e EditInYaml) Unmarshal(in []byte, edit *trello.CardToEdit) error {
-	return yaml.Unmarshal(in, edit)
+func (e EditInYaml) MarshalCardToCreate(create trello.CardToCreate, _ trello.Lists) ([]byte, error) {
+	return yaml.Marshal(create)
+}
+
+func (e EditInYaml) Unmarshal(in []byte, v interface{}) error {
+	return yaml.Unmarshal(in, v)
 }
 
 func NewEditInPrettyYaml() Edit {
@@ -24,7 +32,7 @@ func NewEditInPrettyYaml() Edit {
 
 type EditInPrettyYaml struct{}
 
-func (e EditInPrettyYaml) Marshal(cte trello.CardToEdit, boardLists trello.Lists) ([]byte, error) {
+func (e EditInPrettyYaml) MarshalCardToEdit(cte trello.CardToEdit, boardLists trello.Lists) ([]byte, error) {
 	t := `name: "{{.Card.Name}}"
 # whether the card should be archived (closed: true)
 closed: {{.Card.Closed}}
@@ -56,8 +64,32 @@ desc: |-
 	return w.Bytes(), nil
 }
 
-func (e EditInPrettyYaml) Unmarshal(in []byte, cte *trello.CardToEdit) error {
-	return yaml.Unmarshal(in, cte)
+func (e EditInPrettyYaml) MarshalCardToCreate(ctc trello.CardToCreate, boardLists trello.Lists) ([]byte, error) {
+	t := `name: "{{.Card.Name}}"
+# available board lists:{{if .Lists}}
+{{range $list := .Lists}}# {{$list.ID}}: {{$list.Name}}
+{{end}}{{end}}idList: "{{.Card.IDList}}"
+# the position of the card in its list: "top", "bottom" or a positive float
+pos: "bottom"
+desc: |-
+  `
+	tpl := template.Must(template.New("create-card").Parse(t))
+	tplParams := struct {
+		Card  trello.CardToCreate
+		Lists trello.Lists
+	}{
+		Card:  ctc,
+		Lists: boardLists,
+	}
+	w := bytes.NewBufferString("")
+	if err := tpl.Execute(w, tplParams); err != nil {
+		return nil, err
+	}
+	return w.Bytes(), nil
+}
+
+func (e EditInPrettyYaml) Unmarshal(in []byte, v interface{}) error {
+	return yaml.Unmarshal(in, v)
 }
 
 func (e EditInPrettyYaml) transformDescription(desc string) string {

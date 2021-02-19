@@ -1,7 +1,9 @@
 package trello
 
 import (
+	"encoding/json"
 	"github.com/l-lin/tcli/conf"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -529,6 +531,79 @@ func TestHttpRepository_FindCard(t *testing.T) {
 	}
 }
 
+func TestHttpRepository_CreateCard(t *testing.T) {
+	type given struct {
+		tsFn func() *httptest.Server
+	}
+	type expected struct {
+		hasError bool
+		card     *Card
+	}
+	var tests = map[string]struct {
+		given    given
+		expected expected
+	}{
+		"happy path": {
+			given: given{
+				tsFn: func() *httptest.Server {
+					return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						if r.Method != "POST" {
+							w.WriteHeader(http.StatusMethodNotAllowed)
+						} else {
+							reqBody, _ := io.ReadAll(r.Body)
+							var cc CreateCard
+							json.Unmarshal(reqBody, &cc)
+							card := Card{ID: "card 1", Name: cc.Name}
+							respBody, _ := json.Marshal(&card)
+							w.WriteHeader(http.StatusOK)
+							w.Write(respBody)
+						}
+					}))
+				},
+			},
+			expected: expected{
+				hasError: false,
+				card:     &Card{ID: "card 1", Name: "created card"},
+			},
+		},
+		"server error": {
+			given: given{
+				tsFn: func() *httptest.Server {
+					return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						w.WriteHeader(http.StatusInternalServerError)
+					}))
+				},
+			},
+			expected: expected{
+				hasError: true,
+				card:     nil,
+			},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			ts := tt.given.tsFn()
+			repository := NewHttpRepository(conf.Conf{
+				Trello: conf.Trello{
+					BaseURL: ts.URL,
+				},
+			}, false)
+			actual, actualErr := repository.CreateCard(CreateCard{Name: "created card"})
+			if tt.expected.hasError && actualErr == nil || !tt.expected.hasError && actualErr != nil {
+				t.Errorf("expected err %v, actual err %v", tt.expected.hasError, actualErr != nil)
+			}
+			if tt.expected.card != nil && actual == nil || tt.expected.card == nil && actual != nil {
+				t.Errorf("expected %v, actual %v", tt.expected.card, actual)
+			}
+			if tt.expected.card != nil {
+				if tt.expected.card.ID != actual.ID && tt.expected.card.Name != actual.Name {
+					t.Errorf("expected %v, actual %v", tt.expected.card, actual)
+				}
+			}
+		})
+	}
+}
+
 func TestHttpRepository_UpdateCard(t *testing.T) {
 	type given struct {
 		tsFn func() *httptest.Server
@@ -545,12 +620,18 @@ func TestHttpRepository_UpdateCard(t *testing.T) {
 			given: given{
 				tsFn: func() *httptest.Server {
 					return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						if r.Method != "PUT" {
+							w.WriteHeader(http.StatusMethodNotAllowed)
+						} else {
+							reqBody, _ := io.ReadAll(r.Body)
+							var uc UpdateCard
+							json.Unmarshal(reqBody, &uc)
+							card := Card{ID: uc.ID, Name: uc.Name}
+							respBody, _ := json.Marshal(&card)
+							w.WriteHeader(http.StatusOK)
+							w.Write(respBody)
+						}
 						w.WriteHeader(http.StatusOK)
-						w.Write([]byte(`
-{
-  "id": "card 1",
-  "name": "updated card"
-}`))
 					}))
 				},
 			},
@@ -581,7 +662,7 @@ func TestHttpRepository_UpdateCard(t *testing.T) {
 					BaseURL: ts.URL,
 				},
 			}, false)
-			actual, actualErr := repository.UpdateCard(UpdateCard{ID: "card 1", Name: "card"})
+			actual, actualErr := repository.UpdateCard(UpdateCard{ID: "card 1", Name: "updated card"})
 			if tt.expected.hasError && actualErr == nil || !tt.expected.hasError && actualErr != nil {
 				t.Errorf("expected err %v, actual err %v", tt.expected.hasError, actualErr != nil)
 			}
