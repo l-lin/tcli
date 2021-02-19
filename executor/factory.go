@@ -87,6 +87,22 @@ var Factories = []Factory{
 			}
 		},
 	},
+	{
+		Cmd:         "touch",
+		Description: "create new resource",
+		Create: func(conf conf.Conf, tr trello.Repository, r renderer.Renderer, currentBoard *trello.Board, currentList *trello.List) Executor {
+			return &touch{
+				executor: executor{
+					tr:           tr,
+					r:            r,
+					currentBoard: currentBoard,
+					currentList:  currentList,
+					stdout:       os.Stdout,
+					stderr:       os.Stderr,
+				},
+			}
+		},
+	},
 }
 
 type Factory struct {

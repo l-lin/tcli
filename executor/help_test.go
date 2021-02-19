@@ -14,12 +14,13 @@ func TestHelp_Execute(t *testing.T) {
 	h.Execute("")
 
 	// THEN
-	expected := `help    display help
-exit    exit CLI
-cd      change level in the hierarchy
-ls      list resource content
-cat     show resource content info
-edit    edit resource content
+	expected := `help     display help
+exit     exit CLI
+cd       change level in the hierarchy
+ls       list resource content
+cat      show resource content info
+edit     edit resource content
+touch    create new resource
 
 `
 	actual := buf.String()
