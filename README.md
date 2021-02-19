@@ -14,7 +14,7 @@ Binaries are available from [Github releases](https://github.com/l-lin/tcli/rele
 ### Using cURL
 
 ```bash
-curl -sf https://gobinaries.com/l-lin/tcli | sh;
+curl -sf https://gobinaries.com/l-lin/tcli | sh
 ```
 
 ### Using docker
@@ -45,7 +45,7 @@ tcli ls /
 
 ## Configuration
 
-A `.tcli.yml` will be generated at first execution. Its contents is the following:
+A `.tcli.yml` will be generated at first execution. Its content is as follows:
 
 ```yaml
 trello:
@@ -55,7 +55,7 @@ trello:
   api_key: yyy
   # Trello base API URL
   base_url: https://trello.com/1
-# OS command used to edit the Trello entities
+# OS command used to edit the Trello resources
 editor: editor
 ```
 
