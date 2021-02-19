@@ -5,6 +5,7 @@ import (
 	"github.com/logrusorgru/aurora/v3"
 	"github.com/rs/zerolog/log"
 	"strconv"
+	"strings"
 )
 
 var mapColors = map[string]func(interface{}) aurora.Value{
@@ -93,10 +94,34 @@ func (c Card) TCliID() string {
 }
 
 type Labels []Label
+
+func (l Labels) String() string {
+	if len(l) == 0 {
+		return ""
+	}
+	sb := strings.Builder{}
+	for i := 0; i < len(l); i++ {
+		sb.WriteString(l[i].ID)
+		if i < len(l)-1 {
+			sb.WriteString(",")
+		}
+	}
+	return sb.String()
+}
+
+func (l Labels) Slice() []string {
+	s := make([]string, len(l))
+	for i := 0; i < len(l); i++ {
+		s[i] = l[i].ID
+	}
+	return s
+}
+
 type Label struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Color string `json:"color"`
+	ID      string `json:"id"`
+	IDBoard string `json:"idBoard"`
+	Name    string `json:"name"`
+	Color   string `json:"color"`
 }
 
 func (l Label) Colorize(s string) aurora.Value {
@@ -106,7 +131,9 @@ func (l Label) Colorize(s string) aurora.Value {
 	return aurora.White(s)
 }
 
-// UpdateCard represents the resources used to create a new card
+// CARD CREATION ---------------------------------------------------------------------------------------
+
+// CreateCard represents the resources used to create a new card
 // See https://developer.atlassian.com/cloud/trello/rest/api-group-cards/#api-cards-post for more info
 type CreateCard struct {
 	Name        string      `json:"name"`
@@ -140,15 +167,22 @@ func NewCardToCreate(card Card) CardToCreate {
 // it's different from the other card representation because we do not want to expose everything to the user
 // like for instance, the card ID as the user
 type CardToCreate struct {
-	Name   string `yaml:"name"`
-	Desc   string `yaml:"desc"`
-	IDList string `yaml:"idList"`
-	Pos    string `yaml:"pos,omitempty"` // "top", "bottom" or a positive float
+	Name     string   `yaml:"name"`
+	Desc     string   `yaml:"desc"`
+	IDList   string   `yaml:"idList"`
+	Pos      string   `yaml:"pos,omitempty"` // "top", "bottom" or a positive float
+	IDLabels []string `yaml:"idLabels"`
 }
 
-func (c CardToCreate) GetPos() interface{} {
-	return getPos(c.Pos)
+func (ctc CardToCreate) GetPos() interface{} {
+	return getPos(ctc.Pos)
 }
+
+func (ctc CardToCreate) IDLabelsInString() string {
+	return strings.Join(ctc.IDLabels, ",")
+}
+
+// CARD UPDATE ---------------------------------------------------------------------------------------
 
 // UpdateCard represents the resources used to update a card
 // See https://developer.atlassian.com/cloud/trello/rest/api-group-cards/#api-cards-id-put for more info
@@ -170,6 +204,7 @@ func NewUpdateCard(card Card) UpdateCard {
 		Description: card.Description,
 		IDBoard:     card.IDBoard,
 		IDList:      card.IDList,
+		IDLabels:    card.Labels.String(),
 		Closed:      card.Closed,
 		Pos:         card.Pos,
 	}
@@ -177,11 +212,12 @@ func NewUpdateCard(card Card) UpdateCard {
 
 func NewCardToEdit(card Card) CardToEdit {
 	return CardToEdit{
-		Name:   card.Name,
-		Desc:   card.Description,
-		Closed: card.Closed,
-		IDList: card.IDList,
-		Pos:    strconv.FormatFloat(card.Pos, 'f', 2, 64),
+		Name:     card.Name,
+		Desc:     card.Description,
+		Closed:   card.Closed,
+		IDList:   card.IDList,
+		IDLabels: card.Labels.Slice(),
+		Pos:      strconv.FormatFloat(card.Pos, 'f', 2, 64),
 	}
 }
 
@@ -189,15 +225,20 @@ func NewCardToEdit(card Card) CardToEdit {
 // it's different from the other card representation because we do not want to expose everything to the user
 // like for instance, the card ID as the user
 type CardToEdit struct {
-	Name   string `yaml:"name"`
-	Desc   string `yaml:"desc"`
-	Closed bool   `yaml:"closed"`
-	IDList string `yaml:"idList"`
-	Pos    string `yaml:"pos,omitempty"` // "top", "bottom" or a positive float
+	Name     string   `yaml:"name"`
+	Desc     string   `yaml:"desc"`
+	Closed   bool     `yaml:"closed"`
+	IDList   string   `yaml:"idList"`
+	IDLabels []string `yaml:"idLabels"`
+	Pos      string   `yaml:"pos,omitempty"` // "top", "bottom" or a positive float
 }
 
 func (cte CardToEdit) GetPos() interface{} {
 	return getPos(cte.Pos)
+}
+
+func (cte CardToEdit) IDLabelsInString() string {
+	return strings.Join(cte.IDLabels, ",")
 }
 
 // getPos convert the given pos into appropriate type supported by Trello: either a string or a float

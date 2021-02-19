@@ -108,6 +108,21 @@ func (mr *MockRepositoryMockRecorder) FindCards(idList interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindCards", reflect.TypeOf((*MockRepository)(nil).FindCards), idList)
 }
 
+// FindLabels mocks base method.
+func (m *MockRepository) FindLabels(idBoard string) (Labels, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindLabels", idBoard)
+	ret0, _ := ret[0].(Labels)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindLabels indicates an expected call of FindLabels.
+func (mr *MockRepositoryMockRecorder) FindLabels(idBoard interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindLabels", reflect.TypeOf((*MockRepository)(nil).FindLabels), idBoard)
+}
+
 // FindList mocks base method.
 func (m *MockRepository) FindList(idBoard, query string) (*List, error) {
 	m.ctrl.T.Helper()

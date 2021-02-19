@@ -4,6 +4,7 @@ package trello
 type Repository interface {
 	FindBoards() (Boards, error)
 	FindBoard(query string) (*Board, error)
+	FindLabels(idBoard string) (Labels, error)
 	FindLists(idBoard string) (Lists, error)
 	FindList(idBoard string, query string) (*List, error)
 	FindCards(idList string) (Cards, error)

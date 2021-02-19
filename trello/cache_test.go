@@ -68,6 +68,41 @@ func TestCacheInMemory_FindBoard(t *testing.T) {
 	}
 }
 
+func TestCacheInMemory_FindLabels(t *testing.T) {
+	// GIVEN
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	r := NewMockRepository(ctrl)
+	idBoard := "board 1"
+	expected := Labels{
+		{ID: "label 1", IDBoard: idBoard, Color: "red", Name: "label name 1"},
+		{ID: "label 2", IDBoard: idBoard, Color: "sky", Name: "label name 2"},
+	}
+	r.EXPECT().
+		FindLabels(idBoard).
+		Return(expected, nil).
+		Times(1)
+	cr := NewCacheInMemory(r)
+
+	// WHEN
+	actual1, err1 := cr.FindLabels(idBoard)
+	actual2, err2 := cr.FindLabels(idBoard)
+
+	// THEN
+	if err1 != nil || err2 != nil {
+		t.Error("expected no error")
+	}
+	if len(actual1) != len(expected) || len(actual2) != len(expected) {
+		t.Errorf("expected %v, actual1 %v, actual2 %v", expected, actual1, actual2)
+		t.FailNow()
+	}
+	for i := 0; i < len(expected); i++ {
+		if expected[i] != actual1[i] || expected[i] != actual2[i] {
+			t.Errorf("%d: expected %v, actual1 %v, actual2 %v", i, expected[i], actual1[i], actual2[i])
+		}
+	}
+}
+
 func TestCacheInMemory_FindLists(t *testing.T) {
 	// GIVEN
 	ctrl := gomock.NewController(t)

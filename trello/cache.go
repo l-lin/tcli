@@ -10,15 +10,17 @@ import (
 type CacheInMemory struct {
 	r Repository
 	*Boards
-	mapLists map[string]Lists
-	mapCards map[string]Cards
+	mapLabels map[string]Labels // <idBoard, Labels>
+	mapLists  map[string]Lists  // <idBoard, Lists>
+	mapCards  map[string]Cards  // <idList, Cards>
 }
 
 func NewCacheInMemory(r Repository) Repository {
 	return &CacheInMemory{
-		r:        r,
-		mapLists: map[string]Lists{},
-		mapCards: map[string]Cards{},
+		r:         r,
+		mapLabels: map[string]Labels{},
+		mapLists:  map[string]Lists{},
+		mapCards:  map[string]Cards{},
 	}
 }
 
@@ -42,6 +44,17 @@ func (c *CacheInMemory) FindBoard(query string) (*Board, error) {
 		return board, nil
 	}
 	return nil, fmt.Errorf("no board found with query %s", query)
+}
+
+func (c *CacheInMemory) FindLabels(idBoard string) (Labels, error) {
+	if c.mapLabels[idBoard] != nil {
+		log.Debug().Msg("fetching labels from cache")
+		return c.mapLabels[idBoard], nil
+	}
+	log.Debug().Str("idBoard", idBoard).Msg("fetching labels from remote")
+	labels, err := c.r.FindLabels(idBoard)
+	c.mapLabels[idBoard] = labels
+	return labels, err
 }
 
 func (c *CacheInMemory) FindLists(idBoard string) (Lists, error) {

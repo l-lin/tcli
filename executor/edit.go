@@ -82,9 +82,14 @@ func (e edit) createCard(card trello.Card) (err error) {
 		return
 	}
 
+	var labels trello.Labels
+	if labels, err = e.tr.FindLabels(card.IDBoard); err != nil {
+		return
+	}
+
 	ctc := trello.NewCardToCreate(card)
 	var in []byte
-	if in, err = e.editRenderer.MarshalCardToCreate(ctc, lists); err != nil {
+	if in, err = e.editRenderer.MarshalCardToCreate(ctc, lists, labels); err != nil {
 		return
 	}
 
@@ -102,9 +107,10 @@ func (e edit) createCard(card trello.Card) (err error) {
 	createdCard.Description = editedCard.Desc
 	createdCard.IDList = editedCard.IDList
 	createdCard.Pos = editedCard.GetPos()
+	createdCard.IDLabels = editedCard.IDLabelsInString()
 
 	prompt := promptui.Prompt{
-		Label:     "Do you want to create the card?",
+		Label:     fmt.Sprintf("Do you want to create the card '%s'?", createdCard.Name),
 		IsConfirm: true,
 		Stdin:     e.stdin,
 	}
@@ -121,10 +127,14 @@ func (e edit) editCard(card trello.Card) (err error) {
 	if lists, err = e.tr.FindLists(card.IDBoard); err != nil {
 		return
 	}
+	var labels trello.Labels
+	if labels, err = e.tr.FindLabels(card.IDBoard); err != nil {
+		return
+	}
 
 	cte := trello.NewCardToEdit(card)
 	var in []byte
-	if in, err = e.editRenderer.MarshalCardToEdit(cte, lists); err != nil {
+	if in, err = e.editRenderer.MarshalCardToEdit(cte, lists, labels); err != nil {
 		return
 	}
 
@@ -143,9 +153,10 @@ func (e edit) editCard(card trello.Card) (err error) {
 	updatedCard.Closed = editedCard.Closed
 	updatedCard.IDList = editedCard.IDList
 	updatedCard.Pos = editedCard.GetPos()
+	updatedCard.IDLabels = editedCard.IDLabelsInString()
 
 	prompt := promptui.Prompt{
-		Label:     "Do you want to update the card?",
+		Label:     fmt.Sprintf("Do you want to update the card '%s'?", updatedCard.Name),
 		IsConfirm: true,
 		Stdin:     e.stdin,
 	}

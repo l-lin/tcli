@@ -41,6 +41,11 @@ func TestEdit_Execute(t *testing.T) {
 	createdCard1 := trello.Card{ID: "card 1", Name: "created card", Description: "created card description", Closed: false, IDBoard: board1.ID, IDList: list1.ID, Pos: card1.Pos}
 	updatedCard1 := trello.Card{ID: "card 1", Name: "updated card", Description: "updated card description", Closed: true, IDBoard: board1.ID, IDList: list1.ID, Pos: card1.Pos}
 	cte1 := trello.NewCardToEdit(card1)
+	labels := trello.Labels{
+		{ID: "label 1", Name: "label name 1", Color: "red"},
+		{ID: "label 2", Name: "label name 2", Color: "sky"},
+		{ID: "label 3", Name: "", Color: "black"},
+	}
 
 	editRenderer := renderer.NewEditInYaml()
 	var tests = map[string]struct {
@@ -66,6 +71,9 @@ func TestEdit_Execute(t *testing.T) {
 						FindLists(board1.ID).
 						Return(lists, nil)
 					tr.EXPECT().
+						FindLabels(board1.ID).
+						Return(labels, nil)
+					tr.EXPECT().
 						CreateCard(trello.NewCreateCard(createdCard1)).
 						Return(&createdCard1, nil)
 					return tr
@@ -75,7 +83,7 @@ func TestEdit_Execute(t *testing.T) {
 						Name:   card1.Name,
 						IDList: card1.IDList,
 					})
-					in, _ := editRenderer.MarshalCardToCreate(ctc1, nil)
+					in, _ := editRenderer.MarshalCardToCreate(ctc1, nil, nil)
 					out, _ := yaml.Marshal(trello.NewCardToCreate(createdCard1))
 					e := NewMockEditor(ctrl)
 					e.EXPECT().
@@ -108,12 +116,15 @@ func TestEdit_Execute(t *testing.T) {
 						FindLists(board1.ID).
 						Return(lists, nil)
 					tr.EXPECT().
+						FindLabels(board1.ID).
+						Return(labels, nil)
+					tr.EXPECT().
 						UpdateCard(trello.NewUpdateCard(updatedCard1)).
 						Return(&updatedCard1, nil)
 					return tr
 				},
 				buildEditor: func() Editor {
-					in, _ := editRenderer.MarshalCardToEdit(cte1, nil)
+					in, _ := editRenderer.MarshalCardToEdit(cte1, nil, nil)
 					out, _ := yaml.Marshal(trello.NewCardToEdit(updatedCard1))
 					e := NewMockEditor(ctrl)
 					e.EXPECT().
@@ -146,13 +157,16 @@ func TestEdit_Execute(t *testing.T) {
 						FindLists(board1.ID).
 						Return(lists, nil)
 					tr.EXPECT().
+						FindLabels(board1.ID).
+						Return(labels, nil)
+					tr.EXPECT().
 						UpdateCard(trello.NewUpdateCard(updatedCard1)).
 						Return(&updatedCard1, nil).
 						Times(0)
 					return tr
 				},
 				buildEditor: func() Editor {
-					in, _ := editRenderer.MarshalCardToEdit(cte1, nil)
+					in, _ := editRenderer.MarshalCardToEdit(cte1, nil, nil)
 					e := NewMockEditor(ctrl)
 					e.EXPECT().
 						Edit(in).
@@ -184,12 +198,15 @@ func TestEdit_Execute(t *testing.T) {
 						FindLists(board1.ID).
 						Return(lists, nil)
 					tr.EXPECT().
+						FindLabels(board1.ID).
+						Return(labels, nil)
+					tr.EXPECT().
 						UpdateCard(trello.NewUpdateCard(card1)).
 						Return(nil, errors.New("unexpected error"))
 					return tr
 				},
 				buildEditor: func() Editor {
-					in, _ := editRenderer.MarshalCardToEdit(cte1, nil)
+					in, _ := editRenderer.MarshalCardToEdit(cte1, nil, nil)
 					e := NewMockEditor(ctrl)
 					e.EXPECT().
 						Edit(in).

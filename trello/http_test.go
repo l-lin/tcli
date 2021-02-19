@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func TestHttpRepository_GetBoards(t *testing.T) {
+func TestHttpRepository_FindBoards(t *testing.T) {
 	type given struct {
 		tsFn func() *httptest.Server
 	}
@@ -183,7 +183,91 @@ func TestHttpRepository_FindBoard(t *testing.T) {
 	}
 }
 
-func TestHttpRepository_GetLists(t *testing.T) {
+func TestHttpRepository_FindLabels(t *testing.T) {
+	type given struct {
+		tsFn func() *httptest.Server
+	}
+
+	var tests = map[string]struct {
+		given given
+		test  func(actual Labels, err error)
+	}{
+		"happy path": {
+			given: given{
+				tsFn: func() *httptest.Server {
+					return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						w.WriteHeader(http.StatusOK)
+						w.Write([]byte(`
+[{
+  "id": "label 1",
+  "idBoard": "board",
+  "color": "red",
+  "name": "label name 1"
+}, {
+  "id": "label 2",
+  "idBoard": "board",
+  "color": "sky",
+  "name": "label name 2"
+}]`))
+					}))
+				},
+			},
+			test: func(actual Labels, err error) {
+				if err != nil {
+					t.Errorf("expected no error, got: %v", err)
+					t.FailNow()
+				}
+				if actual == nil {
+					t.Error("expected not nil labels")
+					t.FailNow()
+				}
+				expected := Labels{
+					{ID: "label 1", IDBoard: "board", Color: "red", Name: "label name 1"},
+					{ID: "label 2", IDBoard: "board", Color: "sky", Name: "label name 2"},
+				}
+				if len(expected) != len(actual) {
+					t.Errorf("expected %v, actual %v", expected, actual)
+					t.FailNow()
+				}
+				for i := 0; i < len(expected); i++ {
+					if actual[i] != expected[i] {
+						t.Errorf("%d: expected %v, actual %v", i, expected[i], actual[i])
+					}
+				}
+			},
+		},
+		"server error": {
+			given: given{
+				tsFn: func() *httptest.Server {
+					return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						w.WriteHeader(http.StatusInternalServerError)
+					}))
+				},
+			},
+			test: func(actual Labels, err error) {
+				if err == nil {
+					t.Error("expected error")
+				}
+				if actual != nil {
+					t.Error("expected nil labels")
+				}
+			},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			ts := tt.given.tsFn()
+			repository := NewHttpRepository(conf.Conf{
+				Trello: conf.Trello{
+					BaseURL: ts.URL,
+				},
+			}, false)
+			tt.test(repository.FindLabels("board"))
+		})
+	}
+}
+
+func TestHttpRepository_FindLists(t *testing.T) {
 	type given struct {
 		tsFn func() *httptest.Server
 	}
@@ -214,7 +298,7 @@ func TestHttpRepository_GetLists(t *testing.T) {
 					t.FailNow()
 				}
 				if actual == nil {
-					t.Error("expected not nil boards")
+					t.Error("expected not nil lists")
 					t.FailNow()
 				}
 				expected := Lists{
@@ -245,7 +329,7 @@ func TestHttpRepository_GetLists(t *testing.T) {
 					t.Error("expected error")
 				}
 				if actual != nil {
-					t.Error("expected nil boards")
+					t.Error("expected nil lists")
 				}
 			},
 		},
@@ -357,7 +441,7 @@ func TestHttpRepository_FindList(t *testing.T) {
 	}
 }
 
-func TestHttpRepository_GetCards(t *testing.T) {
+func TestHttpRepository_FindCards(t *testing.T) {
 	type given struct {
 		tsFn func() *httptest.Server
 	}

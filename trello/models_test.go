@@ -140,6 +140,80 @@ func TestFindCards(t *testing.T) {
 	}
 }
 
+func TestLabels_String(t *testing.T) {
+	var tests = map[string]struct {
+		given    Labels
+		expected string
+	}{
+		"3 labels": {
+			given: Labels{
+				{ID: "label 1", Name: "label name 1", Color: "red"},
+				{ID: "label 2", Name: "label name 2", Color: "sky"},
+				{ID: "label 3", Name: "label name 3", Color: "black"},
+			},
+			expected: "label 1,label 2,label 3",
+		},
+		"1 label": {
+			given: Labels{
+				{ID: "label 1", Name: "label name 1", Color: "red"},
+			},
+			expected: "label 1",
+		},
+		"no label": {
+			given:    Labels{},
+			expected: "",
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			actual := tt.given.String()
+			if actual != tt.expected {
+				t.Errorf("expected %v, actual %v", tt.expected, actual)
+			}
+		})
+	}
+}
+
+func TestLabels_Slice(t *testing.T) {
+	var tests = map[string]struct {
+		given    Labels
+		expected []string
+	}{
+		"3 labels": {
+			given: Labels{
+				{ID: "label 1", Name: "label name 1", Color: "red"},
+				{ID: "label 2", Name: "label name 2", Color: "sky"},
+				{ID: "label 3", Name: "label name 3", Color: "black"},
+			},
+			expected: []string{"label 1", "label 2", "label 3"},
+		},
+		"1 label": {
+			given: Labels{
+				{ID: "label 1", Name: "label name 1", Color: "red"},
+			},
+			expected: []string{"label 1"},
+		},
+		"no label": {
+			given:    Labels{},
+			expected: []string{},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			actual := tt.given.Slice()
+			if len(actual) != len(tt.expected) {
+				t.Errorf("expected %v, actual %v", tt.expected, actual)
+				t.FailNow()
+			}
+			for i := 0; i < len(actual); i++ {
+				if actual[i] != tt.expected[i] {
+					t.Errorf("%d: expected %v, actual %v", i, tt.expected[i], actual[i])
+				}
+			}
+		})
+	}
+}
+
 func TestCardToEdit_GetPos(t *testing.T) {
 	var tests = map[string]struct {
 		given    CardToEdit

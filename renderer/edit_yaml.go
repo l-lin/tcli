@@ -14,11 +14,11 @@ func NewEditInYaml() Edit {
 	return EditInYaml{}
 }
 
-func (e EditInYaml) MarshalCardToEdit(cte trello.CardToEdit, _ trello.Lists) ([]byte, error) {
+func (e EditInYaml) MarshalCardToEdit(cte trello.CardToEdit, _ trello.Lists, _ trello.Labels) ([]byte, error) {
 	return yaml.Marshal(cte)
 }
 
-func (e EditInYaml) MarshalCardToCreate(create trello.CardToCreate, _ trello.Lists) ([]byte, error) {
+func (e EditInYaml) MarshalCardToCreate(create trello.CardToCreate, _ trello.Lists, _ trello.Labels) ([]byte, error) {
 	return yaml.Marshal(create)
 }
 
@@ -32,15 +32,82 @@ func NewEditInPrettyYaml() Edit {
 
 type EditInPrettyYaml struct{}
 
-func (e EditInPrettyYaml) MarshalCardToEdit(cte trello.CardToEdit, boardLists trello.Lists) ([]byte, error) {
-	t := `name: "{{.Card.Name}}"
+func (e EditInPrettyYaml) MarshalCardToCreate(ctc trello.CardToCreate, lists trello.Lists, labels trello.Labels) ([]byte, error) {
+	t := `
+{{- /* ---------------- NAME ---------------- */ -}}
+name: "{{.Card.Name}}"
+{{/* ---------------- LISTS ---------------- */ -}}
+# available lists:
+{{- if .Lists -}}
+{{range $list := .Lists}}
+# {{$list.ID}}: {{$list.Name}}
+{{- end -}}
+{{end}}
+idList: "{{.Card.IDList}}"
+{{/* ---------------- POSITION ---------------- */ -}}
+# the position of the card in its list: "top", "bottom" or a positive float
+pos: "bottom"
+{{/* ---------------- LABELS ---------------- */ -}}
+# available labels:
+{{- if .Labels -}}
+{{range $label := .Labels}}
+# {{$label.ID}}: {{$label.Color}}{{if $label.Name}} [{{$label.Name}}]{{end }}
+{{- end -}}
+{{end}}
+idLabels: 
+  - 
+{{/* ---------------- DESCRIPTION ---------------- */ -}}
+desc: |-
+  `
+	tpl := template.Must(template.New("create-card").Parse(t))
+	tplParams := struct {
+		Card   trello.CardToCreate
+		Lists  trello.Lists
+		Labels trello.Labels
+	}{
+		Card:   ctc,
+		Lists:  lists,
+		Labels: labels,
+	}
+	w := bytes.NewBufferString("")
+	if err := tpl.Execute(w, tplParams); err != nil {
+		return nil, err
+	}
+	return w.Bytes(), nil
+}
+
+func (e EditInPrettyYaml) MarshalCardToEdit(cte trello.CardToEdit, lists trello.Lists, labels trello.Labels) ([]byte, error) {
+	t := `
+{{- /* ---------------- NAME ---------------- */ -}}
+name: "{{.Card.Name}}"
+{{/* ---------------- CLOSED ---------------- */ -}}
 # whether the card should be archived (closed: true)
 closed: {{.Card.Closed}}
-# available board lists:{{if .Lists}}
-{{range $list := .Lists}}# {{$list.ID}}: {{$list.Name}}
-{{end}}{{end}}idList: "{{.Card.IDList}}"
+{{/* ---------------- LISTS ---------------- */ -}}
+# available lists:
+{{- if .Lists -}}
+{{range $list := .Lists}}
+# {{$list.ID}}: {{$list.Name}}
+{{- end -}}
+{{end}}
+idList: "{{.Card.IDList}}"
+{{/* ---------------- POSITION ---------------- */ -}}
 # the position of the card in its list: "top", "bottom" or a positive float
 pos: {{.Card.Pos}}
+{{/* ---------------- LABELS ---------------- */ -}}
+# available labels:
+{{- if .Labels -}}
+{{range $label := .Labels}}
+# {{$label.ID}}: {{$label.Color}}{{if $label.Name}} [{{$label.Name}}]{{end }}
+{{- end -}}
+{{end}}
+idLabels:
+{{- if .Card.IDLabels -}}
+{{range $idLabel := .Card.IDLabels}}
+  - {{$idLabel}}
+{{- end -}}
+{{end}}
+{{/* ---------------- DESCRIPTION ---------------- */ -}}
 desc: |-
 {{htmlSafe .CardDescription}}`
 	tpl := template.Must(template.New("edit-card").Funcs(template.FuncMap{
@@ -51,35 +118,13 @@ desc: |-
 	tplParams := struct {
 		Card            trello.CardToEdit
 		Lists           trello.Lists
+		Labels          trello.Labels
 		CardDescription string
 	}{
 		Card:            cte,
-		Lists:           boardLists,
+		Lists:           lists,
 		CardDescription: e.transformDescription(cte.Desc),
-	}
-	w := bytes.NewBufferString("")
-	if err := tpl.Execute(w, tplParams); err != nil {
-		return nil, err
-	}
-	return w.Bytes(), nil
-}
-
-func (e EditInPrettyYaml) MarshalCardToCreate(ctc trello.CardToCreate, boardLists trello.Lists) ([]byte, error) {
-	t := `name: "{{.Card.Name}}"
-# available board lists:{{if .Lists}}
-{{range $list := .Lists}}# {{$list.ID}}: {{$list.Name}}
-{{end}}{{end}}idList: "{{.Card.IDList}}"
-# the position of the card in its list: "top", "bottom" or a positive float
-pos: "bottom"
-desc: |-
-  `
-	tpl := template.Must(template.New("create-card").Parse(t))
-	tplParams := struct {
-		Card  trello.CardToCreate
-		Lists trello.Lists
-	}{
-		Card:  ctc,
-		Lists: boardLists,
+		Labels:          labels,
 	}
 	w := bytes.NewBufferString("")
 	if err := tpl.Execute(w, tplParams); err != nil {

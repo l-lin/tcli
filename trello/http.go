@@ -43,6 +43,17 @@ func (h HttpRepository) FindBoard(query string) (*Board, error) {
 	return nil, fmt.Errorf("no board found with query %s", query)
 }
 
+func (h HttpRepository) FindLabels(idBoard string) (Labels, error) {
+	v := h.buildQueries("id,idBoard,color,name")
+	u := fmt.Sprintf("%s/boards/%s/labels?%v", h.BaseURL, idBoard, v.Encode())
+
+	var labels Labels
+	if err := h.get(u, &labels); err != nil {
+		return nil, err
+	}
+	return labels, nil
+}
+
 func (h HttpRepository) FindLists(idBoard string) (Lists, error) {
 	v := h.buildQueries("id,name,idBoard")
 	u := fmt.Sprintf("%s/boards/%s/lists?%v", h.BaseURL, idBoard, v.Encode())
