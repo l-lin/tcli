@@ -43,6 +43,22 @@ tcli
 tcli ls /
 ```
 
+## Configuration
+
+A `.tcli.yml` will be generated at first execution. Its contents is the following:
+
+```yaml
+trello:
+  # access token generated from first usage
+  access_token: xxx
+  # the Trello developer API key 
+  api_key: yyy
+  # Trello base API URL
+  base_url: https://trello.com/1
+# OS command used to edit the Trello entities
+editor: editor
+```
+
 ## Inspiration
 
 I'm mostly using the command line, and I like using VIM to edit contents. The Trello web UI is great, but I prefer
