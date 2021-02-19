@@ -21,6 +21,7 @@ ls       list resource content
 cat      show resource content info
 edit     edit resource content
 touch    create new resource
+rm       archive resource
 
 `
 	actual := buf.String()

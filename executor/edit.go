@@ -161,7 +161,6 @@ func (e edit) editCard(card trello.Card) (err error) {
 		Stdin:     e.stdin,
 	}
 	if _, err = prompt.Run(); err != nil {
-		fmt.Fprintf(e.stdout, "card '%s' not updated\n", card.Name)
 		return nil
 	}
 	_, err = e.tr.UpdateCard(updatedCard)

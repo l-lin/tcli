@@ -175,10 +175,7 @@ func TestEdit_Execute(t *testing.T) {
 				},
 				stdin: refuseStdin(),
 			},
-			expected: expected{
-				stdout: "card 'card 1' not updated\n",
-				stderr: "",
-			},
+			expected: expected{},
 		},
 		"edit /board/list/card - error when updating card": {
 			given: given{
