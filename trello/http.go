@@ -21,7 +21,7 @@ type HttpRepository struct {
 	client *wrappedhttp.Client
 }
 
-func (h HttpRepository) GetBoards() (Boards, error) {
+func (h HttpRepository) FindBoards() (Boards, error) {
 	v := h.buildQueries("id,name,shortLink,shortUrl,dateLastActivity")
 	u := fmt.Sprintf("%s/members/me/boards?%v", h.BaseURL, v.Encode())
 
@@ -33,7 +33,7 @@ func (h HttpRepository) GetBoards() (Boards, error) {
 }
 
 func (h HttpRepository) FindBoard(query string) (*Board, error) {
-	boards, err := h.GetBoards()
+	boards, err := h.FindBoards()
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (h HttpRepository) FindBoard(query string) (*Board, error) {
 	return nil, fmt.Errorf("no board found with query %s", query)
 }
 
-func (h HttpRepository) GetLists(idBoard string) (Lists, error) {
+func (h HttpRepository) FindLists(idBoard string) (Lists, error) {
 	v := h.buildQueries("id,name,idBoard")
 	u := fmt.Sprintf("%s/boards/%s/lists?%v", h.BaseURL, idBoard, v.Encode())
 
@@ -57,7 +57,7 @@ func (h HttpRepository) GetLists(idBoard string) (Lists, error) {
 func (h HttpRepository) FindList(idBoard string, query string) (*List, error) {
 	// maybe use adequate API instead of getting all lists?
 	// https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-id-lists-filter-get
-	lists, err := h.GetLists(idBoard)
+	lists, err := h.FindLists(idBoard)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (h HttpRepository) FindList(idBoard string, query string) (*List, error) {
 	return nil, fmt.Errorf("no list found with query %s", query)
 }
 
-func (h HttpRepository) GetCards(idList string) (Cards, error) {
+func (h HttpRepository) FindCards(idList string) (Cards, error) {
 	v := h.buildQueries("id,name,desc,idBoard,idList,labels,closed,shortLink,shortUrl")
 	u := fmt.Sprintf("%s/lists/%s/cards?%v", h.BaseURL, idList, v.Encode())
 
@@ -81,7 +81,7 @@ func (h HttpRepository) GetCards(idList string) (Cards, error) {
 func (h HttpRepository) FindCard(idList string, query string) (*Card, error) {
 	// maybe use adequate API instead of getting all cards?
 	// https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-id-cards-filter-get
-	cards, err := h.GetCards(idList)
+	cards, err := h.FindCards(idList)
 	if err != nil {
 		return nil, err
 	}

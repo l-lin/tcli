@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestCacheInMemory_GetBoards(t *testing.T) {
+func TestCacheInMemory_FindBoards(t *testing.T) {
 	// GIVEN
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -15,14 +15,14 @@ func TestCacheInMemory_GetBoards(t *testing.T) {
 		{ID: "board 2", Name: "another board"},
 	}
 	r.EXPECT().
-		GetBoards().
+		FindBoards().
 		Return(expected, nil).
 		Times(1)
 	cr := NewCacheInMemory(r)
 
 	// WHEN
-	actual1, err1 := cr.GetBoards()
-	actual2, err2 := cr.GetBoards()
+	actual1, err1 := cr.FindBoards()
+	actual2, err2 := cr.FindBoards()
 
 	// THEN
 	if err1 != nil || err2 != nil {
@@ -49,7 +49,7 @@ func TestCacheInMemory_FindBoard(t *testing.T) {
 		{ID: "board 2", Name: "another board"},
 	}
 	r.EXPECT().
-		GetBoards().
+		FindBoards().
 		Return(boards, nil).
 		Times(1)
 	cr := NewCacheInMemory(r)
@@ -67,7 +67,7 @@ func TestCacheInMemory_FindBoard(t *testing.T) {
 	}
 }
 
-func TestCacheInMemory_GetLists(t *testing.T) {
+func TestCacheInMemory_FindLists(t *testing.T) {
 	// GIVEN
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -78,14 +78,14 @@ func TestCacheInMemory_GetLists(t *testing.T) {
 	}
 	idBoard := "board 1"
 	r.EXPECT().
-		GetLists(idBoard).
+		FindLists(idBoard).
 		Return(expected, nil).
 		Times(1)
 	cr := NewCacheInMemory(r)
 
 	// WHEN
-	actual1, err1 := cr.GetLists(idBoard)
-	actual2, err2 := cr.GetLists(idBoard)
+	actual1, err1 := cr.FindLists(idBoard)
+	actual2, err2 := cr.FindLists(idBoard)
 
 	// THEN
 	if err1 != nil || err2 != nil {
@@ -113,7 +113,7 @@ func TestCacheInMemory_FindList(t *testing.T) {
 	}
 	idBoard := "board 1"
 	r.EXPECT().
-		GetLists(idBoard).
+		FindLists(idBoard).
 		Return(lists, nil).
 		Times(1)
 	cr := NewCacheInMemory(r)
@@ -131,7 +131,7 @@ func TestCacheInMemory_FindList(t *testing.T) {
 	}
 }
 
-func TestCacheInMemory_GetCards(t *testing.T) {
+func TestCacheInMemory_FindCards(t *testing.T) {
 	// GIVEN
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -142,14 +142,14 @@ func TestCacheInMemory_GetCards(t *testing.T) {
 	}
 	idList := "list 1"
 	r.EXPECT().
-		GetCards(idList).
+		FindCards(idList).
 		Return(expected, nil).
 		Times(1)
 	cr := NewCacheInMemory(r)
 
 	// WHEN
-	actual1, err1 := cr.GetCards(idList)
-	actual2, err2 := cr.GetCards(idList)
+	actual1, err1 := cr.FindCards(idList)
+	actual2, err2 := cr.FindCards(idList)
 
 	// THEN
 	if err1 != nil || err2 != nil {
@@ -177,7 +177,7 @@ func TestCacheInMemory_FindCard(t *testing.T) {
 	}
 	idList := "list 1"
 	r.EXPECT().
-		GetCards(idList).
+		FindCards(idList).
 		Return(cards, nil).
 		Times(1)
 	cr := NewCacheInMemory(r)

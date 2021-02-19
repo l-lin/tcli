@@ -32,7 +32,7 @@ func TestLs_Execute(t *testing.T) {
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
-						GetBoards().
+						FindBoards().
 						Return(trello.Boards{
 							{ID: "board 1", Name: "board"},
 							{ID: "board 2", Name: "another board"},
@@ -61,7 +61,7 @@ func TestLs_Execute(t *testing.T) {
 						FindBoard("board").
 						Return(&trello.Board{ID: "board 1", Name: "board"}, nil)
 					tr.EXPECT().
-						GetLists("board 1").
+						FindLists("board 1").
 						Return(trello.Lists{
 							{ID: "list 1", Name: "list"},
 							{ID: "list 2", Name: "another list"},
@@ -93,7 +93,7 @@ func TestLs_Execute(t *testing.T) {
 						FindList("board 1", "list").
 						Return(&trello.List{ID: "list 1", Name: "list"}, nil)
 					tr.EXPECT().
-						GetCards("list 1").
+						FindCards("list 1").
 						Return(trello.Cards{
 							{ID: "card 1", Name: "card"},
 							{ID: "card 2", Name: "another card"},
@@ -209,7 +209,7 @@ func TestLs_Execute(t *testing.T) {
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
-						GetBoards().
+						FindBoards().
 						Return(nil, errors.New("unexpected error"))
 					return tr
 				},
@@ -230,7 +230,7 @@ func TestLs_Execute(t *testing.T) {
 						FindBoard("board").
 						Return(&trello.Board{ID: "board 1", Name: "board"}, nil)
 					tr.EXPECT().
-						GetLists("board 1").
+						FindLists("board 1").
 						Return(nil, errors.New("unexpected error"))
 					return tr
 				},
@@ -254,7 +254,7 @@ func TestLs_Execute(t *testing.T) {
 						FindList("board 1", "list").
 						Return(&trello.List{ID: "list 1", Name: "list"}, nil)
 					tr.EXPECT().
-						GetCards("list 1").
+						FindCards("list 1").
 						Return(nil, errors.New("unexpected error"))
 					return tr
 				},

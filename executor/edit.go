@@ -2,16 +2,17 @@ package executor
 
 import (
 	"fmt"
+	"github.com/l-lin/tcli/renderer"
 	"github.com/l-lin/tcli/trello"
 	"github.com/manifoldco/promptui"
-	"gopkg.in/yaml.v2"
 	"io"
 )
 
 type edit struct {
 	executor
-	editor Editor
-	stdin  io.ReadCloser
+	editor       Editor
+	stdin        io.ReadCloser
+	editRenderer renderer.Edit
 }
 
 func (e edit) Execute(arg string) (currentBoard *trello.Board, currentList *trello.List) {
@@ -57,59 +58,48 @@ func (e edit) Execute(arg string) (currentBoard *trello.Board, currentList *trel
 		fmt.Fprintf(e.stderr, "no card found with name '%s'\n", cardName)
 		return
 	}
-	var updatedCard *trello.UpdateCard
-	if updatedCard, err = e.editCard(trello.NewUpdateCard(*card)); err != nil {
+	if err = e.editCard(*card); err != nil {
 		fmt.Fprintf(e.stderr, "could not edit card '%s': %v\n", cardName, err)
 	}
+	return
+}
+
+func (e edit) editCard(card trello.Card) (err error) {
+	var lists trello.Lists
+	if lists, err = e.tr.FindLists(card.IDBoard); err != nil {
+		return
+	}
+
+	cte := trello.NewCardToEdit(card)
+	var in []byte
+	if in, err = e.editRenderer.Marshal(cte, lists); err != nil {
+		return
+	}
+
+	var out []byte
+	if out, err = e.editor.Edit(in); err != nil {
+		return
+	}
+
+	var editedCard trello.CardToEdit
+	if err = e.editRenderer.Unmarshal(out, &editedCard); err != nil {
+		return
+	}
+	updatedCard := trello.NewUpdateCard(card)
+	updatedCard.Name = editedCard.Name
+	updatedCard.Description = editedCard.Desc
+	updatedCard.Closed = editedCard.Closed
+	updatedCard.IDList = editedCard.IDList
+
 	prompt := promptui.Prompt{
 		Label:     "Do you want to update the card?",
 		IsConfirm: true,
 		Stdin:     e.stdin,
 	}
 	if _, err = prompt.Run(); err != nil {
-		fmt.Fprintf(e.stdout, "card '%s' not updated\n", cardName)
-		return
+		fmt.Fprintf(e.stdout, "card '%s' not updated\n", card.Name)
+		return nil
 	}
-	if _, err = e.tr.UpdateCard(*updatedCard); err != nil {
-		fmt.Fprintf(e.stderr, "could not update card '%s': %v\n", cardName, err)
-	}
+	_, err = e.tr.UpdateCard(updatedCard)
 	return
-}
-
-func (e edit) editCard(updateCard trello.UpdateCard) (*trello.UpdateCard, error) {
-	cte := newCardToEdit(updateCard)
-	var in []byte
-	var err error
-	if in, err = yaml.Marshal(cte); err != nil {
-		return nil, err
-	}
-
-	var out []byte
-	if out, err = e.editor.Edit(in); err != nil {
-		return nil, err
-	}
-
-	var editedCard cardToEdit
-	if err = yaml.Unmarshal(out, &editedCard); err != nil {
-		return nil, err
-	}
-	result := trello.CopyUpdateCard(updateCard)
-	result.Name = editedCard.Name
-	result.Description = editedCard.Description
-	result.Closed = editedCard.Closed
-	return &result, nil
-}
-
-type cardToEdit struct {
-	Name        string `yaml:"name"`
-	Description string `yaml:"desc"`
-	Closed      bool   `yaml:"closed"`
-}
-
-func newCardToEdit(updateCard trello.UpdateCard) cardToEdit {
-	return cardToEdit{
-		Name:        updateCard.Name,
-		Description: updateCard.Description,
-		Closed:      updateCard.Closed,
-	}
 }

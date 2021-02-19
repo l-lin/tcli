@@ -22,19 +22,19 @@ func NewCacheInMemory(r Repository) Repository {
 	}
 }
 
-func (c *CacheInMemory) GetBoards() (Boards, error) {
+func (c *CacheInMemory) FindBoards() (Boards, error) {
 	if c.Boards != nil {
 		log.Debug().Msg("fetching boards from cache")
 		return *c.Boards, nil
 	}
 	log.Debug().Msg("fetching boards from remote")
-	boards, err := c.r.GetBoards()
+	boards, err := c.r.FindBoards()
 	c.Boards = &boards
 	return boards, err
 }
 
 func (c *CacheInMemory) FindBoard(query string) (*Board, error) {
-	boards, err := c.GetBoards()
+	boards, err := c.FindBoards()
 	if err != nil {
 		return nil, err
 	}
@@ -44,19 +44,19 @@ func (c *CacheInMemory) FindBoard(query string) (*Board, error) {
 	return nil, fmt.Errorf("no board found with query %s", query)
 }
 
-func (c *CacheInMemory) GetLists(idBoard string) (Lists, error) {
+func (c *CacheInMemory) FindLists(idBoard string) (Lists, error) {
 	if c.mapLists[idBoard] != nil {
 		log.Debug().Str("idBoard", idBoard).Msg("fetching lists from cache")
 		return c.mapLists[idBoard], nil
 	}
 	log.Debug().Str("idBoard", idBoard).Msg("fetching lists from remote")
-	lists, err := c.r.GetLists(idBoard)
+	lists, err := c.r.FindLists(idBoard)
 	c.mapLists[idBoard] = lists
 	return lists, err
 }
 
 func (c *CacheInMemory) FindList(idBoard string, query string) (*List, error) {
-	lists, err := c.GetLists(idBoard)
+	lists, err := c.FindLists(idBoard)
 	if err != nil {
 		return nil, err
 	}
@@ -66,19 +66,19 @@ func (c *CacheInMemory) FindList(idBoard string, query string) (*List, error) {
 	return nil, fmt.Errorf("no list found with query %s", query)
 }
 
-func (c *CacheInMemory) GetCards(idList string) (Cards, error) {
+func (c *CacheInMemory) FindCards(idList string) (Cards, error) {
 	if c.mapCards[idList] != nil {
 		log.Debug().Str("idList", idList).Msg("fetching cards from cache")
 		return c.mapCards[idList], nil
 	}
 	log.Debug().Str("idList", idList).Msg("fetching cards from remote")
-	cards, err := c.r.GetCards(idList)
+	cards, err := c.r.FindCards(idList)
 	c.mapCards[idList] = cards
 	return cards, err
 }
 
 func (c *CacheInMemory) FindCard(idList string, query string) (*Card, error) {
-	cards, err := c.GetCards(idList)
+	cards, err := c.FindCards(idList)
 	if err != nil {
 		return nil, err
 	}

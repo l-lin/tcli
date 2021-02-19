@@ -82,7 +82,7 @@ func TestHttpRepository_GetBoards(t *testing.T) {
 					BaseURL: ts.URL,
 				},
 			}, false)
-			tt.test(repository.GetBoards())
+			tt.test(repository.FindBoards())
 		})
 	}
 }
@@ -256,7 +256,7 @@ func TestHttpRepository_GetLists(t *testing.T) {
 					BaseURL: ts.URL,
 				},
 			}, false)
-			tt.test(repository.GetLists("board 1"))
+			tt.test(repository.FindLists("board 1"))
 		})
 	}
 }
@@ -430,7 +430,7 @@ func TestHttpRepository_GetCards(t *testing.T) {
 					BaseURL: ts.URL,
 				},
 			}, false)
-			tt.test(repository.GetCards("list 1"))
+			tt.test(repository.FindCards("list 1"))
 		})
 	}
 }

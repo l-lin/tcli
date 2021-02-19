@@ -80,8 +80,9 @@ var Factories = []Factory{
 					stdout:       os.Stdout,
 					stderr:       os.Stderr,
 				},
-				stdin:  os.Stdin,
-				editor: NewOsEditor(),
+				stdin:        os.Stdin,
+				editor:       NewOsEditor(),
+				editRenderer: renderer.NewEditInPrettyYaml(),
 			}
 		},
 	},

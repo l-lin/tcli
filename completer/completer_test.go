@@ -63,7 +63,7 @@ func TestCompleter_Complete(t *testing.T) {
 						FindBoard("").
 						Return(nil, errors.New("not found"))
 					tr.EXPECT().
-						GetBoards().
+						FindBoards().
 						Return(trello.Boards{
 							{Name: "board", ShortLink: "shortLink"},
 							{Name: "another board", ShortLink: "another shortLink"},
@@ -86,7 +86,7 @@ func TestCompleter_Complete(t *testing.T) {
 						FindBoard("b").
 						Return(nil, errors.New("not found"))
 					tr.EXPECT().
-						GetBoards().
+						FindBoards().
 						Return(trello.Boards{
 							{Name: "board", ShortLink: "shortLink"},
 							{Name: "another board", ShortLink: "another shortLink"},
@@ -111,7 +111,7 @@ func TestCompleter_Complete(t *testing.T) {
 						FindList("board 1", "").
 						Return(nil, errors.New("not found"))
 					tr.EXPECT().
-						GetLists("board 1").
+						FindLists("board 1").
 						Return(trello.Lists{
 							{Name: "list"},
 							{Name: "another list"},
@@ -137,7 +137,7 @@ func TestCompleter_Complete(t *testing.T) {
 						FindList("board 1", "l").
 						Return(nil, errors.New("not found"))
 					tr.EXPECT().
-						GetLists("board 1").
+						FindLists("board 1").
 						Return(trello.Lists{
 							{Name: "list"},
 							{Name: "another list"},
@@ -162,7 +162,7 @@ func TestCompleter_Complete(t *testing.T) {
 						FindList("board 1", "list").
 						Return(&trello.List{Name: "list", ID: "list 1"}, nil)
 					tr.EXPECT().
-						GetCards("list 1").
+						FindCards("list 1").
 						Return(trello.Cards{
 							{Name: "card", ShortLink: "shortLink"},
 							{Name: "another card", ShortLink: "another shortLink"},
@@ -188,7 +188,7 @@ func TestCompleter_Complete(t *testing.T) {
 						FindList("board 1", "list").
 						Return(&trello.List{Name: "list", ID: "list 1"}, nil)
 					tr.EXPECT().
-						GetCards("list 1").
+						FindCards("list 1").
 						Return(trello.Cards{
 							{Name: "card", ShortLink: "shortLink"},
 							{Name: "another card", ShortLink: "another shortLink"},
@@ -215,7 +215,7 @@ func TestCompleter_Complete(t *testing.T) {
 						FindList("board 1", "").
 						Return(nil, errors.New("not found"))
 					tr.EXPECT().
-						GetLists("board 1").
+						FindLists("board 1").
 						Return(trello.Lists{
 							{Name: "list"},
 							{Name: "another list"},
@@ -242,7 +242,7 @@ func TestCompleter_Complete(t *testing.T) {
 						FindList("board 1", "l").
 						Return(nil, errors.New("not found"))
 					tr.EXPECT().
-						GetLists("board 1").
+						FindLists("board 1").
 						Return(trello.Lists{
 							{Name: "list"},
 							{Name: "another list"},
@@ -269,7 +269,7 @@ func TestCompleter_Complete(t *testing.T) {
 						FindList("board 1", "list").
 						Return(&trello.List{ID: "list 1", Name: "list"}, nil)
 					tr.EXPECT().
-						GetCards("list 1").
+						FindCards("list 1").
 						Return(trello.Cards{
 							{Name: "card", ShortLink: "shortLink"},
 							{Name: "another card", ShortLink: "another shortLink"},
@@ -297,7 +297,7 @@ func TestCompleter_Complete(t *testing.T) {
 						FindList("board 1", "list").
 						Return(&trello.List{ID: "list 1", Name: "list"}, nil)
 					tr.EXPECT().
-						GetCards("list 1").
+						FindCards("list 1").
 						Return(trello.Cards{
 							{Name: "card", ShortLink: "shortLink"},
 							{Name: "another card", ShortLink: "another short link"},
@@ -320,7 +320,7 @@ func TestCompleter_Complete(t *testing.T) {
 						FindBoard("a").
 						Return(nil, errors.New("not found"))
 					tr.EXPECT().
-						GetBoards().
+						FindBoards().
 						Return(trello.Boards{
 							{Name: "board", ShortLink: "shortLink"},
 							{Name: "another board", ShortLink: "another shortLink"},
@@ -347,7 +347,7 @@ func TestCompleter_Complete(t *testing.T) {
 						FindList("board 1", "a").
 						Return(nil, errors.New("not found"))
 					tr.EXPECT().
-						GetLists("board 1").
+						FindLists("board 1").
 						Return(trello.Lists{
 							{Name: "list"},
 							{Name: "another list"},
@@ -370,7 +370,7 @@ func TestCompleter_Complete(t *testing.T) {
 						FindBoard("").
 						Return(nil, errors.New("not found"))
 					tr.EXPECT().
-						GetBoards().
+						FindBoards().
 						Return(trello.Boards{
 							{Name: "board", ShortLink: "shortLink"},
 							{Name: "another board", ShortLink: "another shortLink"},
@@ -394,7 +394,7 @@ func TestCompleter_Complete(t *testing.T) {
 						FindBoard("a").
 						Return(nil, errors.New("not found"))
 					tr.EXPECT().
-						GetBoards().
+						FindBoards().
 						Return(trello.Boards{
 							{Name: "board", ShortLink: "shortLink"},
 							{Name: "another board", ShortLink: "another shortLink"},

@@ -61,7 +61,7 @@ func (l ls) Execute(arg string) (currentBoard *trello.Board, currentList *trello
 }
 
 func (l ls) renderBoards() {
-	boards, err := l.tr.GetBoards()
+	boards, err := l.tr.FindBoards()
 	if err != nil {
 		fmt.Fprintf(l.stderr, "could not fetch boards: %v\n", err)
 	} else {
@@ -70,7 +70,7 @@ func (l ls) renderBoards() {
 }
 
 func (l ls) renderLists(board trello.Board) {
-	lists, err := l.tr.GetLists(board.ID)
+	lists, err := l.tr.FindLists(board.ID)
 	if err != nil {
 		fmt.Fprintf(l.stderr, "could not fetch lists for board '%s': %v\n", board.Name, err)
 	} else {
@@ -79,7 +79,7 @@ func (l ls) renderLists(board trello.Board) {
 }
 
 func (l ls) renderCards(list trello.List) {
-	cards, err := l.tr.GetCards(list.ID)
+	cards, err := l.tr.FindCards(list.ID)
 	if err != nil {
 		fmt.Fprintf(l.stderr, "could not fetch cards for list '%s': %v\n", list.Name, err)
 	} else {

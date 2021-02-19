@@ -69,7 +69,7 @@ func (c Completer) suggestCommands(arg string) []prompt.Suggest {
 func (c Completer) suggestBoards(arg string, boardName string) (*trello.Board, []prompt.Suggest) {
 	board, _ := c.tr.FindBoard(boardName)
 	if board == nil {
-		boards, err := c.tr.GetBoards()
+		boards, err := c.tr.FindBoards()
 		if err != nil {
 			log.Debug().
 				Err(err).
@@ -84,7 +84,7 @@ func (c Completer) suggestBoards(arg string, boardName string) (*trello.Board, [
 func (c Completer) suggestLists(arg string, board *trello.Board, listName string) (*trello.List, []prompt.Suggest) {
 	list, _ := c.tr.FindList(board.ID, listName)
 	if list == nil {
-		lists, err := c.tr.GetLists(board.ID)
+		lists, err := c.tr.FindLists(board.ID)
 		if err != nil {
 			log.Debug().
 				Err(err).
@@ -100,7 +100,7 @@ func (c Completer) suggestLists(arg string, board *trello.Board, listName string
 func (c Completer) suggestCards(arg string, list *trello.List) []prompt.Suggest {
 	var cards trello.Cards
 	var err error
-	if cards, err = c.tr.GetCards(list.ID); err != nil {
+	if cards, err = c.tr.FindCards(list.ID); err != nil {
 		log.Debug().
 			Err(err).
 			Str("idList", list.ID).

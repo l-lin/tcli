@@ -48,6 +48,21 @@ func (mr *MockRepositoryMockRecorder) FindBoard(query interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindBoard", reflect.TypeOf((*MockRepository)(nil).FindBoard), query)
 }
 
+// FindBoards mocks base method.
+func (m *MockRepository) FindBoards() (Boards, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindBoards")
+	ret0, _ := ret[0].(Boards)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindBoards indicates an expected call of FindBoards.
+func (mr *MockRepositoryMockRecorder) FindBoards() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindBoards", reflect.TypeOf((*MockRepository)(nil).FindBoards))
+}
+
 // FindCard mocks base method.
 func (m *MockRepository) FindCard(idList, query string) (*Card, error) {
 	m.ctrl.T.Helper()
@@ -61,6 +76,21 @@ func (m *MockRepository) FindCard(idList, query string) (*Card, error) {
 func (mr *MockRepositoryMockRecorder) FindCard(idList, query interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindCard", reflect.TypeOf((*MockRepository)(nil).FindCard), idList, query)
+}
+
+// FindCards mocks base method.
+func (m *MockRepository) FindCards(idList string) (Cards, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindCards", idList)
+	ret0, _ := ret[0].(Cards)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindCards indicates an expected call of FindCards.
+func (mr *MockRepositoryMockRecorder) FindCards(idList interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindCards", reflect.TypeOf((*MockRepository)(nil).FindCards), idList)
 }
 
 // FindList mocks base method.
@@ -78,49 +108,19 @@ func (mr *MockRepositoryMockRecorder) FindList(idBoard, query interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindList", reflect.TypeOf((*MockRepository)(nil).FindList), idBoard, query)
 }
 
-// GetBoards mocks base method.
-func (m *MockRepository) GetBoards() (Boards, error) {
+// FindLists mocks base method.
+func (m *MockRepository) FindLists(idBoard string) (Lists, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBoards")
-	ret0, _ := ret[0].(Boards)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetBoards indicates an expected call of GetBoards.
-func (mr *MockRepositoryMockRecorder) GetBoards() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBoards", reflect.TypeOf((*MockRepository)(nil).GetBoards))
-}
-
-// GetCards mocks base method.
-func (m *MockRepository) GetCards(idList string) (Cards, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCards", idList)
-	ret0, _ := ret[0].(Cards)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetCards indicates an expected call of GetCards.
-func (mr *MockRepositoryMockRecorder) GetCards(idList interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCards", reflect.TypeOf((*MockRepository)(nil).GetCards), idList)
-}
-
-// GetLists mocks base method.
-func (m *MockRepository) GetLists(idBoard string) (Lists, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetLists", idBoard)
+	ret := m.ctrl.Call(m, "FindLists", idBoard)
 	ret0, _ := ret[0].(Lists)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetLists indicates an expected call of GetLists.
-func (mr *MockRepositoryMockRecorder) GetLists(idBoard interface{}) *gomock.Call {
+// FindLists indicates an expected call of FindLists.
+func (mr *MockRepositoryMockRecorder) FindLists(idBoard interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLists", reflect.TypeOf((*MockRepository)(nil).GetLists), idBoard)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindLists", reflect.TypeOf((*MockRepository)(nil).FindLists), idBoard)
 }
 
 // UpdateCard mocks base method.
