@@ -105,12 +105,37 @@ func (c *CacheInMemory) UpdateCard(updateCard UpdateCard) (*Card, error) {
 		return nil, err
 	}
 
-	// replace card
-	for i, cachedCard := range c.mapCards[updateCard.IDList] {
-		if cachedCard.ID == card.ID {
-			c.mapCards[updateCard.IDList][i] = *card
-			break
-		}
+	cardIndex := c.findCardIndex(updateCard.IDList, updateCard.ID)
+	if card.Closed {
+		c.removeCard(updateCard.IDList, cardIndex)
+	} else {
+		c.mapCards[updateCard.IDList][cardIndex] = *card
 	}
 	return card, nil
+}
+
+func (c *CacheInMemory) findCardIndex(idList, cardID string) int {
+	for i, cachedCard := range c.mapCards[idList] {
+		if cachedCard.ID == cardID {
+			return i
+		}
+	}
+	return -1
+}
+
+func (c *CacheInMemory) removeCard(idList string, cardIndex int) {
+	if cardIndex == -1 {
+		return
+	}
+	cards, found := c.mapCards[idList]
+	if !found {
+		return
+	}
+	if cardIndex >= len(cards) {
+		return
+	}
+	// swap
+	cards[len(cards)-1], cards[cardIndex] = cards[cardIndex], cards[len(cards)-1]
+	// then remove last element of slice
+	c.mapCards[idList] = cards[:len(cards)-1]
 }
