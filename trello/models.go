@@ -3,6 +3,7 @@ package trello
 import (
 	"fmt"
 	"github.com/logrusorgru/aurora/v3"
+	"github.com/rs/zerolog/log"
 	"strconv"
 )
 
@@ -130,6 +131,16 @@ func NewUpdateCard(card Card) UpdateCard {
 	}
 }
 
+func NewCardToEdit(card Card) CardToEdit {
+	return CardToEdit{
+		Name:   card.Name,
+		Desc:   card.Description,
+		Closed: card.Closed,
+		IDList: card.IDList,
+		Pos:    strconv.FormatFloat(card.Pos, 'f', 2, 64),
+	}
+}
+
 // CardToEdit is the representation used in the card edition
 // it's different from the other card representation because we do not want to expose everything to the user
 // like for instance, the card ID as the user
@@ -141,14 +152,19 @@ type CardToEdit struct {
 	Pos    string `yaml:"pos,omitempty"` // "top", "bottom" or a positive float
 }
 
-func NewCardToEdit(card Card) CardToEdit {
-	return CardToEdit{
-		Name:   card.Name,
-		Desc:   card.Description,
-		Closed: card.Closed,
-		IDList: card.IDList,
-		Pos:    strconv.FormatFloat(card.Pos, 'f', 4, 64),
+func (cte CardToEdit) GetPos() interface{} {
+	if cte.Pos == "top" || cte.Pos == "bottom" {
+		return cte.Pos
 	}
+	pos, err := strconv.ParseFloat(cte.Pos, 64)
+	if err != nil {
+		log.Debug().
+			Str("pos", cte.Pos).
+			Err(err).
+			Msg("could not parse pos to float")
+		return cte.Pos
+	}
+	return pos
 }
 
 // toTCliID converts a Trello entity into a unique ID understandable by tcli

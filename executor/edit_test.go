@@ -37,8 +37,8 @@ func TestEdit_Execute(t *testing.T) {
 	list2 := trello.List{ID: "list 2", Name: "list name 2"}
 	list3 := trello.List{ID: "list 3", Name: "list name 3"}
 	lists := trello.Lists{list1, list2, list3}
-	card1 := trello.Card{ID: "card 1", Name: "card", Description: "card description", Closed: true, IDBoard: board1.ID, IDList: list1.ID}
-	updatedCard1 := trello.Card{ID: "card 1", Name: "updated card", Description: "updated card description", Closed: true, IDBoard: board1.ID, IDList: list1.ID}
+	card1 := trello.Card{ID: "card 1", Name: "card", Description: "card description", Closed: true, IDBoard: board1.ID, IDList: list1.ID, Pos: float64(123)}
+	updatedCard1 := trello.Card{ID: "card 1", Name: "updated card", Description: "updated card description", Closed: true, IDBoard: board1.ID, IDList: list1.ID, Pos: card1.Pos}
 	cte1 := trello.NewCardToEdit(card1)
 
 	editRenderer := renderer.EditInYaml{}

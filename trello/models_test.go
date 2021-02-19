@@ -139,3 +139,39 @@ func TestFindCards(t *testing.T) {
 		})
 	}
 }
+
+func TestCardToEdit_GetPos(t *testing.T) {
+	var tests = map[string]struct {
+		given    CardToEdit
+		expected interface{}
+	}{
+		"top": {
+			given:    CardToEdit{Pos: "top"},
+			expected: "top",
+		},
+		"bottom": {
+			given:    CardToEdit{Pos: "top"},
+			expected: "top",
+		},
+		"int number": {
+			given:    CardToEdit{Pos: "1234"},
+			expected: float64(1234),
+		},
+		"float number": {
+			given:    CardToEdit{Pos: "1234.56"},
+			expected: 1234.56,
+		},
+		"unknown value": {
+			given:    CardToEdit{Pos: "unknown"},
+			expected: "unknown",
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			actual := tt.given.GetPos()
+			if actual != tt.expected {
+				t.Errorf("expected %v, actual %v", tt.expected, actual)
+			}
+		})
+	}
+}

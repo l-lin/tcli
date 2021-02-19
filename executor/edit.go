@@ -90,7 +90,7 @@ func (e edit) editCard(card trello.Card) (err error) {
 	updatedCard.Description = editedCard.Desc
 	updatedCard.Closed = editedCard.Closed
 	updatedCard.IDList = editedCard.IDList
-	updatedCard.Pos = editedCard.Pos
+	updatedCard.Pos = editedCard.GetPos()
 
 	prompt := promptui.Prompt{
 		Label:     "Do you want to update the card?",
