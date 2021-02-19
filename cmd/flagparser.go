@@ -35,3 +35,7 @@ func (fp flagParser) GetConfigFile() string {
 func (fp flagParser) GetDebug() bool {
 	return fp.GetBool("debug", true)
 }
+
+func (fp flagParser) GetNoCache() bool {
+	return fp.GetBool("no-cache", true)
+}

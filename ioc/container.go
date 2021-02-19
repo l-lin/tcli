@@ -37,10 +37,14 @@ func (c *Container) registerTrelloRepository() {
 	var tr trello.Repository
 	tr = trello.NewHttpRepository(*c.Conf, c.Debug)
 
-	var cacheTr trello.Repository
-	cacheTr = trello.NewCacheInMemory(tr)
+	if c.Inputs.NoCache {
+		c.TrelloRepository = tr
+	} else {
+		var cacheTr trello.Repository
+		cacheTr = trello.NewCacheInMemory(tr)
 
-	c.TrelloRepository = cacheTr
+		c.TrelloRepository = cacheTr
+	}
 }
 
 func (c *Container) registerConf() {

@@ -38,6 +38,7 @@ func initRootCmd(c *cobra.Command, version, buildDate string) *pflag.FlagSet {
 	c.SetVersionTemplate(`{{printf "%s" .Version}}`)
 	c.PersistentFlags().String("config", "", "config file (default will look at $PWD/.tcli.yml then at $HOME/.tcli.yml)")
 	c.PersistentFlags().Bool("debug", false, "debug mode")
+	c.PersistentFlags().Bool("no-cache", false, "do not use cache (/!\\ can be slow as every action will make a HTTP request to Trello APIs)")
 	return c.Flags()
 }
 
@@ -62,9 +63,10 @@ func runRootCmd(_ *cobra.Command, _ []string) {
 func initializeIocContainer(c *cobra.Command, _ []string) {
 	fp := flagParser{Command: c}
 	inputs := ioc.Inputs{
-		Viper: viper.New(),
-		Debug: fp.GetDebug(),
-		File:  fp.GetConfigFile(),
+		Viper:   viper.New(),
+		Debug:   fp.GetDebug(),
+		File:    fp.GetConfigFile(),
+		NoCache: fp.GetNoCache(),
 	}
 	container = ioc.Boostrap(inputs)
 }
