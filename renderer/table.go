@@ -115,7 +115,7 @@ func (b InTable) RenderCard(card trello.Card) string {
 	t.AddLine("Short URL:", card.ShortURL)
 	t.AddLine("Labels:", b.lr.Render(card.Labels))
 	t.AddLine("Description:", "")
-	renderedDescription, err := b.cdr.Render(card.Description)
+	renderedDescription, err := b.cdr.Render(card.Desc)
 	if err != nil {
 		log.Debug().
 			Err(err).

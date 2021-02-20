@@ -60,10 +60,10 @@ func (e edit) Execute(arg string) (currentBoard *trello.Board, currentList *trel
 			Str("cardName", cardName).
 			Msg("no card found => creating new card")
 		card = &trello.Card{
-			Name:        cardName,
-			Description: "",
-			IDBoard:     board.ID,
-			IDList:      list.ID,
+			Name:    cardName,
+			Desc:    "",
+			IDBoard: board.ID,
+			IDList:  list.ID,
 		}
 		if err = e.createCard(*card); err != nil {
 			fmt.Fprintf(e.stderr, "could not create card '%s': %v\n", cardName, err)
@@ -104,7 +104,7 @@ func (e edit) createCard(card trello.Card) (err error) {
 	}
 	createdCard := trello.NewCreateCard(card)
 	createdCard.Name = editedCard.Name
-	createdCard.Description = editedCard.Desc
+	createdCard.Desc = editedCard.Desc
 	createdCard.IDList = editedCard.IDList
 	createdCard.Pos = editedCard.GetPos()
 	createdCard.IDLabels = editedCard.IDLabelsInString()
@@ -149,7 +149,7 @@ func (e edit) editCard(card trello.Card) (err error) {
 	}
 	updatedCard := trello.NewUpdateCard(card)
 	updatedCard.Name = editedCard.Name
-	updatedCard.Description = editedCard.Desc
+	updatedCard.Desc = editedCard.Desc
 	updatedCard.Closed = editedCard.Closed
 	updatedCard.IDList = editedCard.IDList
 	updatedCard.Pos = editedCard.GetPos()

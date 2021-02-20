@@ -85,6 +85,28 @@ func TestRm_Execute(t *testing.T) {
 			expected: expected{},
 		},
 		// ERRORS
+		"invalid path": {
+			given: given{
+				arg: "/../..",
+				buildTrelloRepository: func() trello.Repository {
+					return nil
+				},
+			},
+			expected: expected{
+				stderr: "invalid path\n",
+			},
+		},
+		"no board name": {
+			given: given{
+				arg: "/",
+				buildTrelloRepository: func() trello.Repository {
+					return nil
+				},
+			},
+			expected: expected{
+				stderr: "nothing to archive\n",
+			},
+		},
 		"unknown-board": {
 			given: given{
 				arg: "unknown-board",
@@ -98,6 +120,21 @@ func TestRm_Execute(t *testing.T) {
 			},
 			expected: expected{
 				stderr: "no board found with name 'unknown-board'\n",
+			},
+		},
+		"no list name": {
+			given: given{
+				arg: "board/",
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board.Name).
+						Return(&board, nil)
+					return tr
+				},
+			},
+			expected: expected{
+				stderr: "board archiving not implemented yet\n",
 			},
 		},
 		"unknown-list": {
@@ -116,6 +153,24 @@ func TestRm_Execute(t *testing.T) {
 			},
 			expected: expected{
 				stderr: "no list found with name 'unknown-list'\n",
+			},
+		},
+		"no card name": {
+			given: given{
+				arg: "board/list/",
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board.Name).
+						Return(&board, nil)
+					tr.EXPECT().
+						FindList(board.ID, list.Name).
+						Return(&list, nil)
+					return tr
+				},
+			},
+			expected: expected{
+				stderr: "list archiving not implemented yet\n",
 			},
 		},
 		"unknown-card": {

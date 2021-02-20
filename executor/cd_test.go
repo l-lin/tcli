@@ -2,6 +2,7 @@ package executor
 
 import (
 	"bytes"
+	"errors"
 	"github.com/golang/mock/gomock"
 	"github.com/l-lin/tcli/trello"
 	"testing"
@@ -23,23 +24,27 @@ func TestCd_Execute(t *testing.T) {
 		list   *trello.List
 	}
 
+	board1 := trello.Board{ID: "board 1", Name: "board"}
+	list1 := trello.List{ID: "list 1", Name: "list"}
+	list2 := trello.List{ID: "list 2", Name: "another-list"}
+
 	var tests = map[string]struct {
 		given    given
 		expected expected
 	}{
 		"/ > cd board": {
 			given: given{
-				arg: "board",
+				arg: board1.Name,
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
-						FindBoard("board").
-						Return(&trello.Board{ID: "board 1", Name: "board"}, nil)
+						FindBoard(board1.Name).
+						Return(&board1, nil)
 					return tr
 				},
 			},
 			expected: expected{
-				board: &trello.Board{ID: "board 1", Name: "board"},
+				board: &board1,
 			},
 		},
 		"/ > cd board/list": {
@@ -48,23 +53,23 @@ func TestCd_Execute(t *testing.T) {
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
-						FindBoard("board").
-						Return(&trello.Board{ID: "board 1", Name: "board"}, nil)
+						FindBoard(board1.Name).
+						Return(&board1, nil)
 					tr.EXPECT().
-						FindList("board 1", "list").
-						Return(&trello.List{ID: "list 1", Name: "list"}, nil)
+						FindList(board1.ID, list1.Name).
+						Return(&list1, nil)
 					return tr
 				},
 			},
 			expected: expected{
-				board: &trello.Board{ID: "board 1", Name: "board"},
-				list:  &trello.List{ID: "list 1", Name: "list"},
+				board: &board1,
+				list:  &list1,
 			},
 		},
 		"/board > cd ": {
 			given: given{
 				arg:          "",
-				currentBoard: &trello.Board{ID: "board 1", Name: "board"},
+				currentBoard: &board1,
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
@@ -76,28 +81,28 @@ func TestCd_Execute(t *testing.T) {
 		},
 		"/board > cd list": {
 			given: given{
-				arg:          "list",
-				currentBoard: &trello.Board{ID: "board 1", Name: "board"},
+				arg:          list1.Name,
+				currentBoard: &board1,
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
-						FindBoard("board").
-						Return(&trello.Board{ID: "board 1", Name: "board"}, nil)
+						FindBoard(board1.Name).
+						Return(&board1, nil)
 					tr.EXPECT().
-						FindList("board 1", "list").
-						Return(&trello.List{ID: "list 1", Name: "list"}, nil)
+						FindList(board1.ID, list1.Name).
+						Return(&list1, nil)
 					return tr
 				},
 			},
 			expected: expected{
-				board: &trello.Board{ID: "board 1", Name: "board"},
-				list:  &trello.List{ID: "list 1", Name: "list"},
+				board: &board1,
+				list:  &list1,
 			},
 		},
 		"/board > cd ..": {
 			given: given{
 				arg:          "..",
-				currentBoard: &trello.Board{ID: "board 1", Name: "board"},
+				currentBoard: &board1,
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
@@ -109,37 +114,81 @@ func TestCd_Execute(t *testing.T) {
 		},
 		"/board/list > cd ../another-list": {
 			given: given{
-				arg:          "../another-list",
-				currentBoard: &trello.Board{ID: "board 1", Name: "board"},
-				currentList:  &trello.List{ID: "list 1", Name: "list"},
+				arg:          "../" + list2.Name,
+				currentBoard: &board1,
+				currentList:  &list1,
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
-						FindBoard("board").
-						Return(&trello.Board{ID: "board 1", Name: "board"}, nil)
+						FindBoard(board1.Name).
+						Return(&board1, nil)
 					tr.EXPECT().
-						FindList("board 1", "another-list").
-						Return(&trello.List{ID: "list 2", Name: "another-list"}, nil)
+						FindList(board1.ID, list2.Name).
+						Return(&list2, nil)
 					return tr
 				},
 			},
 			expected: expected{
-				board: &trello.Board{ID: "board 1", Name: "board"},
-				list:  &trello.List{ID: "list 2", Name: "another-list"},
+				board: &board1,
+				list:  &list2,
 			},
 		},
 		// ERRORS
+		"invalid path": {
+			given: given{
+				arg: "/../..",
+				buildTrelloRepository: func() trello.Repository {
+					return nil
+				},
+			},
+			expected: expected{
+				stderr: "invalid path\n",
+			},
+		},
+		"/ > cd unknown-board": {
+			given: given{
+				arg: "unknown-board",
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard("unknown-board").
+						Return(nil, errors.New("not found"))
+					return tr
+				},
+			},
+			expected: expected{
+				stderr: "no board found with name 'unknown-board'\n",
+			},
+		},
+		"/ > cd /board/unknown-list": {
+			given: given{
+				arg: "/board/unknown-list",
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board1.Name).
+						Return(&board1, nil)
+					tr.EXPECT().
+						FindList(board1.ID, "unknown-list").
+						Return(nil, errors.New("not found"))
+					return tr
+				},
+			},
+			expected: expected{
+				stderr: "no list found with name 'unknown-list'\n",
+			},
+		},
 		"/ > cd board/list/card": {
 			given: given{
 				arg: "board/list/card",
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
-						FindBoard("board").
-						Return(&trello.Board{ID: "board 1", Name: "board"}, nil)
+						FindBoard(board1.Name).
+						Return(&board1, nil)
 					tr.EXPECT().
-						FindList("board 1", "list").
-						Return(&trello.List{ID: "list 1", Name: "list"}, nil)
+						FindList(board1.ID, list1.Name).
+						Return(&list1, nil)
 					return tr
 				},
 			},
@@ -163,16 +212,16 @@ func TestCd_Execute(t *testing.T) {
 		"/board/list > cd ../../..": {
 			given: given{
 				arg:          "../../..",
-				currentBoard: &trello.Board{ID: "board 1", Name: "board"},
-				currentList:  &trello.List{ID: "list 1", Name: "list"},
+				currentBoard: &board1,
+				currentList:  &list1,
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
 			},
 			expected: expected{
 				stderr: "invalid path\n",
-				board:  &trello.Board{ID: "board 1", Name: "board"},
-				list:   &trello.List{ID: "list 1", Name: "list"},
+				board:  &board1,
+				list:   &list1,
 			},
 		},
 	}

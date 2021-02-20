@@ -85,8 +85,8 @@ func TestCardsToSuggestions(t *testing.T) {
 	}{
 		"two cards": {
 			given: trello.Cards{
-				{Name: "card 1", Description: "card description 1", ShortLink: "shortLink 1"},
-				{Name: "card 2", Description: "card description 2", ShortLink: "shortLink 2"},
+				{Name: "card 1", Desc: "card description 1", ShortLink: "shortLink 1"},
+				{Name: "card 2", Desc: "card description 2", ShortLink: "shortLink 2"},
 			},
 			expected: []prompt.Suggest{
 				{Text: "card 1 [shortLink 1]", Description: "card description 1"},

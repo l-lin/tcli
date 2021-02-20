@@ -40,7 +40,7 @@ func (c cd) Execute(arg string) (*trello.Board, *trello.List) {
 	var list *trello.List
 	if list, err = c.tr.FindList(board.ID, listName); err != nil || list == nil {
 		fmt.Fprintf(c.stderr, "no list found with name '%s'\n", listName)
-		return board, c.currentList
+		return c.currentBoard, c.currentList
 	}
 
 	if cardName != "" {

@@ -3,6 +3,7 @@ package executor
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"github.com/golang/mock/gomock"
 	"github.com/l-lin/tcli/trello"
 	"testing"
@@ -84,6 +85,33 @@ func TestTouch_Execute(t *testing.T) {
 			},
 			expected: expected{},
 		},
+		// ERRORS
+		"no board name": {
+			given: given{
+				arg: "/",
+				buildTrelloRepository: func() trello.Repository {
+					return nil
+				},
+			},
+			expected: expected{
+				stderr: "nothing to create\n",
+			},
+		},
+		"no list name": {
+			given: given{
+				arg: "/board",
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board.Name).
+						Return(&board, nil)
+					return tr
+				},
+			},
+			expected: expected{
+				stderr: "board creation not implemented yet\n",
+			},
+		},
 		"board not found": {
 			given: given{
 				arg: "/board/list/card",
@@ -97,6 +125,24 @@ func TestTouch_Execute(t *testing.T) {
 			},
 			expected: expected{
 				stderr: "no board found with name 'board'\n",
+			},
+		},
+		"no card name": {
+			given: given{
+				arg: "/board/list",
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board.Name).
+						Return(&board, nil)
+					tr.EXPECT().
+						FindList(board.ID, list.Name).
+						Return(&list, nil)
+					return tr
+				},
+			},
+			expected: expected{
+				stderr: "list creation not implemented yet\n",
 			},
 		},
 		"list not found": {
@@ -115,6 +161,38 @@ func TestTouch_Execute(t *testing.T) {
 			},
 			expected: expected{
 				stderr: "no list found with name 'list'\n",
+			},
+		},
+		"invalid path": {
+			given: given{
+				arg: "/../..",
+				buildTrelloRepository: func() trello.Repository {
+					return nil
+				},
+			},
+			expected: expected{
+				stderr: "invalid path\n",
+			},
+		},
+		"error when creating card": {
+			given: given{
+				arg: "/board/list/card",
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board.Name).
+						Return(&board, nil)
+					tr.EXPECT().
+						FindList(board.ID, list.Name).
+						Return(&list, nil)
+					tr.EXPECT().
+						CreateCard(createCard).
+						Return(nil, errors.New("unexpected error"))
+					return tr
+				},
+			},
+			expected: expected{
+				stderr: fmt.Sprintf("could not create card '%s': unexpected error\n", createCard.Name),
 			},
 		},
 	}

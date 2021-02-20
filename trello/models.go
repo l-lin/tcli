@@ -77,16 +77,16 @@ func FindCard(cards Cards, query string) *Card {
 
 type Cards []Card
 type Card struct {
-	ID          string  `json:"id"`
-	Name        string  `json:"name"`
-	Description string  `json:"desc"`
-	IDBoard     string  `json:"idBoard"`
-	IDList      string  `json:"idList"`
-	Closed      bool    `json:"closed"`
-	ShortLink   string  `json:"shortLink"`
-	ShortURL    string  `json:"shortUrl"`
-	Pos         float64 `json:"pos"`
-	Labels      `json:"labels"`
+	ID        string  `json:"id"`
+	Name      string  `json:"name"`
+	Desc      string  `json:"desc"`
+	IDBoard   string  `json:"idBoard"`
+	IDList    string  `json:"idList"`
+	Closed    bool    `json:"closed"`
+	ShortLink string  `json:"shortLink"`
+	ShortURL  string  `json:"shortUrl"`
+	Pos       float64 `json:"pos"`
+	Labels    `json:"labels"`
 }
 
 func (c Card) TCliID() string {
@@ -136,28 +136,28 @@ func (l Label) Colorize(s string) aurora.Value {
 // CreateCard represents the resources used to create a new card
 // See https://developer.atlassian.com/cloud/trello/rest/api-group-cards/#api-cards-post for more info
 type CreateCard struct {
-	Name        string      `json:"name"`
-	Description string      `json:"desc"`
-	IDList      string      `json:"idList"`
-	IDLabels    string      `json:"idLabels,omitempty"`
-	Closed      bool        `json:"closed,omitempty"`
-	Pos         interface{} `json:"pos,omitempty"` // "top", "bottom" or a positive float
+	Name     string      `json:"name"`
+	Desc     string      `json:"desc"`
+	IDList   string      `json:"idList"`
+	IDLabels string      `json:"idLabels,omitempty"`
+	Closed   bool        `json:"closed,omitempty"`
+	Pos      interface{} `json:"pos,omitempty"` // "top", "bottom" or a positive float
 }
 
 func NewCreateCard(card Card) CreateCard {
 	return CreateCard{
-		Name:        card.Name,
-		Description: card.Description,
-		IDList:      card.IDList,
-		Closed:      card.Closed,
-		Pos:         card.Pos,
+		Name:   card.Name,
+		Desc:   card.Desc,
+		IDList: card.IDList,
+		Closed: card.Closed,
+		Pos:    card.Pos,
 	}
 }
 
 func NewCardToCreate(card Card) CardToCreate {
 	return CardToCreate{
 		Name:   card.Name,
-		Desc:   card.Description,
+		Desc:   card.Desc,
 		IDList: card.IDList,
 		Pos:    strconv.FormatFloat(card.Pos, 'f', 2, 64),
 	}
@@ -187,33 +187,33 @@ func (ctc CardToCreate) IDLabelsInString() string {
 // UpdateCard represents the resources used to update a card
 // See https://developer.atlassian.com/cloud/trello/rest/api-group-cards/#api-cards-id-put for more info
 type UpdateCard struct {
-	ID          string      `json:"id"`
-	Name        string      `json:"name"`
-	Description string      `json:"desc"`
-	IDBoard     string      `json:"idBoard"`
-	IDList      string      `json:"idList"`
-	IDLabels    string      `json:"idLabels,omitempty"`
-	Closed      bool        `json:"closed,omitempty"`
-	Pos         interface{} `json:"pos,omitempty"` // "top", "bottom" or a positive float
+	ID       string      `json:"id"`
+	Name     string      `json:"name"`
+	Desc     string      `json:"desc"`
+	IDBoard  string      `json:"idBoard"`
+	IDList   string      `json:"idList"`
+	IDLabels string      `json:"idLabels,omitempty"`
+	Closed   bool        `json:"closed,omitempty"`
+	Pos      interface{} `json:"pos,omitempty"` // "top", "bottom" or a positive float
 }
 
 func NewUpdateCard(card Card) UpdateCard {
 	return UpdateCard{
-		ID:          card.ID,
-		Name:        card.Name,
-		Description: card.Description,
-		IDBoard:     card.IDBoard,
-		IDList:      card.IDList,
-		IDLabels:    card.Labels.String(),
-		Closed:      card.Closed,
-		Pos:         card.Pos,
+		ID:       card.ID,
+		Name:     card.Name,
+		Desc:     card.Desc,
+		IDBoard:  card.IDBoard,
+		IDList:   card.IDList,
+		IDLabels: card.Labels.String(),
+		Closed:   card.Closed,
+		Pos:      card.Pos,
 	}
 }
 
 func NewCardToEdit(card Card) CardToEdit {
 	return CardToEdit{
 		Name:     card.Name,
-		Desc:     card.Description,
+		Desc:     card.Desc,
 		Closed:   card.Closed,
 		IDList:   card.IDList,
 		IDLabels: card.Labels.Slice(),

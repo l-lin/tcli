@@ -1,6 +1,7 @@
 package trello
 
 import (
+	"errors"
 	"github.com/golang/mock/gomock"
 	"sort"
 	"testing"
@@ -41,31 +42,79 @@ func TestCacheInMemory_FindBoards(t *testing.T) {
 }
 
 func TestCacheInMemory_FindBoard(t *testing.T) {
-	// GIVEN
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	r := NewMockRepository(ctrl)
-	boards := Boards{
-		{ID: "board 1", Name: "board"},
-		{ID: "board 2", Name: "another board"},
-	}
-	r.EXPECT().
-		FindBoards().
-		Return(boards, nil).
-		Times(1)
-	cr := NewCacheInMemory(r)
+	t.Run("happy path", func(t *testing.T) {
+		// GIVEN
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		r := NewMockRepository(ctrl)
+		boards := Boards{
+			{ID: "board 1", Name: "board"},
+			{ID: "board 2", Name: "another board"},
+		}
+		r.EXPECT().
+			FindBoards().
+			Return(boards, nil).
+			Times(1)
+		cr := NewCacheInMemory(r)
 
-	// WHEN
-	actual, err := cr.FindBoard("board")
+		// WHEN
+		actual, err := cr.FindBoard("board")
 
-	// THEN
-	if err != nil {
-		t.Error("expected no error")
-	}
-	expected := boards[0]
-	if actual == nil || *actual != expected {
-		t.Errorf("expected %v, actual %v", expected, actual)
-	}
+		// THEN
+		if err != nil {
+			t.Error("expected no error")
+		}
+		expected := boards[0]
+		if actual == nil || *actual != expected {
+			t.Errorf("expected %v, actual %v", expected, actual)
+		}
+	})
+	t.Run("no board found", func(t *testing.T) {
+		// GIVEN
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		boards := Boards{
+			{ID: "board 1", Name: "board"},
+			{ID: "board 2", Name: "another board"},
+		}
+		r := NewMockRepository(ctrl)
+		r.EXPECT().
+			FindBoards().
+			Return(boards, nil)
+		cr := NewCacheInMemory(r)
+
+		// WHEN
+		actual, err := cr.FindBoard("unknown board")
+
+		// THEN
+		if err == nil {
+			t.Error("expected error")
+		}
+		if actual != nil {
+			t.Errorf("expected nil returned value, got %v", actual)
+		}
+	})
+	t.Run("error when finding boards", func(t *testing.T) {
+		// GIVEN
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		r := NewMockRepository(ctrl)
+		r.EXPECT().
+			FindBoards().
+			Return(nil, errors.New("unexpected error"))
+		cr := NewCacheInMemory(r)
+
+		// WHEN
+		actual, err := cr.FindBoard("board")
+
+		// THEN
+		if err == nil {
+			t.Error("expected error")
+		}
+		if actual != nil {
+			t.Errorf("expected nil returned value, got %v", actual)
+		}
+	})
 }
 
 func TestCacheInMemory_FindLabels(t *testing.T) {
@@ -139,32 +188,83 @@ func TestCacheInMemory_FindLists(t *testing.T) {
 }
 
 func TestCacheInMemory_FindList(t *testing.T) {
-	// GIVEN
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	r := NewMockRepository(ctrl)
-	lists := Lists{
-		{ID: "list 1", Name: "list"},
-		{ID: "list 2", Name: "another list"},
-	}
-	idBoard := "board 1"
-	r.EXPECT().
-		FindLists(idBoard).
-		Return(lists, nil).
-		Times(1)
-	cr := NewCacheInMemory(r)
+	t.Run("happy path", func(t *testing.T) {
+		// GIVEN
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		r := NewMockRepository(ctrl)
+		lists := Lists{
+			{ID: "list 1", Name: "list"},
+			{ID: "list 2", Name: "another list"},
+		}
+		idBoard := "board 1"
+		r.EXPECT().
+			FindLists(idBoard).
+			Return(lists, nil).
+			Times(1)
+		cr := NewCacheInMemory(r)
 
-	// WHEN
-	actual, err := cr.FindList(idBoard, "list")
+		// WHEN
+		actual, err := cr.FindList(idBoard, "list")
 
-	// THEN
-	if err != nil {
-		t.Error("expected no error")
-	}
-	expected := lists[0]
-	if actual == nil || *actual != expected {
-		t.Errorf("expected %v, actual %v", expected, actual)
-	}
+		// THEN
+		if err != nil {
+			t.Error("expected no error")
+		}
+		expected := lists[0]
+		if actual == nil || *actual != expected {
+			t.Errorf("expected %v, actual %v", expected, actual)
+		}
+	})
+	t.Run("list not found", func(t *testing.T) {
+		// GIVEN
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		r := NewMockRepository(ctrl)
+		lists := Lists{
+			{ID: "list 1", Name: "list"},
+			{ID: "list 2", Name: "another list"},
+		}
+		idBoard := "board 1"
+		r.EXPECT().
+			FindLists(idBoard).
+			Return(lists, nil).
+			Times(1)
+		cr := NewCacheInMemory(r)
+
+		// WHEN
+		actual, err := cr.FindList(idBoard, "unknown list")
+
+		// THEN
+		if err == nil {
+			t.Error("expected error")
+		}
+		if actual != nil {
+			t.Errorf("expected nil returned value, actual %v", actual)
+		}
+	})
+	t.Run("error when finding lists", func(t *testing.T) {
+		// GIVEN
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		r := NewMockRepository(ctrl)
+		idBoard := "board 1"
+		r.EXPECT().
+			FindLists(idBoard).
+			Return(nil, errors.New("unexpected error"))
+		cr := NewCacheInMemory(r)
+
+		// WHEN
+		actual, err := cr.FindList(idBoard, "list")
+
+		// THEN
+		if err == nil {
+			t.Error("expected error")
+		}
+		if actual != nil {
+			t.Errorf("expected nil returned value, actual %v", actual)
+		}
+	})
 }
 
 func TestCacheInMemory_FindCards(t *testing.T) {
@@ -203,69 +303,153 @@ func TestCacheInMemory_FindCards(t *testing.T) {
 }
 
 func TestCacheInMemory_FindCard(t *testing.T) {
-	// GIVEN
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	r := NewMockRepository(ctrl)
-	cards := Cards{
-		{ID: "card 1", Name: "card"},
-		{ID: "card 2", Name: "another card"},
-	}
-	idList := "list 1"
-	r.EXPECT().
-		FindCards(idList).
-		Return(cards, nil).
-		Times(1)
-	cr := NewCacheInMemory(r)
+	t.Run("happy path", func(t *testing.T) {
+		// GIVEN
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		r := NewMockRepository(ctrl)
+		cards := Cards{
+			{ID: "card 1", Name: "card"},
+			{ID: "card 2", Name: "another card"},
+		}
+		idList := "list 1"
+		r.EXPECT().
+			FindCards(idList).
+			Return(cards, nil).
+			Times(1)
+		cr := NewCacheInMemory(r)
 
-	// WHEN
-	actual, err := cr.FindCard(idList, "card")
+		// WHEN
+		actual, err := cr.FindCard(idList, "card")
 
-	// THEN
-	if err != nil {
-		t.Error("expected no error")
-	}
-	expected := cards[0]
-	if actual == nil || actual.ID != expected.ID {
-		t.Errorf("expected %v, actual %v", expected, actual)
-	}
+		// THEN
+		if err != nil {
+			t.Error("expected no error")
+		}
+		expected := cards[0]
+		if actual == nil || actual.ID != expected.ID {
+			t.Errorf("expected %v, actual %v", expected, actual)
+		}
+	})
+	t.Run("card not found", func(t *testing.T) {
+		// GIVEN
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		r := NewMockRepository(ctrl)
+		cards := Cards{
+			{ID: "card 1", Name: "card"},
+			{ID: "card 2", Name: "another card"},
+		}
+		idList := "list 1"
+		r.EXPECT().
+			FindCards(idList).
+			Return(cards, nil).
+			Times(1)
+		cr := NewCacheInMemory(r)
+
+		// WHEN
+		actual, err := cr.FindCard(idList, "unknown card")
+
+		// THEN
+		if err == nil {
+			t.Error("expected error")
+		}
+		if actual != nil {
+			t.Errorf("expected nil returned value, actual %v", actual)
+		}
+	})
+	t.Run("error when finding cards", func(t *testing.T) {
+		// GIVEN
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		r := NewMockRepository(ctrl)
+		idList := "list 1"
+		r.EXPECT().
+			FindCards(idList).
+			Return(nil, errors.New("unexpected error"))
+		cr := NewCacheInMemory(r)
+
+		// WHEN
+		actual, err := cr.FindCard(idList, "card")
+
+		// THEN
+		if err == nil {
+			t.Error("expected error")
+		}
+		if actual != nil {
+			t.Errorf("expected nil returned value, actual %v", actual)
+		}
+	})
 }
 
 func TestCacheInMemory_CreateCard(t *testing.T) {
-	// GIVEN
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	r := NewMockRepository(ctrl)
-	expected := Card{ID: "card 1", Name: "card", IDList: "list 1"}
-	r.EXPECT().
-		CreateCard(NewCreateCard(expected)).
-		Return(&expected, nil)
-	cr := &CacheInMemory{
-		r:        r,
-		mapLists: map[string]Lists{},
-		mapCards: map[string]Cards{
-			expected.IDList: {
-				{ID: "card 2", Name: "another card", IDList: expected.IDList},
+	t.Run("happy path", func(t *testing.T) {
+		// GIVEN
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		r := NewMockRepository(ctrl)
+		expected := Card{ID: "card 1", Name: "card", IDList: "list 1"}
+		r.EXPECT().
+			CreateCard(NewCreateCard(expected)).
+			Return(&expected, nil)
+		cr := &CacheInMemory{
+			r:        r,
+			mapLists: map[string]Lists{},
+			mapCards: map[string]Cards{
+				expected.IDList: {
+					{ID: "card 2", Name: "another card", IDList: expected.IDList},
+				},
 			},
-		},
-	}
+		}
 
-	// WHEN
-	actual, err := cr.CreateCard(NewCreateCard(expected))
+		// WHEN
+		actual, err := cr.CreateCard(NewCreateCard(expected))
 
-	// THEN
-	if err != nil {
-		t.Error("expected no error")
-	}
-	if actual == nil {
-		t.Error("expected no nil card returned")
-		t.FailNow()
-	}
-	cardInCache := cr.mapCards[expected.IDList][1]
-	if cardInCache.ID != expected.ID && cardInCache.Name != expected.Name &&
-		actual.ID != expected.ID && actual.Name != expected.Name {
-		t.Errorf("expected %v, actual %v, card in cache %v", expected, actual, cardInCache)
-	}
+		// THEN
+		if err != nil {
+			t.Error("expected no error")
+		}
+		if actual == nil {
+			t.Error("expected no nil card returned")
+			t.FailNow()
+		}
+		cardInCache := cr.mapCards[expected.IDList][1]
+		if cardInCache.ID != expected.ID && cardInCache.Name != expected.Name &&
+			actual.ID != expected.ID && actual.Name != expected.Name {
+			t.Errorf("expected %v, actual %v, card in cache %v", expected, actual, cardInCache)
+		}
+	})
+	t.Run("error when creating card", func(t *testing.T) {
+		// GIVEN
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		r := NewMockRepository(ctrl)
+		card := Card{ID: "card 1", Name: "card", IDList: "list 1"}
+		r.EXPECT().
+			CreateCard(NewCreateCard(card)).
+			Return(nil, errors.New("unexpected error"))
+		cr := &CacheInMemory{
+			r:        r,
+			mapLists: map[string]Lists{},
+			mapCards: map[string]Cards{
+				card.IDList: {
+					{ID: "card 2", Name: "another card", IDList: card.IDList},
+				},
+			},
+		}
+
+		// WHEN
+		actual, err := cr.CreateCard(NewCreateCard(card))
+
+		// THEN
+		if err == nil {
+			t.Error("expected error")
+		}
+		if actual != nil {
+			t.Errorf("expected nil card returned, got %v", actual)
+			t.FailNow()
+		}
+	})
 }
 
 func TestCacheInMemory_UpdateCard(t *testing.T) {
@@ -344,6 +528,43 @@ func TestCacheInMemory_UpdateCard(t *testing.T) {
 		}
 		if len(cr.mapCards[cardToUpdate.IDList]) != 1 {
 			t.Errorf("expected updated card removed from cache, got %v", cr.mapCards[cardToUpdate.IDList])
+		}
+	})
+	t.Run("error when updating card", func(t *testing.T) {
+		// GIVEN
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		r := NewMockRepository(ctrl)
+		cardToUpdate := Card{ID: "card 1", Name: "card", IDList: "list 1"}
+		updateCard := NewUpdateCard(cardToUpdate)
+		updateCard.Closed = true
+		r.EXPECT().
+			UpdateCard(updateCard).
+			Return(nil, errors.New("unexpected error"))
+		cr := &CacheInMemory{
+			r:        r,
+			mapLists: map[string]Lists{},
+			mapCards: map[string]Cards{
+				cardToUpdate.IDList: {
+					{ID: "card 2", Name: "another card", IDList: cardToUpdate.IDList},
+					cardToUpdate,
+				},
+			},
+		}
+
+		// WHEN
+		actual, err := cr.UpdateCard(updateCard)
+
+		// THEN
+		if err == nil {
+			t.Error("expected error")
+		}
+		if actual != nil {
+			t.Errorf("expected nil card returned, actual %v", actual)
+			t.FailNow()
+		}
+		if len(cr.mapCards[cardToUpdate.IDList]) != 2 {
+			t.Errorf("expected cache not modified, got %v", cr.mapCards[cardToUpdate.IDList])
 		}
 	})
 }

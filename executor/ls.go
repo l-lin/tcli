@@ -3,7 +3,6 @@ package executor
 import (
 	"fmt"
 	"github.com/l-lin/tcli/trello"
-	"github.com/rs/zerolog/log"
 )
 
 type ls struct {
@@ -17,10 +16,7 @@ func (l ls) Execute(arg string) (currentBoard *trello.Board, currentList *trello
 	pathResolver := trello.NewPathResolver(currentBoard, currentList)
 	boardName, listName, cardName, err := pathResolver.Resolve(arg)
 	if err != nil {
-		log.Debug().
-			Err(err).
-			Str("arg", arg).
-			Msg("could not resolve path")
+		fmt.Fprintf(l.stderr, "%v\n", err)
 		return
 	}
 

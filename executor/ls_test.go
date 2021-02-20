@@ -140,6 +140,20 @@ func TestLs_Execute(t *testing.T) {
 			expected: expected{stdout: "card 1 content\n"},
 		},
 		// ERRORS
+		"invalid path": {
+			given: given{
+				arg: "/../..",
+				buildTrelloRepository: func() trello.Repository {
+					return nil
+				},
+				buildRenderer: func() renderer.Renderer {
+					return nil
+				},
+			},
+			expected: expected{
+				stderr: "invalid path\n",
+			},
+		},
 		"unknown-board": {
 			given: given{
 				arg: "unknown-board",

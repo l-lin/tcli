@@ -4,6 +4,56 @@ import (
 	"testing"
 )
 
+func TestNewPathResolver(t *testing.T) {
+	type given struct {
+		currentBoard *Board
+		currentList  *List
+	}
+	var tests = map[string]struct {
+		given    given
+		expected PathResolver
+	}{
+		"existing board and list": {
+			given: given{
+				currentBoard: &Board{Name: "board"},
+				currentList:  &List{Name: "list"},
+			},
+			expected: PathResolver{
+				currentBoardName: "board",
+				currentListName:  "list",
+			},
+		},
+		"existing board and non existing list": {
+			given: given{
+				currentBoard: &Board{Name: "board"},
+				currentList:  nil,
+			},
+			expected: PathResolver{
+				currentBoardName: "board",
+				currentListName:  "",
+			},
+		},
+		"non existing board and non existing list": {
+			given: given{
+				currentBoard: nil,
+				currentList:  nil,
+			},
+			expected: PathResolver{
+				currentBoardName: "",
+				currentListName:  "",
+			},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			actual := NewPathResolver(tt.given.currentBoard, tt.given.currentList)
+			if actual != tt.expected {
+				t.Errorf("expected %v, actual %v", tt.expected, actual)
+			}
+		})
+	}
+}
+
 func TestPathResolver_Resolve(t *testing.T) {
 	type given struct {
 		currentBoard string

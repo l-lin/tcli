@@ -37,9 +37,9 @@ func TestEdit_Execute(t *testing.T) {
 	list2 := trello.List{ID: "list 2", Name: "list name 2"}
 	list3 := trello.List{ID: "list 3", Name: "list name 3"}
 	lists := trello.Lists{list1, list2, list3}
-	card1 := trello.Card{ID: "card 1", Name: "card", Description: "card description", Closed: true, IDBoard: board1.ID, IDList: list1.ID, Pos: float64(123)}
-	createdCard1 := trello.Card{ID: "card 1", Name: "created card", Description: "created card description", Closed: false, IDBoard: board1.ID, IDList: list1.ID, Pos: card1.Pos}
-	updatedCard1 := trello.Card{ID: "card 1", Name: "updated card", Description: "updated card description", Closed: true, IDBoard: board1.ID, IDList: list1.ID, Pos: card1.Pos}
+	card1 := trello.Card{ID: "card 1", Name: "card", Desc: "card description", Closed: true, IDBoard: board1.ID, IDList: list1.ID, Pos: float64(123)}
+	createdCard1 := trello.Card{ID: "card 1", Name: "created card", Desc: "created card description", Closed: false, IDBoard: board1.ID, IDList: list1.ID, Pos: card1.Pos}
+	updatedCard1 := trello.Card{ID: "card 1", Name: "updated card", Desc: "updated card description", Closed: true, IDBoard: board1.ID, IDList: list1.ID, Pos: card1.Pos}
 	cte1 := trello.NewCardToEdit(card1)
 	labels := trello.Labels{
 		{ID: "label 1", Name: "label name 1", Color: "red"},
@@ -177,6 +177,113 @@ func TestEdit_Execute(t *testing.T) {
 			},
 			expected: expected{},
 		},
+		// ERRORS
+		"invalid path": {
+			given: given{
+				arg: "/../..",
+				buildTrelloRepository: func() trello.Repository {
+					return nil
+				},
+				buildEditor: func() Editor {
+					return nil
+				},
+			},
+			expected: expected{
+				stderr: "invalid path\n",
+			},
+		},
+		"no board name": {
+			given: given{
+				arg: "/",
+				buildTrelloRepository: func() trello.Repository {
+					return nil
+				},
+				buildEditor: func() Editor {
+					return nil
+				},
+			},
+			expected: expected{
+				stderr: "nothing to edit\n",
+			},
+		},
+		"no board found": {
+			given: given{
+				arg: "/board",
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board1.Name).
+						Return(nil, errors.New("not found"))
+					return tr
+				},
+				buildEditor: func() Editor {
+					return nil
+				},
+			},
+			expected: expected{
+				stderr: "no board found with name 'board'\n",
+			},
+		},
+		"no list name": {
+			given: given{
+				arg: "/board",
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board1.Name).
+						Return(&board1, nil)
+					return tr
+				},
+				buildEditor: func() Editor {
+					return nil
+				},
+			},
+			expected: expected{
+				stderr: "board edition not implemented yet\n",
+			},
+		},
+		"no list found": {
+			given: given{
+				arg: "/board/list",
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board1.Name).
+						Return(&board1, nil)
+					tr.EXPECT().
+						FindList(board1.ID, list1.Name).
+						Return(nil, errors.New("not found"))
+					return tr
+				},
+				buildEditor: func() Editor {
+					return nil
+				},
+			},
+			expected: expected{
+				stderr: "no list found with name 'list'\n",
+			},
+		},
+		"no card name": {
+			given: given{
+				arg: "/board/list",
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board1.Name).
+						Return(&board1, nil)
+					tr.EXPECT().
+						FindList(board1.ID, list1.Name).
+						Return(&list1, nil)
+					return tr
+				},
+				buildEditor: func() Editor {
+					return nil
+				},
+			},
+			expected: expected{
+				stderr: "list edition not implemented yet\n",
+			},
+		},
 		"edit /board/list/card - error when updating card": {
 			given: given{
 				arg: "/board/list/card",
@@ -213,7 +320,6 @@ func TestEdit_Execute(t *testing.T) {
 				stdin: acceptStdin(),
 			},
 			expected: expected{
-				stdout: "",
 				stderr: "could not edit card 'card': unexpected error\n",
 			},
 		},

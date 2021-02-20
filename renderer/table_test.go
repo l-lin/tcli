@@ -230,7 +230,7 @@ func TestInTable_RenderCard(t *testing.T) {
 				Pos:       1234,
 				ShortLink: "abcd1234",
 				ShortURL:  "https://trello.com/c/abcd1234",
-				Description: `# Card title
+				Desc: `# Card title
 
 > some context
 
@@ -269,7 +269,7 @@ Here are some markdown contents
 				Pos:       1234,
 				ShortLink: "abcd1234",
 				ShortURL:  "https://trello.com/c/abcd1234",
-				Description: `# Card title
+				Desc: `# Card title
 
 > some context
 

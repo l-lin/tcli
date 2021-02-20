@@ -80,9 +80,6 @@ func (s *Session) LivePrefix() (string, bool) {
 
 func getCmd(s string) (string, bool) {
 	args := strings.Split(s, " ")
-	if len(args) == 0 {
-		return "", false
-	}
 	if args[0] == "" {
 		return "", false
 	}

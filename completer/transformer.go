@@ -31,7 +31,7 @@ func cardsToSuggestions(cards trello.Cards) []prompt.Suggest {
 	for i, card := range cards {
 		suggestions[i] = prompt.Suggest{
 			Text:        fmt.Sprintf("%s", card.TCliID()),
-			Description: truncateCardDescription(card.Description),
+			Description: truncateCardDescription(card.Desc),
 		}
 	}
 	return suggestions
