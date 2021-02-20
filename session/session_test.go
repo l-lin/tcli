@@ -19,17 +19,17 @@ func TestSession_LivePrefix(t *testing.T) {
 				currentBoard: &trello.Board{Name: "board"},
 				currentList:  &trello.List{Name: "list"},
 			},
-			expected: "/board/list> ",
+			expected: "/board/list > ",
 		},
 		"/board": {
 			given: given{
 				currentBoard: &trello.Board{Name: "board"},
 			},
-			expected: "/board> ",
+			expected: "/board > ",
 		},
 		"/": {
 			given:    given{},
-			expected: "/> ",
+			expected: "/ > ",
 		},
 	}
 	for name, tt := range tests {
