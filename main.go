@@ -19,6 +19,7 @@ func main() {
 	rootCmd.AddCommand(cmd.NewEditCmd())
 	rootCmd.AddCommand(cmd.NewTouchCmd())
 	rootCmd.AddCommand(cmd.NewRMCmd())
+	rootCmd.AddCommand(cmd.NewMVCmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		log.Err(err).Msg("error when executing the root command")

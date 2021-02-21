@@ -162,6 +162,12 @@ func TestGetArgs(t *testing.T) {
 				args: []string{"path to board/list/card", "another path to board/list2", "with quotes"},
 			},
 		},
+		"containing unicodes": {
+			given: `cd TODO/🎉\ DONE`,
+			expected: expected{
+				args: []string{"TODO/🎉 DONE"},
+			},
+		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {

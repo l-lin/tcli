@@ -101,8 +101,9 @@ func getArgs(input string) ([]string, error) {
 	current := ""
 	quote := "\""
 	escapeNext := true
-	for i := 0; i < len(input); i++ {
-		c := input[i]
+	runes := []rune(input)
+	for i := 0; i < len(runes); i++ {
+		c := runes[i]
 
 		if state == "quotes" {
 			if string(c) != quote {

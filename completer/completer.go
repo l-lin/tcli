@@ -32,12 +32,56 @@ func (c Completer) Complete(cmd string, args []string) []prompt.Suggest {
 		return c.suggestCommands(cmd)
 	}
 
-	arg := ""
-	if len(args) > 0 {
-		arg = args[len(args)-1]
+	if cmd == "cd" {
+		return c.suggestForCD(args)
 	}
-	pathResolver := trello.NewPathResolver(c.currentBoard, c.currentList)
-	boardName, listName, _, err := pathResolver.Resolve(arg)
+	if cmd == "mv" {
+		return c.suggestForMV(args)
+	}
+	return c.suggestBoardsAndListsAndCards(args)
+}
+
+func (c Completer) suggestForCD(args []string) []prompt.Suggest {
+	if len(args) > 1 {
+		return []prompt.Suggest{}
+	}
+	return c.suggestBoardsAndLists(args)
+}
+
+func (c Completer) suggestForMV(args []string) []prompt.Suggest {
+	if len(args) < 2 {
+		return c.suggestBoardsAndListsAndCards(args)
+	}
+	if len(args) > 2 {
+		return []prompt.Suggest{}
+	}
+	return c.suggestBoardsAndLists(args)
+}
+
+func (c Completer) suggestBoardsAndLists(args []string) []prompt.Suggest {
+	arg, boardName, listName, cardName, err := c.resolvePath(args)
+	if err != nil {
+		log.Debug().
+			Err(err).
+			Str("arg", arg).
+			Msg("could not resolve path")
+		return []prompt.Suggest{}
+	}
+	if cardName != "" {
+		return []prompt.Suggest{}
+	}
+
+	board, suggestions := c.suggestBoards(arg, boardName)
+	if suggestions != nil {
+		return suggestions
+	}
+
+	_, suggestions = c.suggestLists(arg, board, listName)
+	return suggestions
+}
+
+func (c Completer) suggestBoardsAndListsAndCards(args []string) []prompt.Suggest {
+	arg, boardName, listName, _, err := c.resolvePath(args)
 	if err != nil {
 		log.Debug().
 			Err(err).
@@ -52,12 +96,21 @@ func (c Completer) Complete(cmd string, args []string) []prompt.Suggest {
 	}
 
 	list, suggestions := c.suggestLists(arg, board, listName)
-	// there might be a better way to have commands maps with the corresponding completions
-	if cmd == "cd" || suggestions != nil {
+	if suggestions != nil {
 		return suggestions
 	}
 
 	return c.suggestCards(arg, list)
+}
+
+func (c Completer) resolvePath(args []string) (arg, boardName, listName, cardName string, err error) {
+	arg = ""
+	if len(args) > 0 {
+		arg = args[len(args)-1]
+	}
+	pathResolver := trello.NewPathResolver(c.currentBoard, c.currentList)
+	boardName, listName, cardName, err = pathResolver.Resolve(arg)
+	return
 }
 
 func (c Completer) suggestCommands(arg string) []prompt.Suggest {

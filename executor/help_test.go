@@ -22,6 +22,7 @@ cat      show resource content info
 edit     edit resource content
 touch    create new resource
 rm       archive resource
+mv       move resource
 
 `
 	actual := buf.String()

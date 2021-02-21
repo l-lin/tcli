@@ -120,6 +120,22 @@ var Factories = []Factory{
 			}
 		},
 	},
+	{
+		Cmd:         "mv",
+		Description: "move resource",
+		Create: func(conf conf.Conf, tr trello.Repository, r renderer.Renderer, currentBoard *trello.Board, currentList *trello.List) Executor {
+			return &mv{
+				executor: executor{
+					tr:           tr,
+					r:            r,
+					currentBoard: currentBoard,
+					currentList:  currentList,
+					stdout:       os.Stdout,
+					stderr:       os.Stderr,
+				},
+			}
+		},
+	},
 }
 
 type Factory struct {

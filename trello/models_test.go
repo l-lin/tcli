@@ -6,6 +6,8 @@ import (
 	"testing"
 )
 
+// FIND ---------------------------------------------------------------------------------------
+
 func TestFindBoards(t *testing.T) {
 	nbBoards := 10
 	boards := make(Boards, nbBoards)
@@ -179,6 +181,8 @@ func TestFindCards(t *testing.T) {
 	}
 }
 
+// LABELS ---------------------------------------------------------------------------------------
+
 func TestLabels_String(t *testing.T) {
 	var tests = map[string]struct {
 		given    Labels
@@ -271,6 +275,36 @@ func TestLabel_Colorize(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			actual := tt.given.Colorize(s)
+			if actual != tt.expected {
+				t.Errorf("expected %v, actual %v", tt.expected, actual)
+			}
+		})
+	}
+}
+
+// LISTS ---------------------------------------------------------------------------------------
+
+func TestList_SanitizedName(t *testing.T) {
+	var tests = map[string]struct {
+		given    List
+		expected string
+	}{
+		"no special character": {
+			given:    List{Name: "someList"},
+			expected: "someList",
+		},
+		"containing spaces": {
+			given:    List{Name: "some list"},
+			expected: `some\ list`,
+		},
+		"containing unicodes": {
+			given:    List{Name: "🎉 some list"},
+			expected: `🎉\ some\ list`,
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			actual := tt.given.SanitizedName()
 			if actual != tt.expected {
 				t.Errorf("expected %v, actual %v", tt.expected, actual)
 			}
