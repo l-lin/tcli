@@ -17,8 +17,8 @@ func TestBoardsToSuggestions(t *testing.T) {
 				{Name: "board 2", ShortLink: "shortLink 2"},
 			},
 			expected: []prompt.Suggest{
-				{Text: "board 1 [shortLink 1]"},
-				{Text: "board 2 [shortLink 2]"},
+				{Text: `board\ 1[shortLink 1]`},
+				{Text: `board\ 2[shortLink 2]`},
 			},
 		},
 		"no board": {
@@ -53,8 +53,8 @@ func TestListsToSuggestions(t *testing.T) {
 				{Name: "list 2"},
 			},
 			expected: []prompt.Suggest{
-				{Text: "list 1"},
-				{Text: "list 2"},
+				{Text: `list\ 1`},
+				{Text: `list\ 2`},
 			},
 		},
 		"no list": {
@@ -89,8 +89,8 @@ func TestCardsToSuggestions(t *testing.T) {
 				{Name: "card 2", Desc: "card description 2", ShortLink: "shortLink 2"},
 			},
 			expected: []prompt.Suggest{
-				{Text: "card 1 [shortLink 1]", Description: "card description 1"},
-				{Text: "card 2 [shortLink 2]", Description: "card description 2"},
+				{Text: `card\ 1[shortLink 1]`, Description: "card description 1"},
+				{Text: `card\ 2[shortLink 2]`, Description: "card description 2"},
 			},
 		},
 		"no card": {

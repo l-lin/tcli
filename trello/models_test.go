@@ -11,35 +11,45 @@ func TestFindBoards(t *testing.T) {
 	boards := make(Boards, nbBoards)
 	for i := 0; i < nbBoards; i++ {
 		boards[i] = Board{
-			ID:        fmt.Sprintf("id %d", i),
-			Name:      fmt.Sprintf("name %d", i),
-			ShortLink: fmt.Sprintf("shortLink %d", i),
+			ID:        fmt.Sprintf("id%d", i),
+			Name:      fmt.Sprintf("name%d", i),
+			ShortLink: fmt.Sprintf("shortLink%d", i),
 		}
 	}
+	lastBoardIndex := len(boards) - 1
+	boards[lastBoardIndex].Name = fmt.Sprintf("name with space %d", lastBoardIndex)
 
 	var tests = map[string]struct {
 		given    string
 		expected *Board
 	}{
 		"find by TCliID": {
-			given:    "name 5 [shortLink 5]",
+			given:    "name5[shortLink5]",
 			expected: &boards[5],
 		},
 		"find by ID": {
-			given:    "id 8",
+			given:    "id8",
 			expected: &boards[8],
 		},
 		"find by ShortLink": {
-			given:    "shortLink 1",
+			given:    "shortLink1",
 			expected: &boards[1],
 		},
 		"find by Name": {
-			given:    "name 3",
+			given:    "name3",
 			expected: &boards[3],
 		},
 		"board not found": {
 			given:    "unknown board",
 			expected: nil,
+		},
+		"find by TCliID - board with space in its name": {
+			given:    fmt.Sprintf("%s[%s]", boards[lastBoardIndex].Name, boards[lastBoardIndex].ShortLink),
+			expected: &boards[lastBoardIndex],
+		},
+		"find by Name - board with space in its name": {
+			given:    boards[lastBoardIndex].Name,
+			expected: &boards[lastBoardIndex],
 		},
 	}
 	for name, tt := range tests {
@@ -63,26 +73,32 @@ func TestFindLists(t *testing.T) {
 	lists := make(Lists, nbLists)
 	for i := 0; i < nbLists; i++ {
 		lists[i] = List{
-			ID:   fmt.Sprintf("id %d", i),
-			Name: fmt.Sprintf("name %d", i),
+			ID:   fmt.Sprintf("id%d", i),
+			Name: fmt.Sprintf("name%d", i),
 		}
 	}
+	lastListsIndex := len(lists) - 1
+	lists[lastListsIndex].Name = fmt.Sprintf("name with space %d", lastListsIndex)
 
 	var tests = map[string]struct {
 		given    string
 		expected *List
 	}{
 		"find by ID": {
-			given:    "id 8",
+			given:    "id8",
 			expected: &lists[8],
 		},
 		"find by Name": {
-			given:    "name 3",
+			given:    "name3",
 			expected: &lists[3],
 		},
 		"list not found": {
-			given:    "unknown list",
+			given:    "unknown-list",
 			expected: nil,
+		},
+		"find by name - list with space in its name": {
+			given:    lists[lastListsIndex].Name,
+			expected: &lists[lastListsIndex],
 		},
 	}
 	for name, tt := range tests {
@@ -106,35 +122,45 @@ func TestFindCards(t *testing.T) {
 	cards := make(Cards, nbCards)
 	for i := 0; i < nbCards; i++ {
 		cards[i] = Card{
-			ID:        fmt.Sprintf("id %d", i),
-			Name:      fmt.Sprintf("name %d", i),
-			ShortLink: fmt.Sprintf("shortLink %d", i),
+			ID:        fmt.Sprintf("id%d", i),
+			Name:      fmt.Sprintf("name%d", i),
+			ShortLink: fmt.Sprintf("shortLink%d", i),
 		}
 	}
+	lastCardsIndex := len(cards) - 1
+	cards[lastCardsIndex].Name = fmt.Sprintf("name with space %d", lastCardsIndex)
 
 	var tests = map[string]struct {
 		given    string
 		expected *Card
 	}{
 		"find by TCliID": {
-			given:    "name 5 [shortLink 5]",
+			given:    "name5[shortLink5]",
 			expected: &cards[5],
 		},
 		"find by ID": {
-			given:    "id 8",
+			given:    "id8",
 			expected: &cards[8],
 		},
 		"find by ShortLink": {
-			given:    "shortLink 1",
+			given:    "shortLink1",
 			expected: &cards[1],
 		},
 		"find by Name": {
-			given:    "name 3",
+			given:    "name3",
 			expected: &cards[3],
 		},
 		"card not found": {
-			given:    "unknown card",
+			given:    "unknown-card",
 			expected: nil,
+		},
+		"find by TCliID - card with space in its name": {
+			given:    fmt.Sprintf("%s[%s]", cards[lastCardsIndex].Name, cards[lastCardsIndex].ShortLink),
+			expected: &cards[lastCardsIndex],
+		},
+		"find by Name - card with space in its name": {
+			given:    cards[lastCardsIndex].Name,
+			expected: &cards[lastCardsIndex],
 		},
 	}
 	for name, tt := range tests {

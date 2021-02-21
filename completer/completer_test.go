@@ -82,8 +82,8 @@ func TestCompleter_Complete(t *testing.T) {
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: "board [shortLink]"},
-				{Text: "another board [another shortLink]"},
+				{Text: "board[shortLink]"},
+				{Text: `another\ board[another shortLink]`},
 			},
 		},
 		"typing 'cd b'": {
@@ -102,7 +102,7 @@ func TestCompleter_Complete(t *testing.T) {
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: "board [shortLink]"},
+				{Text: "board[shortLink]"},
 			},
 		},
 		"typing 'cd board/'": {
@@ -124,8 +124,8 @@ func TestCompleter_Complete(t *testing.T) {
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: list1.Name},
-				{Text: "another list"},
+				{Text: list1.SanitizedName()},
+				{Text: `another\ list`},
 			},
 		},
 		"typing 'cd board/l'": {
@@ -147,7 +147,7 @@ func TestCompleter_Complete(t *testing.T) {
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: list1.Name},
+				{Text: list1.SanitizedName()},
 			},
 		},
 		"typing 'cd board/list/'": {
@@ -169,8 +169,8 @@ func TestCompleter_Complete(t *testing.T) {
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: "card [shortLink]"},
-				{Text: "another card [another shortLink]"},
+				{Text: "card[shortLink]"},
+				{Text: `another\ card[another shortLink]`},
 			},
 		},
 		"typing 'cd board/list/ca'": {
@@ -192,7 +192,7 @@ func TestCompleter_Complete(t *testing.T) {
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: "card [shortLink]"},
+				{Text: "card[shortLink]"},
 			},
 		},
 		// WITH CURRENT BOARD
@@ -216,8 +216,8 @@ func TestCompleter_Complete(t *testing.T) {
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: list1.Name},
-				{Text: list2.Name},
+				{Text: list1.SanitizedName()},
+				{Text: list2.SanitizedName()},
 			},
 		},
 		"has current board & typing 'cd l'": {
@@ -264,8 +264,8 @@ func TestCompleter_Complete(t *testing.T) {
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: "card [shortLink]"},
-				{Text: "another card [another shortLink]"},
+				{Text: "card[shortLink]"},
+				{Text: `another\ card[another shortLink]`},
 			},
 		},
 		"has current board & current list & typing 'cd c'": {
@@ -289,7 +289,7 @@ func TestCompleter_Complete(t *testing.T) {
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: "card [shortLink]"},
+				{Text: "card[shortLink]"},
 			},
 		},
 		"has current board & typing 'cd ../a'": {
@@ -309,7 +309,7 @@ func TestCompleter_Complete(t *testing.T) {
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: "another board [another shortLink]"},
+				{Text: `another\ board[another shortLink]`},
 			},
 		},
 		"has current board & current list & typing 'cd ../a'": {
@@ -333,7 +333,7 @@ func TestCompleter_Complete(t *testing.T) {
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: "another list"},
+				{Text: `another\ list`},
 			},
 		},
 		// ABSOLUTE PATHS
@@ -353,8 +353,8 @@ func TestCompleter_Complete(t *testing.T) {
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: "board [shortLink]"},
-				{Text: "another board [another shortLink]"},
+				{Text: "board[shortLink]"},
+				{Text: `another\ board[another shortLink]`},
 			},
 		},
 		"has current board & typing 'cd /a'": {
@@ -374,7 +374,7 @@ func TestCompleter_Complete(t *testing.T) {
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: "another board [another shortLink]"},
+				{Text: `another\ board[another shortLink]`},
 			},
 		},
 		// ERRORS

@@ -22,11 +22,13 @@ var mapColors = map[string]func(interface{}) aurora.Value{
 }
 
 func FindBoard(boards Boards, query string) *Board {
+	sanitizedQuery := sanitize(query)
 	for _, board := range boards {
-		if board.TCliID() == query ||
+		if board.TCliID() == sanitizedQuery ||
 			board.ID == query ||
 			board.ShortLink == query ||
-			board.Name == query {
+			board.Name == query ||
+			board.SanitizedName() == sanitizedQuery {
 			return &board
 		}
 	}
@@ -43,13 +45,19 @@ type Board struct {
 }
 
 func (b Board) TCliID() string {
-	return toTCliID(b.Name, b.ShortLink)
+	return toTCliID(b.SanitizedName(), b.ShortLink)
+}
+
+func (b Board) SanitizedName() string {
+	return sanitize(b.Name)
 }
 
 func FindList(lists Lists, query string) *List {
+	sanitizedQuery := sanitize(query)
 	for _, list := range lists {
 		if list.ID == query ||
-			list.Name == query {
+			list.Name == query ||
+			list.SanitizedName() == sanitizedQuery {
 			return &list
 		}
 	}
@@ -63,12 +71,18 @@ type List struct {
 	IDBoard string `json:"idBoard"`
 }
 
+func (l List) SanitizedName() string {
+	return sanitize(l.Name)
+}
+
 func FindCard(cards Cards, query string) *Card {
+	sanitizedQuery := sanitize(query)
 	for _, card := range cards {
-		if card.TCliID() == query ||
+		if card.TCliID() == sanitizedQuery ||
 			card.ID == query ||
 			card.ShortLink == query ||
-			card.Name == query {
+			card.Name == query ||
+			card.SanitizedName() == sanitizedQuery {
 			return &card
 		}
 	}
@@ -90,7 +104,11 @@ type Card struct {
 }
 
 func (c Card) TCliID() string {
-	return toTCliID(c.Name, c.ShortLink)
+	return toTCliID(c.SanitizedName(), c.ShortLink)
+}
+
+func (c Card) SanitizedName() string {
+	return sanitize(c.Name)
 }
 
 type Labels []Label
@@ -241,6 +259,12 @@ func (cte CardToEdit) IDLabelsInString() string {
 	return strings.Join(cte.IDLabels, ",")
 }
 
+// PRIVATE ---------------------------------------------------------------------------
+
+func sanitize(name string) string {
+	return strings.ReplaceAll(name, " ", "\\ ")
+}
+
 // getPos convert the given pos into appropriate type supported by Trello: either a string or a float
 func getPos(in string) interface{} {
 	if in == "top" || in == "bottom" {
@@ -261,5 +285,5 @@ func getPos(in string) interface{} {
 // it's using the name, for the user experience in the completion, and the short link
 // instead of the id to prevent having long lines in the completion.
 func toTCliID(name, shortLink string) string {
-	return fmt.Sprintf("%s [%s]", name, shortLink)
+	return fmt.Sprintf("%s[%s]", name, shortLink)
 }

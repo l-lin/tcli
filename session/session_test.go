@@ -2,6 +2,7 @@ package session
 
 import (
 	"github.com/l-lin/tcli/trello"
+	"reflect"
 	"testing"
 )
 
@@ -104,37 +105,67 @@ func TestGetCmd(t *testing.T) {
 	}
 }
 
-func TestGetArg(t *testing.T) {
+func TestGetArgs(t *testing.T) {
+	type expected struct {
+		args     []string
+		hasError bool
+	}
 	var tests = map[string]struct {
 		given    string
-		expected string
+		expected expected
 	}{
-		"no arg": {
-			given:    "",
-			expected: "",
+		"no cmd nor arg": {
+			given: "",
+			expected: expected{
+				args: []string{},
+			},
 		},
-		"single arg": {
-			given:    "cd",
-			expected: "",
+		"single cmd": {
+			given: "cd",
+			expected: expected{
+				args: []string{},
+			},
 		},
-		"single arg with space after": {
-			given:    "cd ",
-			expected: "",
+		"single cmd with space after": {
+			given: "cd ",
+			expected: expected{
+				args: []string{},
+			},
 		},
-		"two args": {
-			given:    "cd foobar",
-			expected: "foobar",
+		"cmd and one arg": {
+			given: "cd foobar",
+			expected: expected{
+				args: []string{"foobar"},
+			},
 		},
-		"more than two args": {
-			given:    "cd foobar another",
-			expected: "foobar another",
+		"cmd and two args": {
+			given: "cd foobar another",
+			expected: expected{
+				args: []string{"foobar", "another"},
+			},
+		},
+		"cmd and two args with first arg with escape space": {
+			given: `cd foo\ bar another`,
+			expected: expected{
+				args: []string{"foo bar", "another"},
+			},
+		},
+		"more complex example with escape space": {
+			given: `cd path\ to\ board/list/card another\ path\ to\ board/list2 "with quotes"`,
+			expected: expected{
+				args: []string{"path to board/list/card", "another path to board/list2", "with quotes"},
+			},
 		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			actual := getArg(tt.given)
-			if actual != tt.expected {
-				t.Errorf("expected %v, actual %v", tt.expected, actual)
+			actualArgs, actualErr := getArgs(tt.given)
+			if tt.expected.hasError != (actualErr != nil) {
+				t.Errorf("expected error %v, actual %v", tt.expected.hasError, actualErr)
+				t.FailNow()
+			}
+			if !reflect.DeepEqual(actualArgs, tt.expected.args) {
+				t.Errorf("expected %q, actual %q", tt.expected.args, actualArgs)
 			}
 		})
 	}

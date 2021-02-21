@@ -239,6 +239,19 @@ func TestPathResolver_Resolve(t *testing.T) {
 				err:       nil,
 			},
 		},
+		"board name containing escaped space": {
+			given: given{
+				currentBoard: "",
+				currentList:  "",
+				relativePath: "/board\\ name/list/card/",
+			},
+			expected: expected{
+				boardName: "board\\ name",
+				listName:  "list",
+				cardName:  "card",
+				err:       nil,
+			},
+		},
 		// ERRORS --------------------------------------------------
 		"more than 4 components": {
 			given: given{

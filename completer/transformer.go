@@ -20,7 +20,7 @@ func listsToSuggestions(lists trello.Lists) []prompt.Suggest {
 	suggestions := make([]prompt.Suggest, len(lists))
 	for i, list := range lists {
 		suggestions[i] = prompt.Suggest{
-			Text: fmt.Sprintf("%s", list.Name),
+			Text: fmt.Sprintf("%s", list.SanitizedName()),
 		}
 	}
 	return suggestions
