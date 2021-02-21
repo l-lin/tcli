@@ -65,6 +65,7 @@ func TestCompleter_Complete(t *testing.T) {
 			expected: []prompt.Suggest{
 				{Text: "cd", Description: "change level in the hierarchy"},
 				{Text: "cat", Description: "show resource content info"},
+				{Text: "cp", Description: "copy resource"},
 			},
 		},
 		// RELATIVE PATHS

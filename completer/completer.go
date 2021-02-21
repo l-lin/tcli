@@ -32,11 +32,11 @@ func (c Completer) Complete(cmd string, args []string) []prompt.Suggest {
 		return c.suggestCommands(cmd)
 	}
 
-	if cmd == "cd" {
+	switch cmd {
+	case "cd":
 		return c.suggestForCD(args)
-	}
-	if cmd == "mv" {
-		return c.suggestForMV(args)
+	case "mv", "cp":
+		return c.suggestForMVOrCP(args)
 	}
 	return c.suggestBoardsAndListsAndCards(args)
 }
@@ -48,7 +48,7 @@ func (c Completer) suggestForCD(args []string) []prompt.Suggest {
 	return c.suggestBoardsAndLists(args)
 }
 
-func (c Completer) suggestForMV(args []string) []prompt.Suggest {
+func (c Completer) suggestForMVOrCP(args []string) []prompt.Suggest {
 	if len(args) < 2 {
 		return c.suggestBoardsAndListsAndCards(args)
 	}

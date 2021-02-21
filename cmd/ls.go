@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/l-lin/tcli/executor"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -25,12 +24,6 @@ func NewLSCmd() *cobra.Command {
 }
 
 func runLS(_ *cobra.Command, args []string) {
-	if e := executor.New(*container.Conf, "ls", container.TrelloRepository, container.Renderer, nil, nil); e != nil {
-		e.Execute(args)
-	} else {
-		log.Fatal().
-			Stack().
-			Str("cmd", "ls").
-			Msg("executor not found")
-	}
+	e := executor.New(*container.Conf, "ls", container.TrelloRepository, container.Renderer, nil, nil)
+	e.Execute(args)
 }

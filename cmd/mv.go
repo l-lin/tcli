@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/l-lin/tcli/executor"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -11,19 +10,14 @@ func NewMVCmd() *cobra.Command {
 		Use:   "mv",
 		Short: "Move resource",
 		Run:   runMV,
+		Args:  cobra.ExactArgs(2),
 		Example: `
-  # archive card 'my-card'
+  # move card 'card' to 'target-list'
   tcli mv /source-board/source-list/source-card /target-board/target-list`,
 	}
 }
 
 func runMV(_ *cobra.Command, args []string) {
-	if e := executor.New(*container.Conf, "mv", container.TrelloRepository, container.Renderer, nil, nil); e != nil {
-		e.Execute(args)
-	} else {
-		log.Fatal().
-			Stack().
-			Str("cmd", "mv").
-			Msg("executor not found")
-	}
+	e := executor.New(*container.Conf, "mv", container.TrelloRepository, container.Renderer, nil, nil)
+	e.Execute(args)
 }

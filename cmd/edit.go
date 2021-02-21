@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/l-lin/tcli/executor"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -11,19 +10,14 @@ func NewEditCmd() *cobra.Command {
 		Use:   "edit",
 		Short: "edit resource content",
 		Run:   runEdit,
+		Args:  cobra.ExactArgs(1),
 		Example: `
   # edit card
-  tcli ls /my-board/my-list/my-card`,
+  tcli edit /board/list/card`,
 	}
 }
 
 func runEdit(_ *cobra.Command, args []string) {
-	if e := executor.New(*container.Conf, "edit", container.TrelloRepository, container.Renderer, nil, nil); e != nil {
-		e.Execute(args)
-	} else {
-		log.Fatal().
-			Stack().
-			Str("cmd", "edit").
-			Msg("executor not found")
-	}
+	e := executor.New(*container.Conf, "edit", container.TrelloRepository, container.Renderer, nil, nil)
+	e.Execute(args)
 }

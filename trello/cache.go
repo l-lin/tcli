@@ -119,10 +119,16 @@ func (c *CacheInMemory) UpdateCard(updateCard UpdateCard) (*Card, error) {
 	}
 
 	cardIndex := c.findCardIndex(updateCard.IDList, updateCard.ID)
-	if card.Closed {
-		c.removeCard(updateCard.IDList, cardIndex)
+	if cardIndex == -1 {
+		// card may have been moved, so clear cache completely like a brute
+		// we can find a smarter way, but well, performance wise, it's still acceptable...
+		c.mapCards = map[string]Cards{}
 	} else {
-		c.mapCards[updateCard.IDList][cardIndex] = *card
+		if card.Closed {
+			c.removeCard(updateCard.IDList, cardIndex)
+		} else {
+			c.mapCards[updateCard.IDList][cardIndex] = *card
+		}
 	}
 	return card, nil
 }

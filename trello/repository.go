@@ -1,6 +1,8 @@
 //go:generate mockgen -source repository.go -package trello -destination repository_mock.go
 package trello
 
+// Repository to call perform CRUD operation on Trello resources
+// We may want to update this interface to accept channels to support async
 type Repository interface {
 	FindBoards() (Boards, error)
 	FindBoard(query string) (*Board, error)

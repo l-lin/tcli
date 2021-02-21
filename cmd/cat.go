@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/l-lin/tcli/executor"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -13,24 +12,18 @@ func NewCatCmd() *cobra.Command {
 		Run:   runCat,
 		Args:  cobra.MinimumNArgs(1),
 		Example: `
-  # show 'my-board' info
-  tcli cat /my-board
+  # show 'board' info
+  tcli cat /board
 
-  # show 'my-list' info from 'my-board'
-  tcli cat /my-board/my-list
+  # show 'list' info from 'board'
+  tcli cat /board/list
 
-  # show 'my-card' info'
-  tcli cat /my-board/my-list/my-card`,
+  # show 'card' info'
+  tcli cat /board/list/card`,
 	}
 }
 
 func runCat(_ *cobra.Command, args []string) {
-	if e := executor.New(*container.Conf, "cat", container.TrelloRepository, container.Renderer, nil, nil); e != nil {
-		e.Execute(args)
-	} else {
-		log.Fatal().
-			Stack().
-			Str("cmd", "cat").
-			Msg("executor not found")
-	}
+	e := executor.New(*container.Conf, "cat", container.TrelloRepository, container.Renderer, nil, nil)
+	e.Execute(args)
 }

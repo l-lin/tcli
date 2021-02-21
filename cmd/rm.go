@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/l-lin/tcli/executor"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -11,19 +10,14 @@ func NewRMCmd() *cobra.Command {
 		Use:   "rm",
 		Short: "Archive resource",
 		Run:   runRM,
+		Args:  cobra.MinimumNArgs(1),
 		Example: `
-  # archive card 'my-card'
-  tcli rm /my-board/my-list/my-card`,
+  # archive card 'card'
+  tcli rm /board/list/card`,
 	}
 }
 
 func runRM(_ *cobra.Command, args []string) {
-	if e := executor.New(*container.Conf, "rm", container.TrelloRepository, container.Renderer, nil, nil); e != nil {
-		e.Execute(args)
-	} else {
-		log.Fatal().
-			Stack().
-			Str("cmd", "rm").
-			Msg("executor not found")
-	}
+	e := executor.New(*container.Conf, "rm", container.TrelloRepository, container.Renderer, nil, nil)
+	e.Execute(args)
 }

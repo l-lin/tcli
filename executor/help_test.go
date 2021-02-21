@@ -23,6 +23,7 @@ edit     edit resource content
 touch    create new resource
 rm       archive resource
 mv       move resource
+cp       copy resource
 
 `
 	actual := buf.String()
