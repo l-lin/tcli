@@ -16,7 +16,8 @@ func TestCompleter_Complete(t *testing.T) {
 	type given struct {
 		currentBoard          *trello.Board
 		currentList           *trello.List
-		cmd, arg              string
+		cmd                   string
+		args                  []string
 		buildTrelloRepository func() trello.Repository
 	}
 	board1 := trello.Board{Name: "board", ID: "board 1", ShortLink: "shortLink"}
@@ -54,8 +55,8 @@ func TestCompleter_Complete(t *testing.T) {
 		// COMMANDS
 		"typing 'c'": {
 			given: given{
-				cmd: "c",
-				arg: "",
+				cmd:  "c",
+				args: []string{""},
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
@@ -68,8 +69,8 @@ func TestCompleter_Complete(t *testing.T) {
 		// RELATIVE PATHS
 		"typing 'cd '": {
 			given: given{
-				cmd: "cd",
-				arg: "",
+				cmd:  "cd",
+				args: []string{""},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -88,8 +89,8 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		"typing 'cd b'": {
 			given: given{
-				cmd: "cd",
-				arg: "b",
+				cmd:  "cd",
+				args: []string{"b"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -107,8 +108,8 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		"typing 'cd board/'": {
 			given: given{
-				cmd: "cd",
-				arg: "board/",
+				cmd:  "cd",
+				args: []string{"board/"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -130,8 +131,8 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		"typing 'cd board/l'": {
 			given: given{
-				cmd: "cd",
-				arg: "board/l",
+				cmd:  "cd",
+				args: []string{"board/l"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -150,10 +151,27 @@ func TestCompleter_Complete(t *testing.T) {
 				{Text: list1.SanitizedName()},
 			},
 		},
-		"typing 'cd board/list/'": {
+		"typing 'cd board/list/c'": {
 			given: given{
-				cmd: "cd",
-				arg: "board/list/",
+				cmd:  "cd",
+				args: []string{"board/list/c"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board1.Name).
+						Return(&board1, nil)
+					tr.EXPECT().
+						FindList(board1.ID, list1.Name).
+						Return(&list1, nil)
+					return tr
+				},
+			},
+			expected: []prompt.Suggest{},
+		},
+		"typing 'cat board/list/'": {
+			given: given{
+				cmd:  "cat",
+				args: []string{"board/list/"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -173,10 +191,10 @@ func TestCompleter_Complete(t *testing.T) {
 				{Text: `another\ card[another shortLink]`},
 			},
 		},
-		"typing 'cd board/list/ca'": {
+		"typing 'cat board/list/ca'": {
 			given: given{
-				cmd: "cd",
-				arg: "board/list/ca",
+				cmd:  "cat",
+				args: []string{"board/list/ca"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -199,7 +217,7 @@ func TestCompleter_Complete(t *testing.T) {
 		"has current board & typing 'cd '": {
 			given: given{
 				cmd:          "cd",
-				arg:          "",
+				args:         []string{""},
 				currentBoard: &board1,
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
@@ -223,7 +241,7 @@ func TestCompleter_Complete(t *testing.T) {
 		"has current board & typing 'cd l'": {
 			given: given{
 				cmd:          "cd",
-				arg:          "l",
+				args:         []string{"l"},
 				currentBoard: &board1,
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
@@ -243,10 +261,10 @@ func TestCompleter_Complete(t *testing.T) {
 				{Text: list1.Name},
 			},
 		},
-		"has current board & current list & typing 'cd '": {
+		"has current board & current list & typing 'cat '": {
 			given: given{
-				cmd:          "cd",
-				arg:          "",
+				cmd:          "cat",
+				args:         []string{""},
 				currentBoard: &board1,
 				currentList:  &list1,
 				buildTrelloRepository: func() trello.Repository {
@@ -268,10 +286,10 @@ func TestCompleter_Complete(t *testing.T) {
 				{Text: `another\ card[another shortLink]`},
 			},
 		},
-		"has current board & current list & typing 'cd c'": {
+		"has current board & current list & typing 'cat c'": {
 			given: given{
-				cmd:          "cd",
-				arg:          "c",
+				cmd:          "cat",
+				args:         []string{"c"},
 				currentBoard: &board1,
 				currentList:  &list1,
 				buildTrelloRepository: func() trello.Repository {
@@ -295,7 +313,7 @@ func TestCompleter_Complete(t *testing.T) {
 		"has current board & typing 'cd ../a'": {
 			given: given{
 				cmd:          "cd",
-				arg:          "../a",
+				args:         []string{"../a"},
 				currentBoard: &board1,
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
@@ -315,7 +333,7 @@ func TestCompleter_Complete(t *testing.T) {
 		"has current board & current list & typing 'cd ../a'": {
 			given: given{
 				cmd:          "cd",
-				arg:          "../a",
+				args:         []string{"../a"},
 				currentBoard: &board1,
 				currentList:  &list1,
 				buildTrelloRepository: func() trello.Repository {
@@ -339,8 +357,8 @@ func TestCompleter_Complete(t *testing.T) {
 		// ABSOLUTE PATHS
 		"typing 'cd /'": {
 			given: given{
-				cmd: "cd",
-				arg: "/",
+				cmd:  "cd",
+				args: []string{"/"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -360,7 +378,7 @@ func TestCompleter_Complete(t *testing.T) {
 		"has current board & typing 'cd /a'": {
 			given: given{
 				cmd:          "cd",
-				arg:          "/a",
+				args:         []string{"/a"},
 				currentBoard: &board1,
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
@@ -380,8 +398,8 @@ func TestCompleter_Complete(t *testing.T) {
 		// ERRORS
 		"server error when finding boards": {
 			given: given{
-				cmd: "cd",
-				arg: "/a",
+				cmd:  "cd",
+				args: []string{"/a"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -397,8 +415,8 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		"server error when finding lists": {
 			given: given{
-				cmd: "cd",
-				arg: "/board/l",
+				cmd:  "cd",
+				args: []string{"/board/l"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -417,8 +435,8 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		"server error when finding cards": {
 			given: given{
-				cmd: "cd",
-				arg: "/board/list/c",
+				cmd:  "cat",
+				args: []string{"/board/list/c"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -437,8 +455,8 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		"invalid path": {
 			given: given{
-				cmd: "cd",
-				arg: "/../../",
+				cmd:  "cd",
+				args: []string{"/../../"},
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
@@ -449,7 +467,7 @@ func TestCompleter_Complete(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			c := New(tt.given.buildTrelloRepository(), tt.given.currentBoard, tt.given.currentList)
-			actual := c.Complete(tt.given.cmd, tt.given.arg)
+			actual := c.Complete(tt.given.cmd, tt.given.args)
 			if len(actual) != len(tt.expected) {
 				t.Errorf("expected %v, actual %v", tt.expected, actual)
 				t.FailNow()

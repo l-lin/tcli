@@ -20,7 +20,7 @@ func TestEdit_Execute(t *testing.T) {
 	defer ctrl.Finish()
 
 	type given struct {
-		arg                   string
+		args                  []string
 		buildTrelloRepository func() trello.Repository
 		buildEditor           func() Editor
 		currentBoard          *trello.Board
@@ -55,7 +55,7 @@ func TestEdit_Execute(t *testing.T) {
 		// CARD
 		"edit /board/list/card - card creation": {
 			given: given{
-				arg: "/board/list/card",
+				args: []string{"/board/list/card"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -100,7 +100,7 @@ func TestEdit_Execute(t *testing.T) {
 		},
 		"edit /board/list/card - card edition": {
 			given: given{
-				arg: "/board/list/card",
+				args: []string{"/board/list/card"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -141,7 +141,7 @@ func TestEdit_Execute(t *testing.T) {
 		},
 		"edit /board/list/card - user refused to update card": {
 			given: given{
-				arg: "/board/list/card",
+				args: []string{"/board/list/card"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -178,9 +178,21 @@ func TestEdit_Execute(t *testing.T) {
 			expected: expected{},
 		},
 		// ERRORS
+		"no arg": {
+			given: given{
+				args: []string{},
+				buildTrelloRepository: func() trello.Repository {
+					return nil
+				},
+				buildEditor: func() Editor {
+					return nil
+				},
+			},
+			expected: expected{},
+		},
 		"invalid path": {
 			given: given{
-				arg: "/../..",
+				args: []string{"/../.."},
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
@@ -194,7 +206,7 @@ func TestEdit_Execute(t *testing.T) {
 		},
 		"no board name": {
 			given: given{
-				arg: "/",
+				args: []string{"/"},
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
@@ -208,7 +220,7 @@ func TestEdit_Execute(t *testing.T) {
 		},
 		"no board found": {
 			given: given{
-				arg: "/board",
+				args: []string{"/board"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -226,7 +238,7 @@ func TestEdit_Execute(t *testing.T) {
 		},
 		"no list name": {
 			given: given{
-				arg: "/board",
+				args: []string{"/board"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -244,7 +256,7 @@ func TestEdit_Execute(t *testing.T) {
 		},
 		"no list found": {
 			given: given{
-				arg: "/board/list",
+				args: []string{"/board/list"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -265,7 +277,7 @@ func TestEdit_Execute(t *testing.T) {
 		},
 		"no card name": {
 			given: given{
-				arg: "/board/list",
+				args: []string{"/board/list"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -286,7 +298,7 @@ func TestEdit_Execute(t *testing.T) {
 		},
 		"edit /board/list/card - error when updating card": {
 			given: given{
-				arg: "/board/list/card",
+				args: []string{"/board/list/card"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -340,7 +352,7 @@ func TestEdit_Execute(t *testing.T) {
 				stdin:        tt.given.stdin,
 				editRenderer: editRenderer,
 			}
-			e.Execute(tt.given.arg)
+			e.Execute(tt.given.args)
 			actualStderr := stderrBuf.String()
 			if actualStderr != tt.expected.stderr {
 				t.Errorf("expected:\n%v\nactual:\n%v", tt.expected.stderr, actualStderr)

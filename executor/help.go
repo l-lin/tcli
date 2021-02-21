@@ -15,7 +15,7 @@ type help struct {
 	currentList  *trello.List
 }
 
-func (h help) Execute(_ string) (*trello.Board, *trello.List) {
+func (h help) Execute(_ []string) (*trello.Board, *trello.List) {
 	var buffer bytes.Buffer
 	w := tabwriter.NewWriter(&buffer, 0, 0, 4, ' ', 0)
 	t := tabby.NewCustom(w)

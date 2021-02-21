@@ -50,16 +50,12 @@ func (s *Session) Executor(in string) {
 		fmt.Fprintf(s.stderr, err.Error())
 		return
 	}
-	path := ""
-	if args != nil && len(args) > 0 {
-		path = args[0]
-	}
 	log.Debug().
 		Str("cmd", cmd).
-		Str("path", path).
+		Strs("args", args).
 		Msg("executing command")
 	if e := executor.New(s.conf, cmd, s.tr, s.r, s.CurrentBoard, s.CurrentList); e != nil {
-		s.CurrentBoard, s.CurrentList = e.Execute(path)
+		s.CurrentBoard, s.CurrentList = e.Execute(args)
 	} else {
 		fmt.Fprintf(s.stderr, "command not found: %s\n", cmd)
 	}
@@ -67,17 +63,13 @@ func (s *Session) Executor(in string) {
 
 func (s *Session) Completer(d prompt.Document) []prompt.Suggest {
 	c := completer.New(s.tr, s.CurrentBoard, s.CurrentList)
-	input := strings.TrimSpace(d.TextBeforeCursor())
+	input := d.TextBeforeCursor()
 	cmd, _ := getCmd(input)
 	args, err := getArgs(input)
 	if err != nil {
 		return []prompt.Suggest{}
 	}
-	path := ""
-	if args != nil && len(args) > 0 {
-		path = args[0]
-	}
-	return c.Complete(cmd, path)
+	return c.Complete(cmd, args)
 }
 
 func (s *Session) LivePrefix() (string, bool) {
@@ -102,7 +94,7 @@ func getCmd(s string) (string, bool) {
 }
 
 // getArgs from the input
-//shamelessly taken from https://github.com/chriswalz/bit/blob/f9bb2b246db444bb3f9f6d0d3656090d34a1905a/cmd/util.go#L508-L571
+// shamelessly taken from https://github.com/chriswalz/bit/blob/f9bb2b246db444bb3f9f6d0d3656090d34a1905a/cmd/util.go#L508-L571
 func getArgs(input string) ([]string, error) {
 	var args []string
 	state := "start"
@@ -167,6 +159,11 @@ func getArgs(input string) ([]string, error) {
 
 	if args == nil || len(args) < 2 {
 		return []string{}, nil
+	}
+	// ensure the arguments after the first one restarts the completion
+	lastChar := input[len(input)-1]
+	if lastChar == ' ' || lastChar == '\t' {
+		args = append(args, "")
 	}
 	return args[1:], nil
 }

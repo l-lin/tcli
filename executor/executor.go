@@ -8,7 +8,7 @@ import (
 )
 
 type Executor interface {
-	Execute(arg string) (*trello.Board, *trello.List)
+	Execute(args []string) (*trello.Board, *trello.List)
 }
 
 type executor struct {

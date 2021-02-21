@@ -4,7 +4,6 @@ import (
 	"github.com/l-lin/tcli/executor"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
-	"strings"
 )
 
 func NewCatCmd() *cobra.Command {
@@ -27,7 +26,7 @@ func NewCatCmd() *cobra.Command {
 
 func runCat(_ *cobra.Command, args []string) {
 	if e := executor.New(*container.Conf, "cat", container.TrelloRepository, container.Renderer, nil, nil); e != nil {
-		e.Execute(strings.Join(args, " "))
+		e.Execute(args)
 	} else {
 		log.Fatal().
 			Stack().

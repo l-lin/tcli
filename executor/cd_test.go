@@ -13,7 +13,7 @@ func TestCd_Execute(t *testing.T) {
 	defer ctrl.Finish()
 
 	type given struct {
-		arg                   string
+		args                  []string
 		buildTrelloRepository func() trello.Repository
 		currentBoard          *trello.Board
 		currentList           *trello.List
@@ -34,7 +34,7 @@ func TestCd_Execute(t *testing.T) {
 	}{
 		"/ > cd board": {
 			given: given{
-				arg: board1.Name,
+				args: []string{board1.Name},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -49,7 +49,7 @@ func TestCd_Execute(t *testing.T) {
 		},
 		"/ > cd board/list": {
 			given: given{
-				arg: "board/list",
+				args: []string{"board/list"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -66,9 +66,22 @@ func TestCd_Execute(t *testing.T) {
 				list:  &list1,
 			},
 		},
+		"/board > cd": {
+			given: given{
+				args:         []string{},
+				currentBoard: &board1,
+				buildTrelloRepository: func() trello.Repository {
+					return nil
+				},
+			},
+			expected: expected{
+				board: nil,
+				list:  nil,
+			},
+		},
 		"/board > cd ": {
 			given: given{
-				arg:          "",
+				args:         []string{""},
 				currentBoard: &board1,
 				buildTrelloRepository: func() trello.Repository {
 					return nil
@@ -81,7 +94,7 @@ func TestCd_Execute(t *testing.T) {
 		},
 		"/board > cd list": {
 			given: given{
-				arg:          list1.Name,
+				args:         []string{list1.Name},
 				currentBoard: &board1,
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
@@ -101,7 +114,7 @@ func TestCd_Execute(t *testing.T) {
 		},
 		"/board > cd ..": {
 			given: given{
-				arg:          "..",
+				args:         []string{".."},
 				currentBoard: &board1,
 				buildTrelloRepository: func() trello.Repository {
 					return nil
@@ -114,7 +127,7 @@ func TestCd_Execute(t *testing.T) {
 		},
 		"/board/list > cd ../another-list": {
 			given: given{
-				arg:          "../" + list2.Name,
+				args:         []string{"../" + list2.Name},
 				currentBoard: &board1,
 				currentList:  &list1,
 				buildTrelloRepository: func() trello.Repository {
@@ -136,7 +149,7 @@ func TestCd_Execute(t *testing.T) {
 		// ERRORS
 		"invalid path": {
 			given: given{
-				arg: "/../..",
+				args: []string{"/../.."},
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
@@ -147,7 +160,7 @@ func TestCd_Execute(t *testing.T) {
 		},
 		"/ > cd unknown-board": {
 			given: given{
-				arg: "unknown-board",
+				args: []string{"unknown-board"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -162,7 +175,7 @@ func TestCd_Execute(t *testing.T) {
 		},
 		"/ > cd /board/unknown-list": {
 			given: given{
-				arg: "/board/unknown-list",
+				args: []string{"/board/unknown-list"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -180,7 +193,7 @@ func TestCd_Execute(t *testing.T) {
 		},
 		"/ > cd board/list/card": {
 			given: given{
-				arg: "board/list/card",
+				args: []string{"board/list/card"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -198,7 +211,7 @@ func TestCd_Execute(t *testing.T) {
 		},
 		"/ > cd ..": {
 			given: given{
-				arg: "..",
+				args: []string{".."},
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
@@ -211,7 +224,7 @@ func TestCd_Execute(t *testing.T) {
 		},
 		"/board/list > cd ../../..": {
 			given: given{
-				arg:          "../../..",
+				args:         []string{"../../.."},
 				currentBoard: &board1,
 				currentList:  &list1,
 				buildTrelloRepository: func() trello.Repository {
@@ -220,6 +233,21 @@ func TestCd_Execute(t *testing.T) {
 			},
 			expected: expected{
 				stderr: "invalid path\n",
+				board:  &board1,
+				list:   &list1,
+			},
+		},
+		"/board/list > cd board2 board3": {
+			given: given{
+				args:         []string{"board", "board2"},
+				currentBoard: &board1,
+				currentList:  &list1,
+				buildTrelloRepository: func() trello.Repository {
+					return nil
+				},
+			},
+			expected: expected{
+				stderr: "only one argument is accepted\n",
 				board:  &board1,
 				list:   &list1,
 			},
@@ -236,7 +264,7 @@ func TestCd_Execute(t *testing.T) {
 					stderr:       &stderrBuf,
 				},
 			}
-			actualBoard, actualList := c.Execute(tt.given.arg)
+			actualBoard, actualList := c.Execute(tt.given.args)
 			if tt.expected.board != nil && actualBoard == nil || tt.expected.board == nil && actualBoard != nil {
 				t.Errorf("expected board %v, actual board %v", tt.expected.board, actualBoard)
 				t.FailNow()

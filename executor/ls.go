@@ -9,7 +9,19 @@ type ls struct {
 	executor
 }
 
-func (l ls) Execute(arg string) (currentBoard *trello.Board, currentList *trello.List) {
+func (l ls) Execute(args []string) (currentBoard *trello.Board, currentList *trello.List) {
+	currentBoard = l.currentBoard
+	currentList = l.currentList
+	if len(args) == 0 {
+		l.execute("")
+	}
+	for _, arg := range args {
+		l.execute(arg)
+	}
+	return
+}
+
+func (l ls) execute(arg string) (currentBoard *trello.Board, currentList *trello.List) {
 	currentBoard = l.currentBoard
 	currentList = l.currentList
 

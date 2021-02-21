@@ -11,7 +11,7 @@ func TestHelp_Execute(t *testing.T) {
 	h := help{stdout: &buf}
 
 	// WHEN
-	h.Execute("")
+	h.Execute(nil)
 
 	// THEN
 	expected := `help     display help

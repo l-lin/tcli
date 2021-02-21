@@ -4,7 +4,6 @@ import (
 	"github.com/l-lin/tcli/executor"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
-	"strings"
 )
 
 func NewTouchCmd() *cobra.Command {
@@ -20,7 +19,7 @@ func NewTouchCmd() *cobra.Command {
 
 func runTouch(_ *cobra.Command, args []string) {
 	if e := executor.New(*container.Conf, "touch", container.TrelloRepository, container.Renderer, nil, nil); e != nil {
-		e.Execute(strings.Join(args, " "))
+		e.Execute(args)
 	} else {
 		log.Fatal().
 			Stack().

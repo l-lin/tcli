@@ -138,6 +138,12 @@ func TestGetArgs(t *testing.T) {
 				args: []string{"foobar"},
 			},
 		},
+		"cmd and one arg with space at the end": {
+			given: "cd foobar ",
+			expected: expected{
+				args: []string{"foobar", ""},
+			},
+		},
 		"cmd and two args": {
 			given: "cd foobar another",
 			expected: expected{

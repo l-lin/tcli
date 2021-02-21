@@ -10,7 +10,17 @@ type cd struct {
 	executor
 }
 
-func (c cd) Execute(arg string) (*trello.Board, *trello.List) {
+func (c cd) Execute(args []string) (*trello.Board, *trello.List) {
+	if len(args) == 0 {
+		log.Debug().Msg("returning to top parent")
+		return nil, nil
+	}
+	if len(args) > 1 {
+		fmt.Fprintf(c.stderr, "only one argument is accepted\n")
+		return c.currentBoard, c.currentList
+	}
+
+	arg := args[0]
 	if arg == "" {
 		log.Debug().Msg("returning to top parent")
 		return nil, nil

@@ -9,7 +9,19 @@ type cat struct {
 	executor
 }
 
-func (c cat) Execute(arg string) (currentBoard *trello.Board, currentList *trello.List) {
+func (c cat) Execute(args []string) (currentBoard *trello.Board, currentList *trello.List) {
+	currentBoard = c.currentBoard
+	currentList = c.currentList
+	if len(args) == 0 {
+		return
+	}
+	for _, arg := range args {
+		c.execute(arg)
+	}
+	return
+}
+
+func (c cat) execute(arg string) (currentBoard *trello.Board, currentList *trello.List) {
 	currentBoard = c.currentBoard
 	currentList = c.currentList
 	if arg == "" {

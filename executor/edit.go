@@ -16,7 +16,19 @@ type edit struct {
 	editRenderer renderer.Edit
 }
 
-func (e edit) Execute(arg string) (currentBoard *trello.Board, currentList *trello.List) {
+func (e edit) Execute(args []string) (currentBoard *trello.Board, currentList *trello.List) {
+	currentBoard = e.currentBoard
+	currentList = e.currentList
+	if len(args) == 0 {
+		return
+	}
+	for _, arg := range args {
+		e.execute(arg)
+	}
+	return
+}
+
+func (e edit) execute(arg string) (currentBoard *trello.Board, currentList *trello.List) {
 	currentBoard = e.currentBoard
 	currentList = e.currentList
 

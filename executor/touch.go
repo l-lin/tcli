@@ -9,12 +9,25 @@ type touch struct {
 	executor
 }
 
-func (t touch) Execute(arg string) (currentBoard *trello.Board, currentList *trello.List) {
+func (t touch) Execute(args []string) (currentBoard *trello.Board, currentList *trello.List) {
+	currentBoard = t.currentBoard
+	currentList = t.currentList
+	if len(args) == 0 {
+		fmt.Fprintf(t.stderr, "missing card operand\n")
+		return
+	}
+	for _, arg := range args {
+		t.execute(arg)
+	}
+	return
+}
+
+func (t touch) execute(arg string) (currentBoard *trello.Board, currentList *trello.List) {
 	currentBoard = t.currentBoard
 	currentList = t.currentList
 
 	if arg == "" {
-		fmt.Fprintf(t.stderr, "missing card operand")
+		fmt.Fprintf(t.stderr, "missing card operand\n")
 		return
 	}
 	pathResolver := trello.NewPathResolver(t.currentBoard, t.currentList)

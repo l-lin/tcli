@@ -27,11 +27,15 @@ type Completer struct {
 	suggestions  []prompt.Suggest
 }
 
-func (c Completer) Complete(cmd, arg string) []prompt.Suggest {
+func (c Completer) Complete(cmd string, args []string) []prompt.Suggest {
 	if !isKnownCmd(cmd) {
 		return c.suggestCommands(cmd)
 	}
 
+	arg := ""
+	if len(args) > 0 {
+		arg = args[len(args)-1]
+	}
 	pathResolver := trello.NewPathResolver(c.currentBoard, c.currentList)
 	boardName, listName, _, err := pathResolver.Resolve(arg)
 	if err != nil {
@@ -48,7 +52,8 @@ func (c Completer) Complete(cmd, arg string) []prompt.Suggest {
 	}
 
 	list, suggestions := c.suggestLists(arg, board, listName)
-	if suggestions != nil {
+	// there might be a better way to have commands maps with the corresponding completions
+	if cmd == "cd" || suggestions != nil {
 		return suggestions
 	}
 

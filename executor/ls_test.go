@@ -14,7 +14,7 @@ func TestLs_Execute(t *testing.T) {
 	defer ctrl.Finish()
 
 	type given struct {
-		arg                   string
+		args                  []string
 		buildTrelloRepository func() trello.Repository
 		buildRenderer         func() renderer.Renderer
 	}
@@ -22,30 +22,56 @@ func TestLs_Execute(t *testing.T) {
 		stdout string
 		stderr string
 	}
+	board1 := trello.Board{ID: "board 1", Name: "board"}
+	board2 := trello.Board{ID: "board 2", Name: "another board"}
+	boards := trello.Boards{board1, board2}
+	list1 := trello.List{ID: "list 1", Name: "list"}
+	list2 := trello.List{ID: "list 2", Name: "another list"}
+	list3 := trello.List{ID: "list 3", Name: "list 3"}
+	lists1 := trello.Lists{list1, list2}
+	lists2 := trello.Lists{list3}
+	card1 := trello.Card{ID: "card 1", Name: "card"}
+	card2 := trello.Card{ID: "card 2", Name: "another card"}
+	cards := trello.Cards{card1, card2}
+
 	var tests = map[string]struct {
 		given    given
 		expected expected
 	}{
 		"no arg": {
 			given: given{
-				arg: "",
+				args: []string{},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
 						FindBoards().
-						Return(trello.Boards{
-							{ID: "board 1", Name: "board"},
-							{ID: "board 2", Name: "another board"},
-						}, nil)
+						Return(boards, nil)
 					return tr
 				},
 				buildRenderer: func() renderer.Renderer {
 					r := renderer.NewMockRenderer(ctrl)
 					r.EXPECT().
-						RenderBoards(trello.Boards{
-							{ID: "board 1", Name: "board"},
-							{ID: "board 2", Name: "another board"},
-						}).
+						RenderBoards(boards).
+						Return("boards content")
+					return r
+				},
+			},
+			expected: expected{stdout: "boards content\n"},
+		},
+		"empty string as 1st arg": {
+			given: given{
+				args: []string{""},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoards().
+						Return(boards, nil)
+					return tr
+				},
+				buildRenderer: func() renderer.Renderer {
+					r := renderer.NewMockRenderer(ctrl)
+					r.EXPECT().
+						RenderBoards(boards).
 						Return("boards content")
 					return r
 				},
@@ -54,27 +80,21 @@ func TestLs_Execute(t *testing.T) {
 		},
 		"show lists": {
 			given: given{
-				arg: "board",
+				args: []string{board1.Name},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
-						FindBoard("board").
-						Return(&trello.Board{ID: "board 1", Name: "board"}, nil)
+						FindBoard(board1.Name).
+						Return(&board1, nil)
 					tr.EXPECT().
-						FindLists("board 1").
-						Return(trello.Lists{
-							{ID: "list 1", Name: "list"},
-							{ID: "list 2", Name: "another list"},
-						}, nil)
+						FindLists(board1.ID).
+						Return(lists1, nil)
 					return tr
 				},
 				buildRenderer: func() renderer.Renderer {
 					r := renderer.NewMockRenderer(ctrl)
 					r.EXPECT().
-						RenderLists(trello.Lists{
-							{ID: "list 1", Name: "list"},
-							{ID: "list 2", Name: "another list"},
-						}).
+						RenderLists(lists1).
 						Return("lists content")
 					return r
 				},
@@ -83,30 +103,24 @@ func TestLs_Execute(t *testing.T) {
 		},
 		"show cards": {
 			given: given{
-				arg: "board/list",
+				args: []string{"board/list"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
-						FindBoard("board").
-						Return(&trello.Board{ID: "board 1", Name: "board"}, nil)
+						FindBoard(board1.Name).
+						Return(&board1, nil)
 					tr.EXPECT().
-						FindList("board 1", "list").
-						Return(&trello.List{ID: "list 1", Name: "list"}, nil)
+						FindList(board1.ID, list1.Name).
+						Return(&list1, nil)
 					tr.EXPECT().
-						FindCards("list 1").
-						Return(trello.Cards{
-							{ID: "card 1", Name: "card"},
-							{ID: "card 2", Name: "another card"},
-						}, nil)
+						FindCards(list1.ID).
+						Return(cards, nil)
 					return tr
 				},
 				buildRenderer: func() renderer.Renderer {
 					r := renderer.NewMockRenderer(ctrl)
 					r.EXPECT().
-						RenderCards(trello.Cards{
-							{ID: "card 1", Name: "card"},
-							{ID: "card 2", Name: "another card"},
-						}).
+						RenderCards(cards).
 						Return("cards content")
 					return r
 				},
@@ -115,34 +129,66 @@ func TestLs_Execute(t *testing.T) {
 		},
 		"show single card": {
 			given: given{
-				arg: "board/list/card",
+				args: []string{"board/list/card"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
-						FindBoard("board").
-						Return(&trello.Board{ID: "board 1", Name: "board"}, nil)
+						FindBoard(board1.Name).
+						Return(&board1, nil)
 					tr.EXPECT().
-						FindList("board 1", "list").
-						Return(&trello.List{ID: "list 1", Name: "list"}, nil)
+						FindList(board1.ID, list1.Name).
+						Return(&list1, nil)
 					tr.EXPECT().
-						FindCard("list 1", "card").
-						Return(&trello.Card{ID: "card 1", Name: "card"}, nil)
+						FindCard(list1.ID, card1.Name).
+						Return(&card1, nil)
 					return tr
 				},
 				buildRenderer: func() renderer.Renderer {
 					r := renderer.NewMockRenderer(ctrl)
 					r.EXPECT().
-						RenderCards(trello.Cards{{ID: "card 1", Name: "card"}}).
+						RenderCards(trello.Cards{card1}).
 						Return("card 1 content")
 					return r
 				},
 			},
 			expected: expected{stdout: "card 1 content\n"},
 		},
+		"show 2 lists": {
+			given: given{
+				args: []string{board1.Name, board2.Name},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board1.Name).
+						Return(&board1, nil)
+					tr.EXPECT().
+						FindBoard(board2.Name).
+						Return(&board2, nil)
+					tr.EXPECT().
+						FindLists(board1.ID).
+						Return(lists1, nil)
+					tr.EXPECT().
+						FindLists(board2.ID).
+						Return(lists2, nil)
+					return tr
+				},
+				buildRenderer: func() renderer.Renderer {
+					r := renderer.NewMockRenderer(ctrl)
+					r.EXPECT().
+						RenderLists(lists1).
+						Return("lists 1 content")
+					r.EXPECT().
+						RenderLists(lists2).
+						Return("lists 2 content")
+					return r
+				},
+			},
+			expected: expected{stdout: "lists 1 content\nlists 2 content\n"},
+		},
 		// ERRORS
 		"invalid path": {
 			given: given{
-				arg: "/../..",
+				args: []string{"/../.."},
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
@@ -156,7 +202,7 @@ func TestLs_Execute(t *testing.T) {
 		},
 		"unknown-board": {
 			given: given{
-				arg: "unknown-board",
+				args: []string{"unknown-board"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -174,14 +220,14 @@ func TestLs_Execute(t *testing.T) {
 		},
 		"unknown-list": {
 			given: given{
-				arg: "board/unknown-list",
+				args: []string{"board/unknown-list"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
-						FindBoard("board").
-						Return(&trello.Board{ID: "board 1", Name: "board"}, nil)
+						FindBoard(board1.Name).
+						Return(&board1, nil)
 					tr.EXPECT().
-						FindList("board 1", "unknown-list").
+						FindList(board1.ID, "unknown-list").
 						Return(nil, errors.New("not found"))
 					return tr
 				},
@@ -195,17 +241,17 @@ func TestLs_Execute(t *testing.T) {
 		},
 		"unknown-card": {
 			given: given{
-				arg: "board/list/unknown-card",
+				args: []string{"board/list/unknown-card"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
-						FindBoard("board").
-						Return(&trello.Board{ID: "board 1", Name: "board"}, nil)
+						FindBoard(board1.Name).
+						Return(&board1, nil)
 					tr.EXPECT().
-						FindList("board 1", "list").
-						Return(&trello.List{ID: "list 1", Name: "list"}, nil)
+						FindList(board1.ID, list1.Name).
+						Return(&list1, nil)
 					tr.EXPECT().
-						FindCard("list 1", "unknown-card").
+						FindCard(list1.ID, "unknown-card").
 						Return(nil, errors.New("not found"))
 					return tr
 				},
@@ -219,7 +265,7 @@ func TestLs_Execute(t *testing.T) {
 		},
 		"cannot find boards": {
 			given: given{
-				arg: "",
+				args: []string{""},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -237,14 +283,14 @@ func TestLs_Execute(t *testing.T) {
 		},
 		"cannot find lists": {
 			given: given{
-				arg: "board",
+				args: []string{board1.Name},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
-						FindBoard("board").
-						Return(&trello.Board{ID: "board 1", Name: "board"}, nil)
+						FindBoard(board1.Name).
+						Return(&board1, nil)
 					tr.EXPECT().
-						FindLists("board 1").
+						FindLists(board1.ID).
 						Return(nil, errors.New("unexpected error"))
 					return tr
 				},
@@ -258,17 +304,17 @@ func TestLs_Execute(t *testing.T) {
 		},
 		"cannot find cards": {
 			given: given{
-				arg: "board/list",
+				args: []string{"board/list"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
-						FindBoard("board").
-						Return(&trello.Board{ID: "board 1", Name: "board"}, nil)
+						FindBoard(board1.Name).
+						Return(&board1, nil)
 					tr.EXPECT().
-						FindList("board 1", "list").
-						Return(&trello.List{ID: "list 1", Name: "list"}, nil)
+						FindList(board1.ID, list1.Name).
+						Return(&list1, nil)
 					tr.EXPECT().
-						FindCards("list 1").
+						FindCards(list1.ID).
 						Return(nil, errors.New("unexpected error"))
 					return tr
 				},
@@ -293,7 +339,7 @@ func TestLs_Execute(t *testing.T) {
 					stderr: &stderrBuf,
 				},
 			}
-			l.Execute(tt.given.arg)
+			l.Execute(tt.given.args)
 
 			actualStdout := stdoutBuf.String()
 			if actualStdout != tt.expected.stdout {

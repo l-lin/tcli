@@ -12,12 +12,25 @@ type rm struct {
 	stdin io.ReadCloser
 }
 
-func (r rm) Execute(arg string) (currentBoard *trello.Board, currentList *trello.List) {
+func (r rm) Execute(args []string) (currentBoard *trello.Board, currentList *trello.List) {
+	currentBoard = r.currentBoard
+	currentList = r.currentList
+	if len(args) == 0 {
+		fmt.Fprintf(r.stderr, "missing card operand\n")
+		return
+	}
+	for _, arg := range args {
+		r.execute(arg)
+	}
+	return
+}
+
+func (r rm) execute(arg string) (currentBoard *trello.Board, currentList *trello.List) {
 	currentBoard = r.currentBoard
 	currentList = r.currentList
 
 	if arg == "" {
-		fmt.Fprintf(r.stderr, "missing card operand")
+		fmt.Fprintf(r.stderr, "missing card operand\n")
 		return
 	}
 	pathResolver := trello.NewPathResolver(r.currentBoard, r.currentList)

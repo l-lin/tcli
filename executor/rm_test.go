@@ -20,7 +20,7 @@ func TestRm_Execute(t *testing.T) {
 	updatedCard.Closed = true
 
 	type given struct {
-		arg                   string
+		args                  []string
 		buildTrelloRepository func() trello.Repository
 		stdin                 io.ReadCloser
 	}
@@ -34,16 +34,25 @@ func TestRm_Execute(t *testing.T) {
 	}{
 		"no arg": {
 			given: given{
-				arg:                   "",
+				args:                  []string{},
 				buildTrelloRepository: func() trello.Repository { return nil },
 			},
 			expected: expected{
-				stderr: "missing card operand",
+				stderr: "missing card operand\n",
+			},
+		},
+		"empty string as first arg": {
+			given: given{
+				args:                  []string{""},
+				buildTrelloRepository: func() trello.Repository { return nil },
+			},
+			expected: expected{
+				stderr: "missing card operand\n",
 			},
 		},
 		"archive /board/list/card - user accepts to archive": {
 			given: given{
-				arg: "/board/list/card",
+				args: []string{"/board/list/card"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -66,7 +75,7 @@ func TestRm_Execute(t *testing.T) {
 		},
 		"archive /board/list/card - user refuses to archive": {
 			given: given{
-				arg: "/board/list/card",
+				args: []string{"/board/list/card"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -87,7 +96,7 @@ func TestRm_Execute(t *testing.T) {
 		// ERRORS
 		"invalid path": {
 			given: given{
-				arg: "/../..",
+				args: []string{"/../.."},
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
@@ -98,7 +107,7 @@ func TestRm_Execute(t *testing.T) {
 		},
 		"no board name": {
 			given: given{
-				arg: "/",
+				args: []string{"/"},
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
@@ -109,7 +118,7 @@ func TestRm_Execute(t *testing.T) {
 		},
 		"unknown-board": {
 			given: given{
-				arg: "unknown-board",
+				args: []string{"unknown-board"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -124,7 +133,7 @@ func TestRm_Execute(t *testing.T) {
 		},
 		"no list name": {
 			given: given{
-				arg: "board/",
+				args: []string{"board/"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -139,7 +148,7 @@ func TestRm_Execute(t *testing.T) {
 		},
 		"unknown-list": {
 			given: given{
-				arg: "board/unknown-list",
+				args: []string{"board/unknown-list"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -157,7 +166,7 @@ func TestRm_Execute(t *testing.T) {
 		},
 		"no card name": {
 			given: given{
-				arg: "board/list/",
+				args: []string{"board/list/"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -175,7 +184,7 @@ func TestRm_Execute(t *testing.T) {
 		},
 		"unknown-card": {
 			given: given{
-				arg: "board/list/unknown-card",
+				args: []string{"board/list/unknown-card"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -208,7 +217,7 @@ func TestRm_Execute(t *testing.T) {
 				},
 				stdin: tt.given.stdin,
 			}
-			r.Execute(tt.given.arg)
+			r.Execute(tt.given.args)
 
 			actualStdout := stdoutBuf.String()
 			if actualStdout != tt.expected.stdout {

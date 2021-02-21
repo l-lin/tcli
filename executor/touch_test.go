@@ -14,7 +14,7 @@ func TestTouch_Execute(t *testing.T) {
 	defer ctrl.Finish()
 
 	type given struct {
-		arg                   string
+		args                  []string
 		buildTrelloRepository func() trello.Repository
 		currentBoard          *trello.Board
 		currentList           *trello.List
@@ -26,8 +26,12 @@ func TestTouch_Execute(t *testing.T) {
 
 	board := trello.Board{ID: "board 1", Name: "board"}
 	list := trello.List{ID: "list 1", Name: "list"}
-	createCard := trello.CreateCard{
+	createCard1 := trello.CreateCard{
 		Name:   "card",
+		IDList: list.ID,
+	}
+	createCard2 := trello.CreateCard{
+		Name:   "another-card",
 		IDList: list.ID,
 	}
 
@@ -37,17 +41,29 @@ func TestTouch_Execute(t *testing.T) {
 	}{
 		"no arg": {
 			given: given{
+				args: []string{},
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
 			},
 			expected: expected{
-				stderr: "missing card operand",
+				stderr: "missing card operand\n",
+			},
+		},
+		"empty string as first argument": {
+			given: given{
+				args: []string{""},
+				buildTrelloRepository: func() trello.Repository {
+					return nil
+				},
+			},
+			expected: expected{
+				stderr: "missing card operand\n",
 			},
 		},
 		"/: create card from absolute path": {
 			given: given{
-				arg: "/board/list/card",
+				args: []string{"/board/list/card"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -57,7 +73,7 @@ func TestTouch_Execute(t *testing.T) {
 						FindList(board.ID, list.Name).
 						Return(&list, nil)
 					tr.EXPECT().
-						CreateCard(createCard).
+						CreateCard(createCard1).
 						Return(nil, nil)
 					return tr
 				},
@@ -66,7 +82,7 @@ func TestTouch_Execute(t *testing.T) {
 		},
 		"/board/list: create card from relative path": {
 			given: given{
-				arg:          "card",
+				args:         []string{"card"},
 				currentBoard: &board,
 				currentList:  &list,
 				buildTrelloRepository: func() trello.Repository {
@@ -78,7 +94,31 @@ func TestTouch_Execute(t *testing.T) {
 						FindList(board.ID, list.Name).
 						Return(&list, nil)
 					tr.EXPECT().
-						CreateCard(createCard).
+						CreateCard(createCard1).
+						Return(nil, nil)
+					return tr
+				},
+			},
+			expected: expected{},
+		},
+		"/: create two cards": {
+			given: given{
+				args: []string{"/board/list/card", "/board/list/another-card"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board.Name).
+						Return(&board, nil).
+						Times(2)
+					tr.EXPECT().
+						FindList(board.ID, list.Name).
+						Return(&list, nil).
+						Times(2)
+					tr.EXPECT().
+						CreateCard(createCard1).
+						Return(nil, nil)
+					tr.EXPECT().
+						CreateCard(createCard2).
 						Return(nil, nil)
 					return tr
 				},
@@ -88,7 +128,7 @@ func TestTouch_Execute(t *testing.T) {
 		// ERRORS
 		"no board name": {
 			given: given{
-				arg: "/",
+				args: []string{"/"},
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
@@ -99,7 +139,7 @@ func TestTouch_Execute(t *testing.T) {
 		},
 		"no list name": {
 			given: given{
-				arg: "/board",
+				args: []string{"/board"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -114,7 +154,7 @@ func TestTouch_Execute(t *testing.T) {
 		},
 		"board not found": {
 			given: given{
-				arg: "/board/list/card",
+				args: []string{"/board/list/card"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -129,7 +169,7 @@ func TestTouch_Execute(t *testing.T) {
 		},
 		"no card name": {
 			given: given{
-				arg: "/board/list",
+				args: []string{"/board/list"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -147,7 +187,7 @@ func TestTouch_Execute(t *testing.T) {
 		},
 		"list not found": {
 			given: given{
-				arg: "/board/list/card",
+				args: []string{"/board/list/card"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -165,7 +205,7 @@ func TestTouch_Execute(t *testing.T) {
 		},
 		"invalid path": {
 			given: given{
-				arg: "/../..",
+				args: []string{"/../.."},
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
@@ -176,7 +216,7 @@ func TestTouch_Execute(t *testing.T) {
 		},
 		"error when creating card": {
 			given: given{
-				arg: "/board/list/card",
+				args: []string{"/board/list/card"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -186,13 +226,13 @@ func TestTouch_Execute(t *testing.T) {
 						FindList(board.ID, list.Name).
 						Return(&list, nil)
 					tr.EXPECT().
-						CreateCard(createCard).
+						CreateCard(createCard1).
 						Return(nil, errors.New("unexpected error"))
 					return tr
 				},
 			},
 			expected: expected{
-				stderr: fmt.Sprintf("could not create card '%s': unexpected error\n", createCard.Name),
+				stderr: fmt.Sprintf("could not create card '%s': unexpected error\n", createCard1.Name),
 			},
 		},
 	}
@@ -208,7 +248,7 @@ func TestTouch_Execute(t *testing.T) {
 					stdout:       &stdoutBuf,
 					stderr:       &stderrBuf,
 				}}
-			to.Execute(tt.given.arg)
+			to.Execute(tt.given.args)
 
 			actualStdout := stdoutBuf.String()
 			if actualStdout != tt.expected.stdout {
