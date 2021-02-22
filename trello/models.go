@@ -41,7 +41,8 @@ func (b Board) SanitizedName() string {
 func FindList(lists Lists, query string) *List {
 	sanitizedQuery := sanitize(query)
 	for _, list := range lists {
-		if list.ID == query ||
+		if list.TCliID() == sanitizedQuery ||
+			list.ID == query ||
 			list.Name == query ||
 			list.SanitizedName() == sanitizedQuery {
 			return &list
@@ -55,6 +56,10 @@ type List struct {
 	ID      string `json:"id"`
 	Name    string `json:"name"`
 	IDBoard string `json:"idBoard"`
+}
+
+func (l List) TCliID() string {
+	return toTCliID(l.SanitizedName(), l.ID)
 }
 
 func (l List) SanitizedName() string {
@@ -305,6 +310,6 @@ func getPos(in string) interface{} {
 // toTCliID converts a Trello entity into a unique ID understandable by tcli
 // it's using the name, for the user experience in the completion, and the short link
 // instead of the id to prevent having long lines in the completion.
-func toTCliID(name, shortLink string) string {
-	return fmt.Sprintf("%s[%s]", name, shortLink)
+func toTCliID(name, uid string) string {
+	return fmt.Sprintf("%s[%s]", name, uid)
 }

@@ -6,27 +6,24 @@ import (
 )
 
 func TestInTable_RenderBoards(t *testing.T) {
-	type given func() trello.Boards
 	var tests = map[string]struct {
-		given    given
+		given    trello.Boards
 		expected string
 	}{
 		"two boards": {
-			given: func() trello.Boards {
-				return trello.Boards{
-					trello.Board{
-						ID:               "1",
-						Name:             "Board 1",
-						ShortURL:         "https://trello.com/b/azerty",
-						DateLastActivity: "2021-02-04T14:19:25.229Z",
-					},
-					trello.Board{
-						ID:               "2",
-						Name:             "Board 2",
-						ShortURL:         "https://trello.com/b/popo",
-						DateLastActivity: "2021-02-08T21:02:58.117Z",
-					},
-				}
+			given: trello.Boards{
+				{
+					ID:               "1",
+					Name:             "Board 1",
+					ShortURL:         "https://trello.com/b/azerty",
+					DateLastActivity: "2021-02-04T14:19:25.229Z",
+				},
+				{
+					ID:               "2",
+					Name:             "Board 2",
+					ShortURL:         "https://trello.com/b/popo",
+					DateLastActivity: "2021-02-08T21:02:58.117Z",
+				},
 			},
 			expected: `Name       ID    Short URL                      Last activity date
 ----       --    ---------                      ------------------
@@ -35,9 +32,7 @@ Board 2    2     https://trello.com/b/popo      2021-02-08T21:02:58.117Z
 `,
 		},
 		"no board": {
-			given: func() trello.Boards {
-				return trello.Boards{}
-			},
+			given: trello.Boards{},
 			expected: `Name    ID    Short URL    Last activity date
 ----    --    ---------    ------------------
 `,
@@ -46,7 +41,48 @@ Board 2    2     https://trello.com/b/popo      2021-02-08T21:02:58.117Z
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			r := NewInTableRenderer(PlainLabel{}, PlainDescription{})
-			actual := r.RenderBoards(tt.given())
+			actual := r.RenderBoards(tt.given)
+			if actual != tt.expected {
+				t.Errorf("expected:\n%v\nactual:\n%v", tt.expected, actual)
+			}
+		})
+	}
+}
+
+func TestInTable_RenderBoard(t *testing.T) {
+	var tests = map[string]struct {
+		given    trello.Board
+		expected string
+	}{
+		"existing board": {
+			given: trello.Board{
+				ID:               "1",
+				Name:             "Board 1",
+				ShortLink:        "azerty",
+				ShortURL:         "https://trello.com/b/azerty",
+				DateLastActivity: "2021-02-04T14:19:25.229Z",
+			},
+			expected: `ID:                    1
+Short link:            azerty
+Short URL:             https://trello.com/b/azerty
+Name:                  Board 1
+Last activity date:    2021-02-04T14:19:25.229Z
+`,
+		},
+		"no board": {
+			given: trello.Board{},
+			expected: `ID:                    
+Short link:            
+Short URL:             
+Name:                  
+Last activity date:    
+`,
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			r := NewInTableRenderer(PlainLabel{}, PlainDescription{})
+			actual := r.RenderBoard(tt.given)
 			if actual != tt.expected {
 				t.Errorf("expected:\n%v\nactual:\n%v", tt.expected, actual)
 			}
@@ -55,23 +91,14 @@ Board 2    2     https://trello.com/b/popo      2021-02-08T21:02:58.117Z
 }
 
 func TestInTable_RenderLists(t *testing.T) {
-	type given func() trello.Lists
 	var tests = map[string]struct {
-		given    given
+		given    trello.Lists
 		expected string
 	}{
 		"two lists": {
-			given: func() trello.Lists {
-				return trello.Lists{
-					trello.List{
-						ID:   "1",
-						Name: "List 1",
-					},
-					trello.List{
-						ID:   "2",
-						Name: "List 2",
-					},
-				}
+			given: trello.Lists{
+				{ID: "1", Name: "List 1"},
+				{ID: "2", Name: "List 2"},
 			},
 			expected: `Name      ID
 ----      --
@@ -80,9 +107,7 @@ List 2    2
 `,
 		},
 		"no list": {
-			given: func() trello.Lists {
-				return trello.Lists{}
-			},
+			given: trello.Lists{},
 			expected: `Name    ID
 ----    --
 `,
@@ -91,7 +116,36 @@ List 2    2
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			r := NewInTableRenderer(PlainLabel{}, PlainDescription{})
-			actual := r.RenderLists(tt.given())
+			actual := r.RenderLists(tt.given)
+			if actual != tt.expected {
+				t.Errorf("expected:\n%v\nactual:\n%v", tt.expected, actual)
+			}
+		})
+	}
+}
+
+func TestInTable_RenderList(t *testing.T) {
+	var tests = map[string]struct {
+		given    trello.List
+		expected string
+	}{
+		"existing list": {
+			given: trello.List{ID: "1", Name: "List 1"},
+			expected: `ID:      1
+Name:    List 1
+`,
+		},
+		"no list": {
+			given: trello.List{},
+			expected: `ID:      
+Name:    
+`,
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			r := NewInTableRenderer(PlainLabel{}, PlainDescription{})
+			actual := r.RenderList(tt.given)
 			if actual != tt.expected {
 				t.Errorf("expected:\n%v\nactual:\n%v", tt.expected, actual)
 			}

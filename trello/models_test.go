@@ -99,6 +99,10 @@ func TestFindLists(t *testing.T) {
 		given    string
 		expected *List
 	}{
+		"find by TCliID": {
+			given:    "name6[id6]",
+			expected: &lists[6],
+		},
 		"find by ID": {
 			given:    "id8",
 			expected: &lists[8],

@@ -89,8 +89,8 @@ func TestCompleter_Complete(t *testing.T) {
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: list1.SanitizedName()},
-				{Text: list2.SanitizedName()},
+				{Text: list1.TCliID()},
+				{Text: list2.TCliID()},
 			},
 		},
 		"/board > cat b": {
@@ -113,7 +113,7 @@ func TestCompleter_Complete(t *testing.T) {
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: list1.SanitizedName()},
+				{Text: list1.TCliID()},
 			},
 		},
 		"/board > cat list/": {
@@ -184,7 +184,7 @@ func TestCompleter_Complete(t *testing.T) {
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: list2.SanitizedName()},
+				{Text: list2.TCliID()},
 			},
 		},
 		// ABSOLUTE PATHS
@@ -292,7 +292,7 @@ func TestCompleter_Complete(t *testing.T) {
 				},
 			},
 			expected: []prompt.Suggest{
-				{Text: list2.SanitizedName()},
+				{Text: list2.TCliID()},
 			},
 		},
 		"/ > mv board/list/card board/another-list/c": {

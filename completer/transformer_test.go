@@ -49,12 +49,12 @@ func TestListsToSuggestions(t *testing.T) {
 	}{
 		"two lists": {
 			given: trello.Lists{
-				{Name: "list 1"},
-				{Name: "list 2"},
+				{Name: "list 1", ID: "id 1"},
+				{Name: "list 2", ID: "id 2"},
 			},
 			expected: []prompt.Suggest{
-				{Text: `list\ 1`},
-				{Text: `list\ 2`},
+				{Text: `list\ 1[id 1]`},
+				{Text: `list\ 2[id 2]`},
 			},
 		},
 		"no list": {
