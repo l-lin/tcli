@@ -81,7 +81,7 @@ func (s *Session) LivePrefix() (string, bool) {
 	if s.CurrentList != nil {
 		builder.WriteString(fmt.Sprintf("/%s", s.CurrentList.Name))
 	}
-	builder.WriteString(" > ")
+	builder.WriteString("> ")
 	return builder.String(), true
 }
 
