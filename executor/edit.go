@@ -119,7 +119,10 @@ func (e edit) createCard(card trello.Card) (err error) {
 	createdCard.Desc = editedCard.Desc
 	createdCard.IDList = editedCard.IDList
 	createdCard.Pos = editedCard.GetPos()
-	createdCard.IDLabels = labels.FilterByColors(editedCard.LabelColors).IDLabelsInString()
+	createdCard.IDLabels = labels.FilterBy(
+		editedCard.Labels,
+		trello.LabelFilterOr(trello.LabelFilterByID, trello.LabelFilterByTCliColor, trello.LabelFilterByColor),
+	).IDLabelsInString()
 
 	prompt := promptui.Prompt{
 		Label:     fmt.Sprintf("Do you want to create the card '%s'?", createdCard.Name),
@@ -165,7 +168,10 @@ func (e edit) editCard(card trello.Card) (err error) {
 	updatedCard.Closed = editedCard.Closed
 	updatedCard.IDList = editedCard.IDList
 	updatedCard.Pos = editedCard.GetPos()
-	updatedCard.IDLabels = labels.FilterByColors(editedCard.LabelColors).IDLabelsInString()
+	updatedCard.IDLabels = labels.FilterBy(
+		editedCard.Labels,
+		trello.LabelFilterOr(trello.LabelFilterByID, trello.LabelFilterByTCliColor, trello.LabelFilterByColor),
+	).IDLabelsInString()
 
 	prompt := promptui.Prompt{
 		Label:     fmt.Sprintf("Do you want to update the card '%s'?", updatedCard.Name),

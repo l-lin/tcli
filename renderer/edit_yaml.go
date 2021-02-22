@@ -48,13 +48,13 @@ idList: "{{.Card.IDList}}"
 # the position of the card in its list: "top", "bottom" or a positive float
 pos: "bottom"
 {{/* ---------------- LABELS ---------------- */ -}}
-# available labels:
+# available labels (use color or ID):
 {{- if .Labels -}}
 {{range $label := .Labels}}
-# {{$label.Color}}{{if $label.Name}} [{{$label.Name}}]{{end }}
+# {{$label.ID}}: {{$label.Color}}{{if $label.Name}} [{{$label.Name}}]{{end }}
 {{- end -}}
 {{end}}
-labelColors: 
+labels: 
   - 
 {{/* ---------------- DESCRIPTION ---------------- */ -}}
 desc: |-
@@ -95,16 +95,16 @@ idList: "{{.Card.IDList}}"
 # the position of the card in its list: "top", "bottom" or a positive float
 pos: {{.Card.Pos}}
 {{/* ---------------- LABELS ---------------- */ -}}
-# available labels:
+# available labels (use color or ID):
 {{- if .Labels -}}
 {{range $label := .Labels}}
-# {{$label.Color}}{{if $label.Name}} [{{$label.Name}}]{{end }}
+# {{$label.ID}}: {{$label.Color}}{{if $label.Name}} [{{$label.Name}}]{{end }}
 {{- end -}}
 {{end}}
-labelColors:
-{{- if .Card.LabelColors -}}
-{{range $labelColor := .Card.LabelColors}}
-  - {{$labelColor}}
+labels:
+{{- if .Card.Labels -}}
+{{range $label := .Card.Labels}}
+  - {{$label}}
 {{- end -}}
 {{end}}
 {{/* ---------------- DESCRIPTION ---------------- */ -}}

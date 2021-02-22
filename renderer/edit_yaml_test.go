@@ -31,9 +31,9 @@ func TestEditInPrettyYaml_MarshalCardToCreate(t *testing.T) {
 					{ID: "list 3", Name: "list name 3"},
 				},
 				labels: trello.Labels{
-					{ID: "label 1", Name: "label name 1", Color: "red"},
-					{ID: "label 2", Name: "label name 2", Color: "sky"},
-					{ID: "label 3", Name: "", Color: "black"},
+					{ID: "id red", Name: "name red", Color: "red"},
+					{ID: "id sky", Name: "name sky", Color: "sky"},
+					{ID: "id black", Name: "", Color: "black"},
 				},
 			},
 			expected: expected{
@@ -46,11 +46,11 @@ func TestEditInPrettyYaml_MarshalCardToCreate(t *testing.T) {
 idList: "list 1"
 # the position of the card in its list: "top", "bottom" or a positive float
 pos: "bottom"
-# available labels:
-# red [label name 1]
-# sky [label name 2]
-# black
-labelColors: 
+# available labels (use color or ID):
+# id red: red [name red]
+# id sky: sky [name sky]
+# id black: black
+labels: 
   - 
 desc: |-
   `,
@@ -82,6 +82,11 @@ func TestEditInYaml_RenderCardToEdit(t *testing.T) {
 		hasError bool
 		content  string
 	}
+	labels := trello.Labels{
+		{ID: "id red", Name: "name red", Color: "red"},
+		{ID: "id sky", Name: "name sky", Color: "sky"},
+		{ID: "id black", Name: "", Color: "black"},
+	}
 	var tests = map[string]struct {
 		given    given
 		expected expected
@@ -95,21 +100,17 @@ func TestEditInYaml_RenderCardToEdit(t *testing.T) {
 > some context
 
 foobar`,
-					Closed:      false,
-					IDList:      "list 1",
-					Pos:         "123",
-					LabelColors: []string{"red", "black"},
+					Closed: false,
+					IDList: "list 1",
+					Pos:    "123",
+					Labels: []string{labels[0].ToTCliColor(), labels[2].ToTCliColor()},
 				},
 				boardLists: trello.Lists{
 					{ID: "list 1", Name: "list name 1"},
 					{ID: "list 2", Name: "list name 2"},
 					{ID: "list 3", Name: "list name 3"},
 				},
-				labels: trello.Labels{
-					{ID: "label 1", Name: "label name 1", Color: "red"},
-					{ID: "label 2", Name: "label name 2", Color: "sky"},
-					{ID: "label 3", Name: "", Color: "black"},
-				},
+				labels: labels,
 			},
 			expected: expected{
 				hasError: false,
@@ -123,12 +124,12 @@ closed: false
 idList: "list 1"
 # the position of the card in its list: "top", "bottom" or a positive float
 pos: 123
-# available labels:
-# red [label name 1]
-# sky [label name 2]
-# black
-labelColors:
-  - red
+# available labels (use color or ID):
+# id red: red [name red]
+# id sky: sky [name sky]
+# id black: black
+labels:
+  - red [name red]
   - black
 desc: |-
   # card description
@@ -148,17 +149,13 @@ desc: |-
 > some context
 
 foobar`,
-					Closed:      false,
-					IDList:      "list 1",
-					Pos:         "123",
-					LabelColors: []string{"red", "black"},
+					Closed: false,
+					IDList: "list 1",
+					Pos:    "123",
+					Labels: []string{labels[0].ToTCliColor(), labels[2].ToTCliColor()},
 				},
 				boardLists: trello.Lists{},
-				labels: trello.Labels{
-					{ID: "label 1", Name: "label name 1", Color: "red"},
-					{ID: "label 2", Name: "label name 2", Color: "sky"},
-					{ID: "label 3", Name: "", Color: "black"},
-				},
+				labels:     labels,
 			},
 			expected: expected{
 				hasError: false,
@@ -169,12 +166,12 @@ closed: false
 idList: "list 1"
 # the position of the card in its list: "top", "bottom" or a positive float
 pos: 123
-# available labels:
-# red [label name 1]
-# sky [label name 2]
-# black
-labelColors:
-  - red
+# available labels (use color or ID):
+# id red: red [name red]
+# id sky: sky [name sky]
+# id black: black
+labels:
+  - red [name red]
   - black
 desc: |-
   # card description
@@ -194,10 +191,10 @@ desc: |-
 > some context
 
 foobar`,
-					Closed:      false,
-					IDList:      "list 1",
-					Pos:         "123",
-					LabelColors: []string{},
+					Closed: false,
+					IDList: "list 1",
+					Pos:    "123",
+					Labels: []string{},
 				},
 				boardLists: trello.Lists{
 					{ID: "list 1", Name: "list name 1"},
@@ -218,8 +215,8 @@ closed: false
 idList: "list 1"
 # the position of the card in its list: "top", "bottom" or a positive float
 pos: 123
-# available labels:
-labelColors:
+# available labels (use color or ID):
+labels:
 desc: |-
   # card description
 

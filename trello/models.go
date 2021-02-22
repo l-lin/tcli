@@ -113,11 +113,33 @@ func (l Labels) String() string {
 	return sb.String()
 }
 
-func (l Labels) FilterByColors(colors []string) Labels {
+type LabelFilter func(s string, l Label) bool
+
+var LabelFilterByID = func(s string, l Label) bool {
+	return s == l.ID
+}
+var LabelFilterByTCliColor = func(s string, l Label) bool {
+	return s == l.ToTCliColor()
+}
+var LabelFilterByColor = func(s string, l Label) bool {
+	return s == l.Color
+}
+var LabelFilterOr = func(filters ...LabelFilter) LabelFilter {
+	return func(s string, l Label) bool {
+		for _, filter := range filters {
+			if filter(s, l) {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+func (l Labels) FilterBy(labels []string, filter LabelFilter) Labels {
 	filtered := Labels{}
-	for _, color := range colors {
+	for _, s := range labels {
 		for _, label := range l {
-			if color == label.Color {
+			if filter(s, label) {
 				filtered = append(filtered, label)
 				continue
 			}
@@ -134,10 +156,10 @@ func (l Labels) IDLabelsInString() string {
 	return strings.Join(idLabels, ",")
 }
 
-func (l Labels) SliceColors() []string {
+func (l Labels) ToSliceTCliColors() []string {
 	s := make([]string, len(l))
 	for i := 0; i < len(l); i++ {
-		s[i] = l[i].Color
+		s[i] = l[i].ToTCliColor()
 	}
 	return s
 }
@@ -147,6 +169,13 @@ type Label struct {
 	IDBoard string `json:"idBoard"`
 	Name    string `json:"name"`
 	Color   string `json:"color"`
+}
+
+func (l Label) ToTCliColor() string {
+	if l.Name == "" {
+		return l.Color
+	}
+	return fmt.Sprintf("%s [%s]", l.Color, l.Name)
 }
 
 // CARD CREATION ---------------------------------------------------------------------------------------
@@ -185,11 +214,11 @@ func NewCardToCreate(card Card) CardToCreate {
 // it's different from the other card representation because we do not want to expose everything to the user
 // like for instance, the card ID as the user
 type CardToCreate struct {
-	Name        string   `yaml:"name"`
-	Desc        string   `yaml:"desc"`
-	IDList      string   `yaml:"idList"`
-	Pos         string   `yaml:"pos,omitempty"` // "top", "bottom" or a positive float
-	LabelColors []string `yaml:"labelColors"`
+	Name   string   `yaml:"name"`
+	Desc   string   `yaml:"desc"`
+	IDList string   `yaml:"idList"`
+	Pos    string   `yaml:"pos,omitempty"` // "top", "bottom" or a positive float
+	Labels []string `yaml:"labels"`
 }
 
 func (ctc CardToCreate) GetPos() interface{} {
@@ -226,12 +255,12 @@ func NewUpdateCard(card Card) UpdateCard {
 
 func NewCardToEdit(card Card) CardToEdit {
 	return CardToEdit{
-		Name:        card.Name,
-		Desc:        card.Desc,
-		Closed:      card.Closed,
-		IDList:      card.IDList,
-		LabelColors: card.Labels.SliceColors(),
-		Pos:         strconv.FormatFloat(card.Pos, 'f', 2, 64),
+		Name:   card.Name,
+		Desc:   card.Desc,
+		Closed: card.Closed,
+		IDList: card.IDList,
+		Labels: card.Labels.ToSliceTCliColors(),
+		Pos:    strconv.FormatFloat(card.Pos, 'f', 2, 64),
 	}
 }
 
@@ -239,12 +268,12 @@ func NewCardToEdit(card Card) CardToEdit {
 // it's different from the other card representation because we do not want to expose everything to the user
 // like for instance, the card ID as the user
 type CardToEdit struct {
-	Name        string   `yaml:"name"`
-	Desc        string   `yaml:"desc"`
-	Closed      bool     `yaml:"closed"`
-	IDList      string   `yaml:"idList"`
-	LabelColors []string `yaml:"labelColors"`
-	Pos         string   `yaml:"pos,omitempty"` // "top", "bottom" or a positive float
+	Name   string   `yaml:"name"`
+	Desc   string   `yaml:"desc"`
+	Closed bool     `yaml:"closed"`
+	IDList string   `yaml:"idList"`
+	Labels []string `yaml:"labels"`
+	Pos    string   `yaml:"pos,omitempty"` // "top", "bottom" or a positive float
 }
 
 func (cte CardToEdit) GetPos() interface{} {
