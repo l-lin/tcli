@@ -58,6 +58,19 @@ func (e executor) getListFromArg(arg string) (*trello.List, error) {
 	return e.getList(boardName, listName)
 }
 
+func (e executor) getListAndCardNameFromArg(arg string) (*trello.List, string, error) {
+	pathResolver := trello.NewPathResolver(e.currentBoard, e.currentList)
+	boardName, listName, cardName, err := pathResolver.Resolve(arg)
+	if err != nil {
+		return nil, "", err
+	}
+	if boardName == "" || listName == "" {
+		return nil, "", fmt.Errorf("invalid path")
+	}
+	list, err := e.getList(boardName, listName)
+	return list, cardName, err
+}
+
 func (e executor) getList(boardName, listName string) (list *trello.List, err error) {
 	var board *trello.Board
 	if board, err = e.tr.FindBoard(boardName); err != nil || board == nil {

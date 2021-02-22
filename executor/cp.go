@@ -30,7 +30,7 @@ func (c cp) Execute(args []string) (currentBoard *trello.Board, currentList *tre
 		fmt.Fprintf(c.stderr, "%s\n", err.Error())
 		return
 	}
-	destList, destCard, err := c.getListAndCardName(args[1])
+	destList, destCardName, err := c.getListAndCardNameFromArg(args[1])
 	if err != nil {
 		fmt.Fprintf(c.stderr, "%s\n", err.Error())
 		return
@@ -38,25 +38,12 @@ func (c cp) Execute(args []string) (currentBoard *trello.Board, currentList *tre
 	var createCard trello.CreateCard
 	createCard = trello.NewCreateCard(*sourceCard)
 	createCard.IDList = destList.ID
-	if destCard != "" {
-		createCard.Name = destCard
+	if destCardName != "" {
+		createCard.Name = destCardName
 	}
 	if _, err = c.tr.CreateCard(createCard); err != nil {
 		fmt.Fprintf(c.stderr, "could not copy card '%s': %v\n", sourceCard.Name, err)
 		return
 	}
 	return
-}
-
-func (c cp) getListAndCardName(arg string) (*trello.List, string, error) {
-	pathResolver := trello.NewPathResolver(c.currentBoard, c.currentList)
-	boardName, listName, cardName, err := pathResolver.Resolve(arg)
-	if err != nil {
-		return nil, "", err
-	}
-	if boardName == "" || listName == "" {
-		return nil, "", fmt.Errorf("invalid path")
-	}
-	list, err := c.getList(boardName, listName)
-	return list, cardName, err
 }

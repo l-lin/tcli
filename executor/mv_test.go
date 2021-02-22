@@ -15,7 +15,7 @@ func TestMv_Execute(t *testing.T) {
 	board := trello.Board{ID: "board 1", Name: "board"}
 	list1 := trello.List{ID: "list 1", Name: "list"}
 	list2 := trello.List{ID: "list 2", Name: "another-list"}
-	card := trello.Card{ID: "card 1", Name: "card"}
+	card := trello.Card{ID: "card 1", Name: "card", IDList: list1.ID}
 	type given struct {
 		args                  []string
 		buildTrelloRepository func() trello.Repository
@@ -28,7 +28,7 @@ func TestMv_Execute(t *testing.T) {
 		given    given
 		expected expected
 	}{
-		"moving card to another list": {
+		"/ > mv /board/list/card /board/another-list": {
 			given: given{
 				args: []string{"/board/list/card", "/board/another-list"},
 				buildTrelloRepository: func() trello.Repository {
@@ -48,6 +48,32 @@ func TestMv_Execute(t *testing.T) {
 						Return(&card, nil)
 					updatedCard := trello.NewUpdateCard(card)
 					updatedCard.IDList = list2.ID
+					tr.EXPECT().
+						UpdateCard(updatedCard).
+						Return(nil, nil)
+					return tr
+				},
+			},
+			expected: expected{},
+		},
+		"/ > mv /board/list/card /board/list/new-card-name": {
+			given: given{
+				args: []string{"/board/list/card", "/board/list/new-card-name"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board.Name).
+						Return(&board, nil).
+						Times(2)
+					tr.EXPECT().
+						FindList(board.ID, list1.Name).
+						Return(&list1, nil).
+						Times(2)
+					tr.EXPECT().
+						FindCard(list1.ID, card.Name).
+						Return(&card, nil)
+					updatedCard := trello.NewUpdateCard(card)
+					updatedCard.Name = "new-card-name"
 					tr.EXPECT().
 						UpdateCard(updatedCard).
 						Return(nil, nil)

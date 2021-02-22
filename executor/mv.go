@@ -30,13 +30,16 @@ func (m mv) Execute(args []string) (currentBoard *trello.Board, currentList *tre
 		fmt.Fprintf(m.stderr, "%s\n", err.Error())
 		return
 	}
-	destList, err := m.getListFromArg(args[1])
+	destList, destCardName, err := m.getListAndCardNameFromArg(args[1])
 	if err != nil {
 		fmt.Fprintf(m.stderr, "%s\n", err.Error())
 		return
 	}
 	updateCard := trello.NewUpdateCard(*sourceCard)
 	updateCard.IDList = destList.ID
+	if destCardName != "" {
+		updateCard.Name = destCardName
+	}
 	if _, err = m.tr.UpdateCard(updateCard); err != nil {
 		fmt.Fprintf(m.stderr, "could not update card: %v\n", err)
 	}

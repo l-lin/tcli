@@ -13,7 +13,10 @@ func NewMVCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(2),
 		Example: `
   # move card 'card' to 'target-list'
-  tcli mv /source-board/source-list/source-card /target-board/target-list`,
+  tcli mv /source-board/source-list/source-card /target-board/target-list
+
+  # rename card 'card' to 'new-card-name
+  tcli mv /board/list/card /board/list/new-card-name`,
 	}
 }
 
