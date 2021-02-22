@@ -153,8 +153,5 @@ func (c *CacheInMemory) removeCard(idList string, cardIndex int) {
 	if cardIndex >= len(cards) {
 		return
 	}
-	// swap
-	cards[len(cards)-1], cards[cardIndex] = cards[cardIndex], cards[len(cards)-1]
-	// then remove last element of slice
-	c.mapCards[idList] = cards[:len(cards)-1]
+	c.mapCards[idList] = append(cards[:cardIndex], cards[cardIndex+1:]...)
 }

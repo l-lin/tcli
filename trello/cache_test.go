@@ -632,6 +632,27 @@ func TestCacheInMemory_removeCard(t *testing.T) {
 		given    given
 		expected expected
 	}{
+		"remove card at index 0": {
+			given: given{
+				mapCards: map[string]Cards{
+					"list 1": {
+						{ID: "card 1"},
+						{ID: "card 2"},
+						{ID: "card 3"},
+					},
+				},
+				idList:    "list 1",
+				cardIndex: 0,
+			},
+			expected: expected{
+				mapCards: map[string]Cards{
+					"list 1": {
+						{ID: "card 2"},
+						{ID: "card 3"},
+					},
+				},
+			},
+		},
 		"remove card at index 1": {
 			given: given{
 				mapCards: map[string]Cards{
