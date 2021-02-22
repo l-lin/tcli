@@ -166,6 +166,7 @@ func TestInTable_RenderCards(t *testing.T) {
 						ID:       "1",
 						ShortURL: "https://trello.com/c/abcd1",
 						Name:     "Card 1",
+						Pos:      10,
 						Labels: trello.Labels{
 							trello.Label{
 								ID:    "10",
@@ -183,6 +184,7 @@ func TestInTable_RenderCards(t *testing.T) {
 						ID:       "2",
 						ShortURL: "https://trello.com/c/abcd2",
 						Name:     "Card 2",
+						Pos:      20,
 						Labels: trello.Labels{
 							trello.Label{
 								ID:    "20",
@@ -197,10 +199,10 @@ func TestInTable_RenderCards(t *testing.T) {
 					},
 				}
 			},
-			expected: `Name      ID    Short URL                     Labels
-----      --    ---------                     ------
-Card 1    1     https://trello.com/c/abcd1    Label 10 Label 11 
-Card 2    2     https://trello.com/c/abcd2    Label 20 sky 
+			expected: `Name      ID    Short URL                     Position    Labels
+----      --    ---------                     --------    ------
+Card 1    1     https://trello.com/c/abcd1    10          Label 10 Label 11 
+Card 2    2     https://trello.com/c/abcd2    20          Label 20 sky 
 `,
 		},
 		"two cards without label": {
@@ -210,20 +212,22 @@ Card 2    2     https://trello.com/c/abcd2    Label 20 sky
 						ID:       "1",
 						ShortURL: "https://trello.com/c/abcd1",
 						Name:     "Card 1",
+						Pos:      10,
 						Labels:   trello.Labels{},
 					},
 					trello.Card{
 						ID:       "2",
 						ShortURL: "https://trello.com/c/abcd2",
 						Name:     "Card 2",
+						Pos:      20,
 						Labels:   trello.Labels{},
 					},
 				}
 			},
-			expected: `Name      ID    Short URL                     Labels
-----      --    ---------                     ------
-Card 1    1     https://trello.com/c/abcd1    
-Card 2    2     https://trello.com/c/abcd2    
+			expected: `Name      ID    Short URL                     Position    Labels
+----      --    ---------                     --------    ------
+Card 1    1     https://trello.com/c/abcd1    10          
+Card 2    2     https://trello.com/c/abcd2    20          
 `,
 		},
 		"display cards by position order": {
@@ -245,18 +249,18 @@ Card 2    2     https://trello.com/c/abcd2
 					},
 				}
 			},
-			expected: `Name      ID    Short URL                     Labels
-----      --    ---------                     ------
-Card 2    2     https://trello.com/c/abcd2    
-Card 1    1     https://trello.com/c/abcd1    
+			expected: `Name      ID    Short URL                     Position    Labels
+----      --    ---------                     --------    ------
+Card 2    2     https://trello.com/c/abcd2    1           
+Card 1    1     https://trello.com/c/abcd1    10          
 `,
 		},
 		"no card": {
 			given: func() trello.Cards {
 				return trello.Cards{}
 			},
-			expected: `Name    ID    Short URL    Labels
-----    --    ---------    ------
+			expected: `Name    ID    Short URL    Position    Labels
+----    --    ---------    --------    ------
 `,
 		},
 	}

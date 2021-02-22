@@ -88,16 +88,17 @@ func (b InTable) RenderCards(cards trello.Cards) string {
 	var buffer bytes.Buffer
 	w := tabwriter.NewWriter(&buffer, b.minWidth, b.tabWidth, b.padding, b.padChar, b.flags)
 	t := tabby.NewCustom(w)
-	t.AddHeader("Name", "ID", "Short URL", "Labels")
+	t.AddHeader("Name", "ID", "Short URL", "Position", "Labels")
 	sort.Slice(cards, func(i, j int) bool {
 		return cards[i].Pos < cards[j].Pos
 	})
 	for _, card := range cards {
-		line := make([]interface{}, 4)
+		line := make([]interface{}, 5)
 		line[0] = card.Name
 		line[1] = card.ID
 		line[2] = card.ShortURL
-		line[3] = b.lr.Render(card.Labels)
+		line[3] = card.Pos
+		line[4] = b.lr.Render(card.Labels)
 		t.AddLine(line...)
 	}
 	t.Print()
