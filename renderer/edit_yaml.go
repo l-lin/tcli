@@ -51,10 +51,10 @@ pos: "bottom"
 # available labels:
 {{- if .Labels -}}
 {{range $label := .Labels}}
-# {{$label.ID}}: {{$label.Color}}{{if $label.Name}} [{{$label.Name}}]{{end }}
+# {{$label.Color}}{{if $label.Name}} [{{$label.Name}}]{{end }}
 {{- end -}}
 {{end}}
-idLabels: 
+labelColors: 
   - 
 {{/* ---------------- DESCRIPTION ---------------- */ -}}
 desc: |-
@@ -98,13 +98,13 @@ pos: {{.Card.Pos}}
 # available labels:
 {{- if .Labels -}}
 {{range $label := .Labels}}
-# {{$label.ID}}: {{$label.Color}}{{if $label.Name}} [{{$label.Name}}]{{end }}
+# {{$label.Color}}{{if $label.Name}} [{{$label.Name}}]{{end }}
 {{- end -}}
 {{end}}
-idLabels:
-{{- if .Card.IDLabels -}}
-{{range $idLabel := .Card.IDLabels}}
-  - {{$idLabel}}
+labelColors:
+{{- if .Card.LabelColors -}}
+{{range $labelColor := .Card.LabelColors}}
+  - {{$labelColor}}
 {{- end -}}
 {{end}}
 {{/* ---------------- DESCRIPTION ---------------- */ -}}

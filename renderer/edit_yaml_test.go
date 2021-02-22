@@ -47,10 +47,10 @@ idList: "list 1"
 # the position of the card in its list: "top", "bottom" or a positive float
 pos: "bottom"
 # available labels:
-# label 1: red [label name 1]
-# label 2: sky [label name 2]
-# label 3: black
-idLabels: 
+# red [label name 1]
+# sky [label name 2]
+# black
+labelColors: 
   - 
 desc: |-
   `,
@@ -95,10 +95,10 @@ func TestEditInYaml_RenderCardToEdit(t *testing.T) {
 > some context
 
 foobar`,
-					Closed:   false,
-					IDList:   "list 1",
-					Pos:      "123",
-					IDLabels: []string{"label 1", "label 3"},
+					Closed:      false,
+					IDList:      "list 1",
+					Pos:         "123",
+					LabelColors: []string{"red", "black"},
 				},
 				boardLists: trello.Lists{
 					{ID: "list 1", Name: "list name 1"},
@@ -124,12 +124,12 @@ idList: "list 1"
 # the position of the card in its list: "top", "bottom" or a positive float
 pos: 123
 # available labels:
-# label 1: red [label name 1]
-# label 2: sky [label name 2]
-# label 3: black
-idLabels:
-  - label 1
-  - label 3
+# red [label name 1]
+# sky [label name 2]
+# black
+labelColors:
+  - red
+  - black
 desc: |-
   # card description
 
@@ -148,10 +148,10 @@ desc: |-
 > some context
 
 foobar`,
-					Closed:   false,
-					IDList:   "list 1",
-					Pos:      "123",
-					IDLabels: []string{"label 1", "label 3"},
+					Closed:      false,
+					IDList:      "list 1",
+					Pos:         "123",
+					LabelColors: []string{"red", "black"},
 				},
 				boardLists: trello.Lists{},
 				labels: trello.Labels{
@@ -170,12 +170,12 @@ idList: "list 1"
 # the position of the card in its list: "top", "bottom" or a positive float
 pos: 123
 # available labels:
-# label 1: red [label name 1]
-# label 2: sky [label name 2]
-# label 3: black
-idLabels:
-  - label 1
-  - label 3
+# red [label name 1]
+# sky [label name 2]
+# black
+labelColors:
+  - red
+  - black
 desc: |-
   # card description
 
@@ -194,10 +194,10 @@ desc: |-
 > some context
 
 foobar`,
-					Closed:   false,
-					IDList:   "list 1",
-					Pos:      "123",
-					IDLabels: []string{},
+					Closed:      false,
+					IDList:      "list 1",
+					Pos:         "123",
+					LabelColors: []string{},
 				},
 				boardLists: trello.Lists{
 					{ID: "list 1", Name: "list name 1"},
@@ -219,7 +219,7 @@ idList: "list 1"
 # the position of the card in its list: "top", "bottom" or a positive float
 pos: 123
 # available labels:
-idLabels:
+labelColors:
 desc: |-
   # card description
 

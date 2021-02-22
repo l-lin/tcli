@@ -3,6 +3,7 @@ package trello
 import (
 	"fmt"
 	"github.com/logrusorgru/aurora/v3"
+	"reflect"
 	"testing"
 )
 
@@ -228,13 +229,13 @@ func TestLabels_Slice(t *testing.T) {
 				{ID: "label 2", Name: "label name 2", Color: "sky"},
 				{ID: "label 3", Name: "label name 3", Color: "black"},
 			},
-			expected: []string{"label 1", "label 2", "label 3"},
+			expected: []string{"red", "sky", "black"},
 		},
 		"1 label": {
 			given: Labels{
 				{ID: "label 1", Name: "label name 1", Color: "red"},
 			},
-			expected: []string{"label 1"},
+			expected: []string{"red"},
 		},
 		"no label": {
 			given:    Labels{},
@@ -243,15 +244,9 @@ func TestLabels_Slice(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			actual := tt.given.Slice()
-			if len(actual) != len(tt.expected) {
+			actual := tt.given.SliceColors()
+			if !reflect.DeepEqual(tt.expected, actual) {
 				t.Errorf("expected %v, actual %v", tt.expected, actual)
-				t.FailNow()
-			}
-			for i := 0; i < len(actual); i++ {
-				if actual[i] != tt.expected[i] {
-					t.Errorf("%d: expected %v, actual %v", i, tt.expected[i], actual[i])
-				}
 			}
 		})
 	}
@@ -276,6 +271,120 @@ func TestLabel_Colorize(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			actual := tt.given.Colorize(s)
 			if actual != tt.expected {
+				t.Errorf("expected %v, actual %v", tt.expected, actual)
+			}
+		})
+	}
+}
+
+func TestLabels_FilterByColors(t *testing.T) {
+	labels := Labels{}
+	for color := range mapColors {
+		labels = append(labels, Label{Color: color, ID: "id " + color})
+	}
+	var tests = map[string]struct {
+		given    []string
+		expected Labels
+	}{
+		"3 labels": {
+			given: []string{"red", "green", "sky"},
+			expected: Labels{
+				{Color: "red", ID: "id red"},
+				{Color: "green", ID: "id green"},
+				{Color: "sky", ID: "id sky"},
+			},
+		},
+		"1 label": {
+			given: []string{"black"},
+			expected: Labels{
+				{Color: "black", ID: "id black"},
+			},
+		},
+		"no label": {
+			given:    []string{},
+			expected: Labels{},
+		},
+		"nonexistent color": {
+			given: []string{"unknown", "red"},
+			expected: Labels{
+				{Color: "red", ID: "id red"},
+			},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			actual := labels.FilterByColors(tt.given)
+			if !reflect.DeepEqual(tt.expected, actual) {
+				t.Errorf("expected %v, actual %v", tt.expected, actual)
+			}
+		})
+	}
+}
+
+func TestLabels_IDLabelsInString(t *testing.T) {
+	var tests = map[string]struct {
+		given    Labels
+		expected string
+	}{
+		"3 labels": {
+			given: Labels{
+				{Color: "red", ID: "id red"},
+				{Color: "green", ID: "id green"},
+				{Color: "sky", ID: "id sky"},
+			},
+			expected: "id red,id green,id sky",
+		},
+		"1 labels": {
+			given: Labels{
+				{Color: "red", ID: "id red"},
+			},
+			expected: "id red",
+		},
+		"no labels": {
+			given:    Labels{},
+			expected: "",
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			actual := tt.given.IDLabelsInString()
+			if actual != tt.expected {
+				t.Errorf("expected %v, actual %v", tt.expected, actual)
+			}
+		})
+	}
+}
+
+func TestLabels_FilterByColors_Then_IDLabelsInString(t *testing.T) {
+	labels := Labels{}
+	for color := range mapColors {
+		labels = append(labels, Label{Color: color, ID: "id " + color})
+	}
+	var tests = map[string]struct {
+		given    []string
+		expected string
+	}{
+		"3 labels": {
+			given:    []string{"red", "green", "sky"},
+			expected: "id red,id green,id sky",
+		},
+		"1 label": {
+			given:    []string{"black"},
+			expected: "id black",
+		},
+		"no label": {
+			given:    []string{},
+			expected: "",
+		},
+		"nonexistent color": {
+			given:    []string{"unknown", "red"},
+			expected: "id red",
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			actual := labels.FilterByColors(tt.given).IDLabelsInString()
+			if !reflect.DeepEqual(tt.expected, actual) {
 				t.Errorf("expected %v, actual %v", tt.expected, actual)
 			}
 		})
@@ -408,34 +517,6 @@ func TestCardToCreate_GetPos(t *testing.T) {
 	}
 }
 
-func TestCardToCreate_IDLabelsInString(t *testing.T) {
-	var tests = map[string]struct {
-		given    CardToCreate
-		expected string
-	}{
-		"3 labels": {
-			given:    CardToCreate{IDLabels: []string{"label 1", "label 2", "label 3"}},
-			expected: "label 1,label 2,label 3",
-		},
-		"1 label": {
-			given:    CardToCreate{IDLabels: []string{"label 1"}},
-			expected: "label 1",
-		},
-		"no label": {
-			given:    CardToCreate{IDLabels: []string{}},
-			expected: "",
-		},
-	}
-	for name, tt := range tests {
-		t.Run(name, func(t *testing.T) {
-			actual := tt.given.IDLabelsInString()
-			if actual != tt.expected {
-				t.Errorf("expected %v, actual %v", tt.expected, actual)
-			}
-		})
-	}
-}
-
 // CARD UPDATE ---------------------------------------------------------------------------------------
 
 func TestNewUpdateCard(t *testing.T) {
@@ -490,7 +571,7 @@ func TestNewCardToEdit(t *testing.T) {
 		IDList: "list id",
 		Closed: true,
 		Pos:    123,
-		Labels: Labels{{ID: "label id 1"}, {ID: "label id 2"}, {ID: "label id 3"}},
+		Labels: Labels{{Color: "red"}, {Color: "green"}, {Color: "black"}},
 	}
 
 	// WHEN
@@ -513,15 +594,9 @@ func TestNewCardToEdit(t *testing.T) {
 	if actual.Pos != expectedPos {
 		t.Errorf("expected %v, actual %v", expectedPos, actual.Pos)
 	}
-	expectedIDLabels := []string{"label id 1", "label id 2", "label id 3"}
-	if len(actual.IDLabels) != len(expectedIDLabels) {
-		t.Errorf("expected %v, actual %v", expectedIDLabels, actual.IDLabels)
-		t.FailNow()
-	}
-	for i := 0; i < len(expectedIDLabels); i++ {
-		if expectedIDLabels[i] != actual.IDLabels[i] {
-			t.Errorf("%d: expected %v, actual %v", i, expectedIDLabels[i], actual.IDLabels[i])
-		}
+	expectedLabelColors := []string{"red", "green", "black"}
+	if !reflect.DeepEqual(expectedLabelColors, actual.LabelColors) {
+		t.Errorf("expected %v, actual %v", expectedLabelColors, actual.LabelColors)
 	}
 }
 
@@ -554,34 +629,6 @@ func TestCardToEdit_GetPos(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			actual := tt.given.GetPos()
-			if actual != tt.expected {
-				t.Errorf("expected %v, actual %v", tt.expected, actual)
-			}
-		})
-	}
-}
-
-func TestCardToEdit_IDLabelsInString(t *testing.T) {
-	var tests = map[string]struct {
-		given    CardToEdit
-		expected string
-	}{
-		"3 labels": {
-			given:    CardToEdit{IDLabels: []string{"label 1", "label 2", "label 3"}},
-			expected: "label 1,label 2,label 3",
-		},
-		"1 label": {
-			given:    CardToEdit{IDLabels: []string{"label 1"}},
-			expected: "label 1",
-		},
-		"no label": {
-			given:    CardToEdit{IDLabels: []string{}},
-			expected: "",
-		},
-	}
-	for name, tt := range tests {
-		t.Run(name, func(t *testing.T) {
-			actual := tt.given.IDLabelsInString()
 			if actual != tt.expected {
 				t.Errorf("expected %v, actual %v", tt.expected, actual)
 			}

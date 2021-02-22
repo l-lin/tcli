@@ -127,10 +127,31 @@ func (l Labels) String() string {
 	return sb.String()
 }
 
-func (l Labels) Slice() []string {
+func (l Labels) FilterByColors(colors []string) Labels {
+	filtered := Labels{}
+	for _, color := range colors {
+		for _, label := range l {
+			if color == label.Color {
+				filtered = append(filtered, label)
+				continue
+			}
+		}
+	}
+	return filtered
+}
+
+func (l Labels) IDLabelsInString() string {
+	var idLabels []string
+	for _, label := range l {
+		idLabels = append(idLabels, label.ID)
+	}
+	return strings.Join(idLabels, ",")
+}
+
+func (l Labels) SliceColors() []string {
 	s := make([]string, len(l))
 	for i := 0; i < len(l); i++ {
-		s[i] = l[i].ID
+		s[i] = l[i].Color
 	}
 	return s
 }
@@ -185,19 +206,15 @@ func NewCardToCreate(card Card) CardToCreate {
 // it's different from the other card representation because we do not want to expose everything to the user
 // like for instance, the card ID as the user
 type CardToCreate struct {
-	Name     string   `yaml:"name"`
-	Desc     string   `yaml:"desc"`
-	IDList   string   `yaml:"idList"`
-	Pos      string   `yaml:"pos,omitempty"` // "top", "bottom" or a positive float
-	IDLabels []string `yaml:"idLabels"`
+	Name        string   `yaml:"name"`
+	Desc        string   `yaml:"desc"`
+	IDList      string   `yaml:"idList"`
+	Pos         string   `yaml:"pos,omitempty"` // "top", "bottom" or a positive float
+	LabelColors []string `yaml:"labelColors"`
 }
 
 func (ctc CardToCreate) GetPos() interface{} {
 	return getPos(ctc.Pos)
-}
-
-func (ctc CardToCreate) IDLabelsInString() string {
-	return strings.Join(ctc.IDLabels, ",")
 }
 
 // CARD UPDATE ---------------------------------------------------------------------------------------
@@ -230,12 +247,12 @@ func NewUpdateCard(card Card) UpdateCard {
 
 func NewCardToEdit(card Card) CardToEdit {
 	return CardToEdit{
-		Name:     card.Name,
-		Desc:     card.Desc,
-		Closed:   card.Closed,
-		IDList:   card.IDList,
-		IDLabels: card.Labels.Slice(),
-		Pos:      strconv.FormatFloat(card.Pos, 'f', 2, 64),
+		Name:        card.Name,
+		Desc:        card.Desc,
+		Closed:      card.Closed,
+		IDList:      card.IDList,
+		LabelColors: card.Labels.SliceColors(),
+		Pos:         strconv.FormatFloat(card.Pos, 'f', 2, 64),
 	}
 }
 
@@ -243,20 +260,16 @@ func NewCardToEdit(card Card) CardToEdit {
 // it's different from the other card representation because we do not want to expose everything to the user
 // like for instance, the card ID as the user
 type CardToEdit struct {
-	Name     string   `yaml:"name"`
-	Desc     string   `yaml:"desc"`
-	Closed   bool     `yaml:"closed"`
-	IDList   string   `yaml:"idList"`
-	IDLabels []string `yaml:"idLabels"`
-	Pos      string   `yaml:"pos,omitempty"` // "top", "bottom" or a positive float
+	Name        string   `yaml:"name"`
+	Desc        string   `yaml:"desc"`
+	Closed      bool     `yaml:"closed"`
+	IDList      string   `yaml:"idList"`
+	LabelColors []string `yaml:"labelColors"`
+	Pos         string   `yaml:"pos,omitempty"` // "top", "bottom" or a positive float
 }
 
 func (cte CardToEdit) GetPos() interface{} {
 	return getPos(cte.Pos)
-}
-
-func (cte CardToEdit) IDLabelsInString() string {
-	return strings.Join(cte.IDLabels, ",")
 }
 
 // PRIVATE ---------------------------------------------------------------------------

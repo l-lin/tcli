@@ -3,7 +3,7 @@ package trello
 import (
 	"errors"
 	"github.com/golang/mock/gomock"
-	"sort"
+	"reflect"
 	"testing"
 )
 
@@ -746,23 +746,8 @@ func TestCacheInMemory_removeCard(t *testing.T) {
 			cr := &CacheInMemory{mapCards: tt.given.mapCards}
 			cr.removeCard(tt.given.idList, tt.given.cardIndex)
 			actual := cr.mapCards
-			if len(actual) != len(tt.expected.mapCards) {
+			if !reflect.DeepEqual(tt.expected.mapCards, actual) {
 				t.Errorf("expected %v, actual %v", tt.expected.mapCards, actual)
-				t.FailNow()
-			}
-			for idList, cards := range tt.expected.mapCards {
-				if len(actual[idList]) != len(cards) {
-					t.Errorf("expected %v, actual %v", cards, actual[idList])
-					t.FailNow()
-				}
-				sort.Slice(actual[idList], func(i, j int) bool {
-					return actual[idList][i].ID < actual[idList][j].ID
-				})
-				for i := 0; i < len(cards); i++ {
-					if actual[idList][i].ID != cards[i].ID {
-						t.Errorf("%d: expected %v, actual %v", i, cards[i], actual[idList][i])
-					}
-				}
 			}
 		})
 	}
