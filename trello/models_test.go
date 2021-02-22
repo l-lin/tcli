@@ -2,10 +2,22 @@ package trello
 
 import (
 	"fmt"
-	"github.com/logrusorgru/aurora/v3"
 	"reflect"
 	"testing"
 )
+
+var colors = []string{
+	"black",
+	"blue",
+	"green",
+	"lime",
+	"orange",
+	"pink",
+	"purple",
+	"red",
+	"sky",
+	"yellow",
+}
 
 // FIND ---------------------------------------------------------------------------------------
 
@@ -252,34 +264,9 @@ func TestLabels_Slice(t *testing.T) {
 	}
 }
 
-func TestLabel_Colorize(t *testing.T) {
-	s := "content"
-	var tests = map[string]struct {
-		given    Label
-		expected aurora.Value
-	}{
-		"lime": {
-			given:    Label{Color: "lime"},
-			expected: aurora.BgGreen(s),
-		},
-		"no color found": {
-			given:    Label{Color: "unknown color"},
-			expected: aurora.White(s),
-		},
-	}
-	for name, tt := range tests {
-		t.Run(name, func(t *testing.T) {
-			actual := tt.given.Colorize(s)
-			if actual != tt.expected {
-				t.Errorf("expected %v, actual %v", tt.expected, actual)
-			}
-		})
-	}
-}
-
 func TestLabels_FilterByColors(t *testing.T) {
 	labels := Labels{}
-	for color := range mapColors {
+	for _, color := range colors {
 		labels = append(labels, Label{Color: color, ID: "id " + color})
 	}
 	var tests = map[string]struct {
@@ -357,7 +344,7 @@ func TestLabels_IDLabelsInString(t *testing.T) {
 
 func TestLabels_FilterByColors_Then_IDLabelsInString(t *testing.T) {
 	labels := Labels{}
-	for color := range mapColors {
+	for _, color := range colors {
 		labels = append(labels, Label{Color: color, ID: "id " + color})
 	}
 	var tests = map[string]struct {

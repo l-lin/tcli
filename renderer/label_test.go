@@ -3,7 +3,7 @@ package renderer
 import (
 	"fmt"
 	"github.com/l-lin/tcli/trello"
-	"github.com/logrusorgru/aurora/v3"
+	"github.com/muesli/termenv"
 	"testing"
 )
 
@@ -64,7 +64,7 @@ func TestPlainLabelRenderer_Render(t *testing.T) {
 	}
 }
 
-func TestAuroraLabelRenderer_Render(t *testing.T) {
+func TestTermenvLabelRenderer_Render(t *testing.T) {
 	var tests = map[string]struct {
 		given    trello.Labels
 		expected string
@@ -81,8 +81,8 @@ func TestAuroraLabelRenderer_Render(t *testing.T) {
 				},
 			},
 			expected: fmt.Sprintf("%s %s ",
-				aurora.Sprintf(aurora.BgBrightYellow(" %s "), "yellow label"),
-				aurora.Sprintf(aurora.BgBrightCyan(" %s "), "sky label"),
+				termenv.String(" yellow label ").Background(mapColors["yellow"]).Foreground(foregroundColor),
+				termenv.String(" sky label ").Background(mapColors["sky"]).Foreground(foregroundColor),
 			),
 		},
 		"two labels without name": {
@@ -95,8 +95,8 @@ func TestAuroraLabelRenderer_Render(t *testing.T) {
 				},
 			},
 			expected: fmt.Sprintf("%s %s ",
-				aurora.Sprintf(aurora.BgBrightYellow(" %s "), "    "),
-				aurora.Sprintf(aurora.BgBrightCyan(" %s "), "    "),
+				termenv.String("      ").Background(mapColors["yellow"]).Foreground(foregroundColor),
+				termenv.String("      ").Background(mapColors["sky"]).Foreground(foregroundColor),
 			),
 		},
 		"one labels with name and another without": {
@@ -110,8 +110,19 @@ func TestAuroraLabelRenderer_Render(t *testing.T) {
 				},
 			},
 			expected: fmt.Sprintf("%s %s ",
-				aurora.Sprintf(aurora.BgBrightYellow(" %s "), "yellow label"),
-				aurora.Sprintf(aurora.BgBrightCyan(" %s "), "    "),
+				termenv.String(" yellow label ").Background(mapColors["yellow"]).Foreground(foregroundColor),
+				termenv.String("      ").Background(mapColors["sky"]).Foreground(foregroundColor),
+			),
+		},
+		"label without registered color": {
+			given: trello.Labels{
+				trello.Label{
+					Name:  "unknown label",
+					Color: "unknown",
+				},
+			},
+			expected: fmt.Sprintf("%s ",
+				termenv.String(" unknown label ").Background(termenv.ANSIWhite).Foreground(foregroundColor),
 			),
 		},
 		"no labels": {
@@ -121,7 +132,7 @@ func TestAuroraLabelRenderer_Render(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			ar := AuroraLabel{}
+			ar := TermEnvLabel{}
 			actual := ar.Render(tt.given)
 			if actual != tt.expected {
 				t.Errorf("expected %v, actual %v", tt.expected, actual)

@@ -2,24 +2,10 @@ package trello
 
 import (
 	"fmt"
-	"github.com/logrusorgru/aurora/v3"
 	"github.com/rs/zerolog/log"
 	"strconv"
 	"strings"
 )
-
-var mapColors = map[string]func(interface{}) aurora.Value{
-	"black":  aurora.BgBrightBlack,
-	"blue":   aurora.BgBrightBlue,
-	"green":  aurora.BgBrightGreen,
-	"lime":   aurora.BgGreen,
-	"orange": aurora.BgYellow,
-	"pink":   aurora.BgMagenta,
-	"purple": aurora.BgBrightMagenta,
-	"red":    aurora.BgBrightRed,
-	"sky":    aurora.BgBrightCyan,
-	"yellow": aurora.BgBrightYellow,
-}
 
 func FindBoard(boards Boards, query string) *Board {
 	sanitizedQuery := sanitize(query)
@@ -161,13 +147,6 @@ type Label struct {
 	IDBoard string `json:"idBoard"`
 	Name    string `json:"name"`
 	Color   string `json:"color"`
-}
-
-func (l Label) Colorize(s string) aurora.Value {
-	if c := mapColors[l.Color]; c != nil {
-		return c(s)
-	}
-	return aurora.White(s)
 }
 
 // CARD CREATION ---------------------------------------------------------------------------------------

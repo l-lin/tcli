@@ -2,7 +2,6 @@ package renderer
 
 import (
 	"github.com/l-lin/tcli/trello"
-	"github.com/logrusorgru/aurora/v3"
 	"testing"
 )
 
@@ -167,11 +166,11 @@ Card 2    2     https://trello.com/c/abcd2    Label 20 sky
 					},
 				}
 			},
-			expected: aurora.Sprintf(`Name      ID    Short URL                     Labels
+			expected: `Name      ID    Short URL                     Labels
 ----      --    ---------                     ------
 Card 1    1     https://trello.com/c/abcd1    
 Card 2    2     https://trello.com/c/abcd2    
-`),
+`,
 		},
 		"display cards by position order": {
 			given: func() trello.Cards {
@@ -192,11 +191,11 @@ Card 2    2     https://trello.com/c/abcd2
 					},
 				}
 			},
-			expected: aurora.Sprintf(`Name      ID    Short URL                     Labels
+			expected: `Name      ID    Short URL                     Labels
 ----      --    ---------                     ------
 Card 2    2     https://trello.com/c/abcd2    
 Card 1    1     https://trello.com/c/abcd1    
-`),
+`,
 		},
 		"no card": {
 			given: func() trello.Cards {

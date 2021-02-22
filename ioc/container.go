@@ -82,7 +82,7 @@ func (c *Container) registerRenderer() {
 	}
 
 	var lr renderer.Labels
-	lr = renderer.AuroraLabel{}
+	lr = renderer.TermEnvLabel{}
 
 	var r renderer.Renderer
 	r = renderer.NewInTableRenderer(lr, cdr)
