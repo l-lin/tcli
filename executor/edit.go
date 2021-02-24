@@ -16,76 +16,69 @@ type edit struct {
 	editRenderer renderer.Edit
 }
 
-func (e edit) Execute(args []string) (currentBoard *trello.Board, currentList *trello.List) {
-	currentBoard = e.currentBoard
-	currentList = e.currentList
-	if len(args) == 0 {
-		return
+func (e edit) Execute(args []string) {
+	if len(args) != 0 {
+		for _, arg := range args {
+			e.execute(arg)
+		}
 	}
-	for _, arg := range args {
-		e.execute(arg)
-	}
-	return
 }
 
-func (e edit) execute(arg string) (currentBoard *trello.Board, currentList *trello.List) {
-	currentBoard = e.currentBoard
-	currentList = e.currentList
+func (e edit) execute(arg string) {
 
-	pathResolver := trello.NewPathResolver(e.currentBoard, e.currentList)
-	boardName, listName, cardName, err := pathResolver.Resolve(arg)
+	pathResolver := trello.NewPathResolver(e.session)
+	p, err := pathResolver.Resolve(arg)
 	if err != nil {
 		fmt.Fprintf(e.stderr, "%v\n", err)
-		return e.currentBoard, e.currentList
+		return
 	}
 
-	if boardName == "" {
+	if p.BoardName == "" {
 		fmt.Fprintf(e.stderr, "nothing to edit\n")
 		return
 	}
 
 	var board *trello.Board
-	if board, err = e.tr.FindBoard(boardName); err != nil || board == nil {
-		fmt.Fprintf(e.stderr, "no board found with name '%s'\n", boardName)
+	if board, err = e.tr.FindBoard(p.BoardName); err != nil || board == nil {
+		fmt.Fprintf(e.stderr, "no board found with name '%s'\n", p.BoardName)
 		return
 	}
 
-	if listName == "" {
+	if p.ListName == "" {
 		fmt.Fprintf(e.stderr, "board edition not implemented yet\n")
 		return
 	}
 
 	var list *trello.List
-	if list, err = e.tr.FindList(board.ID, listName); err != nil || list == nil {
-		fmt.Fprintf(e.stderr, "no list found with name '%s'\n", listName)
+	if list, err = e.tr.FindList(board.ID, p.ListName); err != nil || list == nil {
+		fmt.Fprintf(e.stderr, "no list found with name '%s'\n", p.ListName)
 		return
 	}
 
-	if cardName == "" {
+	if p.CardName == "" {
 		fmt.Fprintf(e.stderr, "list edition not implemented yet\n")
 		return
 	}
 
 	var card *trello.Card
-	if card, err = e.tr.FindCard(list.ID, cardName); err != nil || card == nil {
+	if card, err = e.tr.FindCard(list.ID, p.CardName); err != nil || card == nil {
 		log.Debug().
-			Str("cardName", cardName).
+			Str("cardName", p.CardName).
 			Msg("no card found => creating new card")
 		card = &trello.Card{
-			Name:    cardName,
+			Name:    p.CardName,
 			Desc:    "",
 			IDBoard: board.ID,
 			IDList:  list.ID,
 		}
 		if err = e.createCard(*card); err != nil {
-			fmt.Fprintf(e.stderr, "could not create card '%s': %v\n", cardName, err)
+			fmt.Fprintf(e.stderr, "could not create card '%s': %v\n", p.CardName, err)
 		}
 	} else {
 		if err = e.editCard(*card); err != nil {
-			fmt.Fprintf(e.stderr, "could not edit card '%s': %v\n", cardName, err)
+			fmt.Fprintf(e.stderr, "could not edit card '%s': %v\n", p.CardName, err)
 		}
 	}
-	return
 }
 
 func (e edit) createCard(card trello.Card) (err error) {

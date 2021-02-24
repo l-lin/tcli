@@ -235,10 +235,11 @@ func TestCat_Execute(t *testing.T) {
 			stderrBuf := bytes.Buffer{}
 			c := cat{
 				executor{
-					tr:     tt.given.buildTrelloRepository(),
-					r:      tt.given.buildRenderer(),
-					stdout: &stdoutBuf,
-					stderr: &stderrBuf,
+					tr:      tt.given.buildTrelloRepository(),
+					r:       tt.given.buildRenderer(),
+					session: &trello.Session{},
+					stdout:  &stdoutBuf,
+					stderr:  &stderrBuf,
 				},
 			}
 			c.Execute(tt.given.args)

@@ -3,8 +3,8 @@ package ioc
 import (
 	"github.com/charmbracelet/glamour"
 	"github.com/l-lin/tcli/conf"
+	"github.com/l-lin/tcli/prompt"
 	"github.com/l-lin/tcli/renderer"
-	"github.com/l-lin/tcli/session"
 	"github.com/l-lin/tcli/trello"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -16,7 +16,7 @@ type Container struct {
 	*conf.Conf
 	TrelloRepository trello.Repository
 	Renderer         renderer.Renderer
-	*session.Session
+	*prompt.Prompt
 }
 
 // Bootstrap the beans from the given user inputs
@@ -27,7 +27,7 @@ func Boostrap(inputs Inputs) *Container {
 	container.registerConf()
 	container.registerTrelloRepository()
 	container.registerRenderer()
-	container.registerSession()
+	container.registerPrompt()
 
 	container.setLogLevel()
 	return container
@@ -89,6 +89,6 @@ func (c *Container) registerRenderer() {
 	c.Renderer = r
 }
 
-func (c *Container) registerSession() {
-	c.Session = session.NewSession(*c.Conf, c.TrelloRepository, c.Renderer)
+func (c *Container) registerPrompt() {
+	c.Prompt = prompt.NewPrompt(*c.Conf, c.TrelloRepository, c.Renderer)
 }

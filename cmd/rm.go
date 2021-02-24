@@ -18,6 +18,6 @@ func NewRMCmd() *cobra.Command {
 }
 
 func runRM(_ *cobra.Command, args []string) {
-	e := executor.New(*container.Conf, "rm", container.TrelloRepository, container.Renderer, nil, nil)
+	e := executor.New(*container.Conf, "rm", container.TrelloRepository, container.Renderer, nil)
 	e.Execute(args)
 }

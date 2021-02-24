@@ -1,4 +1,4 @@
-package session
+package prompt
 
 import (
 	"fmt"
@@ -14,28 +14,28 @@ import (
 	"strings"
 )
 
-func NewSession(conf conf.Conf, tr trello.Repository, r renderer.Renderer) *Session {
-	return &Session{
-		conf:   conf,
-		tr:     tr,
-		r:      r,
-		stdout: os.Stdout,
-		stderr: os.Stderr,
+func NewPrompt(conf conf.Conf, tr trello.Repository, r renderer.Renderer) *Prompt {
+	return &Prompt{
+		conf:    conf,
+		tr:      tr,
+		r:       r,
+		Session: &trello.Session{},
+		stdout:  os.Stdout,
+		stderr:  os.Stderr,
 	}
 }
 
-// Session of the terminal to navigate seamlessly in interactive mode
-type Session struct {
-	conf         conf.Conf
-	tr           trello.Repository
-	r            renderer.Renderer
-	CurrentBoard *trello.Board
-	CurrentList  *trello.List
-	stdout       io.Writer
-	stderr       io.Writer
+// Prompt of the terminal to navigate seamlessly in interactive mode
+type Prompt struct {
+	conf    conf.Conf
+	tr      trello.Repository
+	r       renderer.Renderer
+	Session *trello.Session
+	stdout  io.Writer
+	stderr  io.Writer
 }
 
-func (s *Session) Executor(in string) {
+func (p *Prompt) Executor(in string) {
 	input := strings.TrimSpace(in)
 	if input == "" {
 		return
@@ -47,22 +47,22 @@ func (s *Session) Executor(in string) {
 	}
 	args, err := getArgs(input)
 	if err != nil {
-		fmt.Fprintf(s.stderr, err.Error())
+		fmt.Fprintf(p.stderr, err.Error())
 		return
 	}
 	log.Debug().
 		Str("cmd", cmd).
 		Strs("args", args).
 		Msg("executing command")
-	if e := executor.New(s.conf, cmd, s.tr, s.r, s.CurrentBoard, s.CurrentList); e != nil {
-		s.CurrentBoard, s.CurrentList = e.Execute(args)
+	if e := executor.New(p.conf, cmd, p.tr, p.r, p.Session); e != nil {
+		e.Execute(args)
 	} else {
-		fmt.Fprintf(s.stderr, "command not found: %s\n", cmd)
+		fmt.Fprintf(p.stderr, "command not found: %s\n", cmd)
 	}
 }
 
-func (s *Session) Completer(d prompt.Document) []prompt.Suggest {
-	c := completer.New(s.tr, s.CurrentBoard, s.CurrentList)
+func (p *Prompt) Completer(d prompt.Document) []prompt.Suggest {
+	c := completer.New(p.tr, p.Session)
 	input := d.TextBeforeCursor()
 	cmd, _ := getCmd(input)
 	args, err := getArgs(input)
@@ -72,14 +72,14 @@ func (s *Session) Completer(d prompt.Document) []prompt.Suggest {
 	return c.Complete(cmd, args)
 }
 
-func (s *Session) LivePrefix() (string, bool) {
+func (p *Prompt) LivePrefix() (string, bool) {
 	builder := strings.Builder{}
 	builder.WriteString("/")
-	if s.CurrentBoard != nil {
-		builder.WriteString(fmt.Sprintf("%s", s.CurrentBoard.Name))
+	if p.Session.CurrentBoard != nil {
+		builder.WriteString(fmt.Sprintf("%s", p.Session.CurrentBoard.Name))
 	}
-	if s.CurrentList != nil {
-		builder.WriteString(fmt.Sprintf("/%s", s.CurrentList.Name))
+	if p.Session.CurrentList != nil {
+		builder.WriteString(fmt.Sprintf("/%s", p.Session.CurrentList.Name))
 	}
 	builder.WriteString("> ")
 	return builder.String(), true

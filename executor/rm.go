@@ -12,9 +12,7 @@ type rm struct {
 	stdin io.ReadCloser
 }
 
-func (r rm) Execute(args []string) (currentBoard *trello.Board, currentList *trello.List) {
-	currentBoard = r.currentBoard
-	currentList = r.currentList
+func (r rm) Execute(args []string) {
 	if len(args) == 0 {
 		fmt.Fprintf(r.stderr, "missing card operand\n")
 		return
@@ -25,51 +23,48 @@ func (r rm) Execute(args []string) (currentBoard *trello.Board, currentList *tre
 	return
 }
 
-func (r rm) execute(arg string) (currentBoard *trello.Board, currentList *trello.List) {
-	currentBoard = r.currentBoard
-	currentList = r.currentList
-
+func (r rm) execute(arg string) {
 	if arg == "" {
 		fmt.Fprintf(r.stderr, "missing card operand\n")
 		return
 	}
-	pathResolver := trello.NewPathResolver(r.currentBoard, r.currentList)
-	boardName, listName, cardName, err := pathResolver.Resolve(arg)
+	pathResolver := trello.NewPathResolver(r.session)
+	p, err := pathResolver.Resolve(arg)
 	if err != nil {
 		fmt.Fprintf(r.stderr, "%v\n", err)
-		return r.currentBoard, r.currentList
+		return
 	}
 
-	if boardName == "" {
+	if p.BoardName == "" {
 		fmt.Fprintf(r.stderr, "nothing to archive\n")
 		return
 	}
 
 	var board *trello.Board
-	if board, err = r.tr.FindBoard(boardName); err != nil || board == nil {
-		fmt.Fprintf(r.stderr, "no board found with name '%s'\n", boardName)
+	if board, err = r.tr.FindBoard(p.BoardName); err != nil || board == nil {
+		fmt.Fprintf(r.stderr, "no board found with name '%s'\n", p.BoardName)
 		return
 	}
 
-	if listName == "" {
+	if p.ListName == "" {
 		fmt.Fprintf(r.stderr, "board archiving not implemented yet\n")
 		return
 	}
 
 	var list *trello.List
-	if list, err = r.tr.FindList(board.ID, listName); err != nil || list == nil {
-		fmt.Fprintf(r.stderr, "no list found with name '%s'\n", listName)
+	if list, err = r.tr.FindList(board.ID, p.ListName); err != nil || list == nil {
+		fmt.Fprintf(r.stderr, "no list found with name '%s'\n", p.ListName)
 		return
 	}
 
-	if cardName == "" {
+	if p.CardName == "" {
 		fmt.Fprintf(r.stderr, "list archiving not implemented yet\n")
 		return
 	}
 
 	var card *trello.Card
-	if card, err = r.tr.FindCard(list.ID, cardName); err != nil || card == nil {
-		fmt.Fprintf(r.stderr, "no card found with name '%s'\n", cardName)
+	if card, err = r.tr.FindCard(list.ID, p.CardName); err != nil || card == nil {
+		fmt.Fprintf(r.stderr, "no card found with name '%s'\n", p.CardName)
 		return
 	}
 	prompt := promptui.Prompt{
@@ -82,6 +77,7 @@ func (r rm) execute(arg string) (currentBoard *trello.Board, currentList *trello
 	}
 	updatedCard := trello.NewUpdateCard(*card)
 	updatedCard.Closed = true
-	_, err = r.tr.UpdateCard(updatedCard)
-	return
+	if _, err = r.tr.UpdateCard(updatedCard); err != nil {
+		fmt.Fprintf(r.stderr, "could not archive card '%s': %s\n", p.CardName, err)
+	}
 }

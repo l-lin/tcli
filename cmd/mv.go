@@ -21,6 +21,6 @@ func NewMVCmd() *cobra.Command {
 }
 
 func runMV(_ *cobra.Command, args []string) {
-	e := executor.New(*container.Conf, "mv", container.TrelloRepository, container.Renderer, nil, nil)
+	e := executor.New(*container.Conf, "mv", container.TrelloRepository, container.Renderer, nil)
 	e.Execute(args)
 }

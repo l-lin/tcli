@@ -43,7 +43,7 @@ func initRootCmd(c *cobra.Command, version, buildDate string) *pflag.FlagSet {
 }
 
 func runRootCmd(_ *cobra.Command, _ []string) {
-	s := container.Session
+	s := container.Prompt
 	p := prompt.New(
 		s.Executor,
 		s.Completer,

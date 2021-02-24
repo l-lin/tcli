@@ -9,63 +9,56 @@ type ls struct {
 	executor
 }
 
-func (l ls) Execute(args []string) (currentBoard *trello.Board, currentList *trello.List) {
-	currentBoard = l.currentBoard
-	currentList = l.currentList
+func (l ls) Execute(args []string) {
 	if len(args) == 0 {
 		l.execute("")
 	}
 	for _, arg := range args {
 		l.execute(arg)
 	}
-	return
 }
 
-func (l ls) execute(arg string) (currentBoard *trello.Board, currentList *trello.List) {
-	currentBoard = l.currentBoard
-	currentList = l.currentList
-
-	pathResolver := trello.NewPathResolver(currentBoard, currentList)
-	boardName, listName, cardName, err := pathResolver.Resolve(arg)
+func (l ls) execute(arg string) {
+	pathResolver := trello.NewPathResolver(l.session)
+	p, err := pathResolver.Resolve(arg)
 	if err != nil {
 		fmt.Fprintf(l.stderr, "%v\n", err)
 		return
 	}
 
-	if boardName == "" {
+	if p.BoardName == "" {
 		l.renderBoards()
 		return
 	}
 
 	var board *trello.Board
-	if board, err = l.tr.FindBoard(boardName); err != nil || board == nil {
-		fmt.Fprintf(l.stderr, "no board found with name '%s'\n", boardName)
+	if board, err = l.tr.FindBoard(p.BoardName); err != nil || board == nil {
+		fmt.Fprintf(l.stderr, "no board found with name '%s'\n", p.BoardName)
 		return
 	}
 
-	if listName == "" {
+	if p.ListName == "" {
 		l.renderLists(*board)
 		return
 	}
 
 	var list *trello.List
-	if list, err = l.tr.FindList(board.ID, listName); err != nil || list == nil {
-		fmt.Fprintf(l.stderr, "no list found with name '%s'\n", listName)
+	if list, err = l.tr.FindList(board.ID, p.ListName); err != nil || list == nil {
+		fmt.Fprintf(l.stderr, "no list found with name '%s'\n", p.ListName)
 		return
 	}
 
-	if cardName == "" {
+	if p.CardName == "" {
 		l.renderCards(*list)
 		return
 	}
 
 	var card *trello.Card
-	if card, err = l.tr.FindCard(list.ID, cardName); err != nil || card == nil {
-		fmt.Fprintf(l.stderr, "no card found with name '%s'\n", cardName)
+	if card, err = l.tr.FindCard(list.ID, p.CardName); err != nil || card == nil {
+		fmt.Fprintf(l.stderr, "no card found with name '%s'\n", p.CardName)
 		return
 	}
 	l.renderCard(*card)
-	return
 }
 
 func (l ls) renderBoards() {

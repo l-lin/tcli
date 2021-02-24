@@ -1,4 +1,4 @@
-package session
+package prompt
 
 import (
 	"github.com/l-lin/tcli/trello"
@@ -6,38 +6,33 @@ import (
 	"testing"
 )
 
-func TestSession_LivePrefix(t *testing.T) {
-	type given struct {
-		currentBoard *trello.Board
-		currentList  *trello.List
-	}
+func TestPrompt_LivePrefix(t *testing.T) {
 	var tests = map[string]struct {
-		given    given
+		given    *trello.Session
 		expected string
 	}{
 		"/board/list": {
-			given: given{
-				currentBoard: &trello.Board{Name: "board"},
-				currentList:  &trello.List{Name: "list"},
+			given: &trello.Session{
+				CurrentBoard: &trello.Board{Name: "board"},
+				CurrentList:  &trello.List{Name: "list"},
 			},
 			expected: "/board/list> ",
 		},
 		"/board": {
-			given: given{
-				currentBoard: &trello.Board{Name: "board"},
+			given: &trello.Session{
+				CurrentBoard: &trello.Board{Name: "board"},
 			},
 			expected: "/board> ",
 		},
 		"/": {
-			given:    given{},
+			given:    &trello.Session{},
 			expected: "/> ",
 		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			s := Session{
-				CurrentBoard: tt.given.currentBoard,
-				CurrentList:  tt.given.currentList,
+			s := Prompt{
+				Session: tt.given,
 			}
 			actual, _ := s.LivePrefix()
 			if actual != tt.expected {

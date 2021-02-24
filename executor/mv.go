@@ -9,9 +9,7 @@ type mv struct {
 	executor
 }
 
-func (m mv) Execute(args []string) (currentBoard *trello.Board, currentList *trello.List) {
-	currentBoard = m.currentBoard
-	currentList = m.currentList
+func (m mv) Execute(args []string) {
 	if len(args) == 0 {
 		fmt.Fprintf(m.stderr, "missing card source operand\n")
 		return
@@ -43,5 +41,4 @@ func (m mv) Execute(args []string) (currentBoard *trello.Board, currentList *tre
 	if _, err = m.tr.UpdateCard(updateCard); err != nil {
 		fmt.Fprintf(m.stderr, "could not update card: %v\n", err)
 	}
-	return
 }

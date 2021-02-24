@@ -9,66 +9,65 @@ import (
 )
 
 type Executor interface {
-	Execute(args []string) (*trello.Board, *trello.List)
+	Execute(args []string)
 }
 
 type executor struct {
-	tr           trello.Repository
-	r            renderer.Renderer
-	currentBoard *trello.Board
-	currentList  *trello.List
-	stdout       io.Writer
-	stderr       io.Writer
+	tr      trello.Repository
+	r       renderer.Renderer
+	session *trello.Session
+	stdout  io.Writer
+	stderr  io.Writer
 }
 
 func (e executor) getCardFromArg(arg string) (*trello.Card, error) {
-	pathResolver := trello.NewPathResolver(e.currentBoard, e.currentList)
-	boardName, listName, cardName, err := pathResolver.Resolve(arg)
+	pathResolver := trello.NewPathResolver(e.session)
+	p, err := pathResolver.Resolve(arg)
 	if err != nil {
 		return nil, err
 	}
 
-	if boardName == "" || listName == "" || cardName == "" {
+	if p.BoardName == "" || p.ListName == "" || p.CardName == "" {
 		return nil, fmt.Errorf("invalid path")
 	}
 
 	var list *trello.List
-	if list, err = e.getList(boardName, listName); err != nil {
+	if list, err = e.getList(p.BoardName, p.ListName); err != nil {
 		return nil, err
 	}
 
 	var card *trello.Card
-	if card, err = e.tr.FindCard(list.ID, cardName); err != nil || card == nil {
-		return nil, fmt.Errorf("no card found with name '%s'", cardName)
+	if card, err = e.tr.FindCard(list.ID, p.CardName); err != nil || card == nil {
+		return nil, fmt.Errorf("no card found with name '%s'", p.CardName)
 	}
 	return card, nil
 }
 
 func (e executor) getListFromArg(arg string) (*trello.List, error) {
-	pathResolver := trello.NewPathResolver(e.currentBoard, e.currentList)
-	boardName, listName, _, err := pathResolver.Resolve(arg)
+	pathResolver := trello.NewPathResolver(e.session)
+	p, err := pathResolver.Resolve(arg)
 	if err != nil {
 		return nil, err
 	}
 
-	if boardName == "" || listName == "" {
+	if p.BoardName == "" || p.ListName == "" {
 		return nil, fmt.Errorf("invalid path")
 	}
 
-	return e.getList(boardName, listName)
+	return e.getList(p.BoardName, p.ListName)
 }
 
 func (e executor) getListAndCardNameFromArg(arg string) (*trello.List, string, error) {
-	pathResolver := trello.NewPathResolver(e.currentBoard, e.currentList)
-	boardName, listName, cardName, err := pathResolver.Resolve(arg)
+	pathResolver := trello.NewPathResolver(e.session)
+	p, err := pathResolver.Resolve(arg)
 	if err != nil {
 		return nil, "", err
 	}
-	if boardName == "" || listName == "" {
+	if p.BoardName == "" || p.ListName == "" {
 		return nil, "", fmt.Errorf("invalid path")
 	}
-	list, err := e.getList(boardName, listName)
-	return list, cardName, err
+	list, err := e.getList(p.BoardName, p.ListName)
+	return list, p.CardName, err
 }
 
 func (e executor) getList(boardName, listName string) (list *trello.List, err error) {
@@ -82,10 +81,10 @@ func (e executor) getList(boardName, listName string) (list *trello.List, err er
 	return list, nil
 }
 
-func New(conf conf.Conf, cmd string, tr trello.Repository, r renderer.Renderer, currentBoard *trello.Board, currentList *trello.List) Executor {
+func New(conf conf.Conf, cmd string, tr trello.Repository, r renderer.Renderer, session *trello.Session) Executor {
 	for _, factory := range Factories {
 		if factory.Cmd == cmd {
-			return factory.Create(conf, tr, r, currentBoard, currentList)
+			return factory.Create(conf, tr, r, session)
 		}
 	}
 	return nil

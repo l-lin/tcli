@@ -24,6 +24,6 @@ func NewCatCmd() *cobra.Command {
 }
 
 func runCat(_ *cobra.Command, args []string) {
-	e := executor.New(*container.Conf, "cat", container.TrelloRepository, container.Renderer, nil, nil)
+	e := executor.New(*container.Conf, "cat", container.TrelloRepository, container.Renderer, nil)
 	e.Execute(args)
 }

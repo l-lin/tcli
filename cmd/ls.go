@@ -24,6 +24,6 @@ func NewLSCmd() *cobra.Command {
 }
 
 func runLS(_ *cobra.Command, args []string) {
-	e := executor.New(*container.Conf, "ls", container.TrelloRepository, container.Renderer, nil, nil)
+	e := executor.New(*container.Conf, "ls", container.TrelloRepository, container.Renderer, nil)
 	e.Execute(args)
 }

@@ -4,18 +4,15 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/cheynewallace/tabby"
-	"github.com/l-lin/tcli/trello"
 	"io"
 	"text/tabwriter"
 )
 
 type help struct {
-	stdout       io.Writer
-	currentBoard *trello.Board
-	currentList  *trello.List
+	stdout io.Writer
 }
 
-func (h help) Execute(_ []string) (*trello.Board, *trello.List) {
+func (h help) Execute(_ []string) {
 	var buffer bytes.Buffer
 	w := tabwriter.NewWriter(&buffer, 0, 0, 4, ' ', 0)
 	t := tabby.NewCustom(w)
@@ -24,5 +21,4 @@ func (h help) Execute(_ []string) (*trello.Board, *trello.List) {
 	}
 	t.Print()
 	fmt.Fprintf(h.stdout, "%s\n", buffer.String())
-	return h.currentBoard, h.currentList
 }

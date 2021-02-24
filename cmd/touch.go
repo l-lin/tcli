@@ -18,6 +18,6 @@ func NewTouchCmd() *cobra.Command {
 }
 
 func runTouch(_ *cobra.Command, args []string) {
-	e := executor.New(*container.Conf, "touch", container.TrelloRepository, container.Renderer, nil, nil)
+	e := executor.New(*container.Conf, "touch", container.TrelloRepository, container.Renderer, nil)
 	e.Execute(args)
 }

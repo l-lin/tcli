@@ -1,52 +1,49 @@
 package trello
 
 import (
+	"reflect"
 	"testing"
 )
 
 func TestNewPathResolver(t *testing.T) {
-	type given struct {
-		currentBoard *Board
-		currentList  *List
-	}
 	var tests = map[string]struct {
-		given    given
+		given    *Session
 		expected PathResolver
 	}{
 		"existing board and list": {
-			given: given{
-				currentBoard: &Board{Name: "board"},
-				currentList:  &List{Name: "list"},
+			given: &Session{
+				CurrentBoard: &Board{Name: "board"},
+				CurrentList:  &List{Name: "list"},
 			},
 			expected: PathResolver{
-				currentBoardName: "board",
-				currentListName:  "list",
+				Path: Path{
+					BoardName: "board",
+					ListName:  "list",
+				},
 			},
 		},
 		"existing board and non existing list": {
-			given: given{
-				currentBoard: &Board{Name: "board"},
-				currentList:  nil,
+			given: &Session{
+				CurrentBoard: &Board{Name: "board"},
+				CurrentList:  nil,
 			},
 			expected: PathResolver{
-				currentBoardName: "board",
-				currentListName:  "",
+				Path: Path{
+					BoardName: "board",
+				},
 			},
 		},
 		"non existing board and non existing list": {
-			given: given{
-				currentBoard: nil,
-				currentList:  nil,
+			given: &Session{
+				CurrentBoard: nil,
+				CurrentList:  nil,
 			},
-			expected: PathResolver{
-				currentBoardName: "",
-				currentListName:  "",
-			},
+			expected: PathResolver{},
 		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			actual := NewPathResolver(tt.given.currentBoard, tt.given.currentList)
+			actual := NewPathResolver(tt.given)
 			if actual != tt.expected {
 				t.Errorf("expected %v, actual %v", tt.expected, actual)
 			}
@@ -56,15 +53,12 @@ func TestNewPathResolver(t *testing.T) {
 
 func TestPathResolver_Resolve(t *testing.T) {
 	type given struct {
-		currentBoard string
-		currentList  string
+		currentPath  Path
 		relativePath string
 	}
 	type expected struct {
-		boardName string
-		listName  string
-		cardName  string
-		err       error
+		resolvedPath Path
+		err          error
 	}
 	var tests = map[string]struct {
 		given    given
@@ -72,245 +66,266 @@ func TestPathResolver_Resolve(t *testing.T) {
 	}{
 		"full path": {
 			given: given{
-				currentBoard: "board",
-				currentList:  "list",
+				currentPath: Path{
+					BoardName: "board",
+					ListName:  "list",
+				},
 				relativePath: "card",
 			},
 			expected: expected{
-				boardName: "board",
-				listName:  "list",
-				cardName:  "card",
-				err:       nil,
+				resolvedPath: Path{
+					BoardName: "board",
+					ListName:  "list",
+					CardName:  "card",
+				},
+				err: nil,
 			},
 		},
 		"empty relative path": {
 			given: given{
-				currentBoard: "board",
-				currentList:  "list",
+				currentPath: Path{
+					BoardName: "board",
+					ListName:  "list",
+					CardName:  "card",
+				},
 				relativePath: "",
 			},
 			expected: expected{
-				boardName: "board",
-				listName:  "list",
-				cardName:  "",
-				err:       nil,
+				resolvedPath: Path{
+					BoardName: "board",
+					ListName:  "list",
+					CardName:  "card",
+				},
+				err: nil,
 			},
 		},
 		"no list": {
 			given: given{
-				currentBoard: "board",
-				currentList:  "",
+				currentPath: Path{
+					BoardName: "board",
+				},
 				relativePath: "list",
 			},
 			expected: expected{
-				boardName: "board",
-				listName:  "list",
-				cardName:  "",
-				err:       nil,
+				resolvedPath: Path{
+					BoardName: "board",
+					ListName:  "list",
+				},
+				err: nil,
 			},
 		},
 		"no board and no list": {
 			given: given{
-				currentBoard: "",
-				currentList:  "",
+				currentPath:  Path{},
 				relativePath: "board/list",
 			},
 			expected: expected{
-				boardName: "board",
-				listName:  "list",
-				cardName:  "",
-				err:       nil,
+				resolvedPath: Path{
+					BoardName: "board",
+					ListName:  "list",
+				},
+				err: nil,
 			},
 		},
 		"full path in relativePath": {
 			given: given{
-				currentBoard: "",
-				currentList:  "",
 				relativePath: "board/list/card",
 			},
 			expected: expected{
-				boardName: "board",
-				listName:  "list",
-				cardName:  "card",
-				err:       nil,
+				resolvedPath: Path{
+					BoardName: "board",
+					ListName:  "list",
+					CardName:  "card",
+				},
+				err: nil,
 			},
 		},
 		"boardName set and rest of the path in relativePath": {
 			given: given{
-				currentBoard: "board",
-				currentList:  "",
+				currentPath: Path{
+					BoardName: "board",
+				},
 				relativePath: "list/card",
 			},
 			expected: expected{
-				boardName: "board",
-				listName:  "list",
-				cardName:  "card",
-				err:       nil,
+				resolvedPath: Path{
+					BoardName: "board",
+					ListName:  "list",
+					CardName:  "card",
+				},
+				err: nil,
 			},
 		},
 		"using .. in relativePath": {
 			given: given{
-				currentBoard: "board",
-				currentList:  "list",
+				currentPath: Path{
+					BoardName: "board",
+					ListName:  "list",
+				},
 				relativePath: "../list2/card",
 			},
 			expected: expected{
-				boardName: "board",
-				listName:  "list2",
-				cardName:  "card",
-				err:       nil,
+				resolvedPath: Path{
+					BoardName: "board",
+					ListName:  "list2",
+					CardName:  "card",
+				},
+				err: nil,
 			},
 		},
 		"using ../.. in relativePath": {
 			given: given{
-				currentBoard: "board",
-				currentList:  "list",
+				currentPath: Path{
+					BoardName: "board",
+					ListName:  "list",
+				},
 				relativePath: "../../board2/list2/card",
 			},
 			expected: expected{
-				boardName: "board2",
-				listName:  "list2",
-				cardName:  "card",
-				err:       nil,
+				resolvedPath: Path{
+					BoardName: "board2",
+					ListName:  "list2",
+					CardName:  "card",
+				},
+				err: nil,
 			},
 		},
 		"have / at the end of the relativePath": {
 			given: given{
-				currentBoard: "board",
-				currentList:  "list",
+				currentPath: Path{
+					BoardName: "board",
+					ListName:  "list",
+				},
 				relativePath: "card/",
 			},
 			expected: expected{
-				boardName: "board",
-				listName:  "list",
-				cardName:  "card",
-				err:       nil,
+				resolvedPath: Path{
+					BoardName: "board",
+					ListName:  "list",
+					CardName:  "card",
+				},
+				err: nil,
 			},
 		},
 		"using absolute path in relativePath": {
 			given: given{
-				currentBoard: "board",
-				currentList:  "list",
+				currentPath: Path{
+					BoardName: "board",
+					ListName:  "list",
+				},
 				relativePath: "/board2/list2/card",
 			},
 			expected: expected{
-				boardName: "board2",
-				listName:  "list2",
-				cardName:  "card",
-				err:       nil,
+				resolvedPath: Path{
+					BoardName: "board2",
+					ListName:  "list2",
+					CardName:  "card",
+				},
+				err: nil,
 			},
 		},
 		"have / at the end of the absolute path in relativePath": {
 			given: given{
-				currentBoard: "board",
-				currentList:  "list",
+				currentPath: Path{
+					BoardName: "board",
+					ListName:  "list",
+				},
 				relativePath: "/board2/list2/card/",
 			},
 			expected: expected{
-				boardName: "board2",
-				listName:  "list2",
-				cardName:  "card",
-				err:       nil,
+				resolvedPath: Path{
+					BoardName: "board2",
+					ListName:  "list2",
+					CardName:  "card",
+				},
+				err: nil,
 			},
 		},
 		".. in relativePath from /board/list": {
 			given: given{
-				currentBoard: "board",
-				currentList:  "list",
+				currentPath: Path{
+					BoardName: "board",
+					ListName:  "list",
+				},
 				relativePath: "..",
 			},
 			expected: expected{
-				boardName: "board",
-				listName:  "",
-				cardName:  "",
-				err:       nil,
+				resolvedPath: Path{
+					BoardName: "board",
+				},
+				err: nil,
 			},
 		},
 		".. in relativePath from /board": {
 			given: given{
-				currentBoard: "board",
-				currentList:  "",
+				currentPath: Path{
+					BoardName: "board",
+				},
 				relativePath: "..",
 			},
 			expected: expected{
-				boardName: "",
-				listName:  "",
-				cardName:  "",
-				err:       nil,
+				resolvedPath: Path{},
+				err:          nil,
 			},
 		},
 		"board name containing escaped space": {
 			given: given{
-				currentBoard: "",
-				currentList:  "",
+				currentPath:  Path{},
 				relativePath: "/board\\ name/list/card/",
 			},
 			expected: expected{
-				boardName: "board\\ name",
-				listName:  "list",
-				cardName:  "card",
-				err:       nil,
+				resolvedPath: Path{
+					BoardName: "board\\ name",
+					ListName:  "list",
+					CardName:  "card",
+				},
+				err: nil,
 			},
 		},
 		// ERRORS --------------------------------------------------
-		"more than 4 components": {
+		"more than allowed components": {
 			given: given{
-				currentBoard: "board",
-				currentList:  "list",
+				currentPath: Path{
+					BoardName: "board",
+					ListName:  "list",
+				},
 				relativePath: "card/invalid",
 			},
 			expected: expected{
-				boardName: "",
-				listName:  "",
-				cardName:  "",
-				err:       invalidPathErr,
+				err: invalidPathErr,
 			},
 		},
 		"using .. when already at top level": {
 			given: given{
-				currentBoard: "",
-				currentList:  "",
 				relativePath: "../invalid",
 			},
 			expected: expected{
-				boardName: "",
-				listName:  "",
-				cardName:  "",
-				err:       invalidPathErr,
+				err: invalidPathErr,
 			},
 		},
 		"using .. too much": {
 			given: given{
-				currentBoard: "board",
-				currentList:  "",
+				currentPath: Path{
+					BoardName: "board",
+				},
 				relativePath: "../../invalid",
 			},
 			expected: expected{
-				boardName: "",
-				listName:  "",
-				cardName:  "",
-				err:       invalidPathErr,
+				err: invalidPathErr,
 			},
 		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			r := PathResolver{
-				currentBoardName: tt.given.currentBoard,
-				currentListName:  tt.given.currentList,
+				Path: tt.given.currentPath,
 			}
-			actualBoardName, actualListName, actualCardName, actualErr := r.Resolve(tt.given.relativePath)
-			if actualBoardName != tt.expected.boardName {
-				t.Errorf("expected %v, actual %v", tt.expected.boardName, actualBoardName)
-			}
-			if actualListName != tt.expected.listName {
-				t.Errorf("expected %v, actual %v", tt.expected.listName, actualListName)
-			}
-			if actualCardName != tt.expected.cardName {
-				t.Errorf("expected %v, actual %v", tt.expected.cardName, actualCardName)
-			}
+			actual, actualErr := r.Resolve(tt.given.relativePath)
 			if actualErr != tt.expected.err {
 				t.Errorf("expected %v, actual %v", tt.expected.err, actualErr)
+			}
+			if !reflect.DeepEqual(actual, tt.expected.resolvedPath) {
+				t.Errorf("expected %v, actual %v", tt.expected.resolvedPath, actual)
 			}
 		})
 	}

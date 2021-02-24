@@ -10,73 +10,72 @@ import (
 
 var invalidPathErr = errors.New("invalid path")
 
-func NewPathResolver(currentBoard *Board, currentList *List) PathResolver {
+type Path struct {
+	BoardName string
+	ListName  string
+	CardName  string
+}
+
+func NewPathResolver(session *Session) PathResolver {
 	boardName := ""
-	if currentBoard != nil {
-		boardName = currentBoard.Name
+	if session.CurrentBoard != nil {
+		boardName = session.CurrentBoard.Name
 	}
 	listName := ""
-	if currentList != nil {
-		listName = currentList.Name
+	if session.CurrentList != nil {
+		listName = session.CurrentList.Name
 	}
 	return PathResolver{
-		currentBoardName: boardName,
-		currentListName:  listName,
+		Path: Path{
+			BoardName: boardName,
+			ListName:  listName,
+		},
 	}
 }
 
 type PathResolver struct {
-	currentBoardName string
-	currentListName  string
+	Path
 }
 
-func (r *PathResolver) Resolve(relativePath string) (boardName, listName, cardName string, err error) {
+func (pr *PathResolver) Resolve(relativePath string) (p Path, err error) {
 	if relativePath == "" {
-		boardName = r.currentBoardName
-		listName = r.currentListName
-		r.logResolved(boardName, listName, cardName)
+		p = pr.Path
+		pr.logResolved(p)
 		return
 	}
 	var resolvedPath string
 	if path.IsAbs(relativePath) {
 		resolvedPath = strings.Trim(relativePath, "/")
 	} else {
-		resolvedPath = strings.Trim(filepath.Join(r.currentBoardName, r.currentListName, relativePath), "/")
+		resolvedPath = strings.Trim(filepath.Join(pr.BoardName, pr.ListName, relativePath), "/")
 	}
 	if isInvalid(resolvedPath) {
 		err = invalidPathErr
 		return
 	}
 	if isTopLevel(resolvedPath) {
-		r.logResolved(boardName, listName, cardName)
+		pr.logResolved(p)
 		return
 	}
 	paths := strings.Split(resolvedPath, "/")
-	// only 3 levels: boards > lists > cards
-	switch len(paths) {
-	case 1:
-		boardName = paths[0]
-	case 2:
-		boardName = paths[0]
-		listName = paths[1]
-	case 3:
-		boardName = paths[0]
-		listName = paths[1]
-		cardName = paths[2]
-	default:
+	if len(paths) > 3 {
 		err = invalidPathErr
+		return
 	}
-	r.logResolved(boardName, listName, cardName)
+	// only 3 levels: boards > lists > cards
+	result := make([]string, 3)
+	copy(result, paths[0:])
+	p.BoardName = result[0]
+	p.ListName = result[1]
+	p.CardName = result[2]
+	pr.logResolved(p)
 	return
 }
 
-func (r *PathResolver) logResolved(boardName string, listName string, cardName string) {
+func (pr *PathResolver) logResolved(p Path) {
 	log.Debug().
-		Str("currentBoardName", r.currentBoardName).
-		Str("currentListName", r.currentListName).
-		Str("boardName", boardName).
-		Str("listName", listName).
-		Str("cardName", cardName).
+		Interface("currentPath", pr).
+		Interface("resolvedPath", p).
 		Msg("resolved path")
 }
 

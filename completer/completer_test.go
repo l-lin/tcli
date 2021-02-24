@@ -14,8 +14,7 @@ func TestCompleter_Complete(t *testing.T) {
 	defer ctrl.Finish()
 
 	type given struct {
-		currentBoard          *trello.Board
-		currentList           *trello.List
+		session               *trello.Session
 		cmd                   string
 		args                  []string
 		buildTrelloRepository func() trello.Repository
@@ -41,6 +40,7 @@ func TestCompleter_Complete(t *testing.T) {
 		"/ > ": {
 			given: given{
 				buildTrelloRepository: func() trello.Repository { return nil },
+				session:               &trello.Session{},
 			},
 			expected: commandSuggestions(),
 		},
@@ -50,6 +50,7 @@ func TestCompleter_Complete(t *testing.T) {
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
+				session: &trello.Session{},
 			},
 			expected: []prompt.Suggest{},
 		},
@@ -61,6 +62,7 @@ func TestCompleter_Complete(t *testing.T) {
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
+				session: &trello.Session{},
 			},
 			expected: []prompt.Suggest{
 				{Text: "cd", Description: "change level in the hierarchy"},
@@ -71,9 +73,9 @@ func TestCompleter_Complete(t *testing.T) {
 		// RELATIVE PATHS
 		"/board > cat ": {
 			given: given{
-				cmd:          "cat",
-				args:         []string{""},
-				currentBoard: &board1,
+				cmd:     "cat",
+				args:    []string{""},
+				session: &trello.Session{CurrentBoard: &board1},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -95,9 +97,9 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		"/board > cat b": {
 			given: given{
-				cmd:          "cat",
-				args:         []string{"l"},
-				currentBoard: &board1,
+				cmd:     "cat",
+				args:    []string{"l"},
+				session: &trello.Session{CurrentBoard: &board1},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -118,9 +120,9 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		"/board > cat list/": {
 			given: given{
-				cmd:          "cat",
-				args:         []string{"list/"},
-				currentBoard: &board1,
+				cmd:     "cat",
+				args:    []string{"list/"},
+				session: &trello.Session{CurrentBoard: &board1},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -142,9 +144,9 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		"/board > cat list/c": {
 			given: given{
-				cmd:          "cat",
-				args:         []string{"list/c"},
-				currentBoard: &board1,
+				cmd:     "cat",
+				args:    []string{"list/c"},
+				session: &trello.Session{CurrentBoard: &board1},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -165,10 +167,9 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		"/board/list > cat ../a": {
 			given: given{
-				cmd:          "cat",
-				args:         []string{"../a"},
-				currentBoard: &board1,
-				currentList:  &list1,
+				cmd:     "cat",
+				args:    []string{"../a"},
+				session: &trello.Session{CurrentBoard: &board1, CurrentList: &list1},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -190,9 +191,9 @@ func TestCompleter_Complete(t *testing.T) {
 		// ABSOLUTE PATHS
 		"/board > cd /": {
 			given: given{
-				cmd:          "cd",
-				args:         []string{"/"},
-				currentBoard: &board1,
+				cmd:     "cd",
+				args:    []string{"/"},
+				session: &trello.Session{CurrentBoard: &board1},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -211,9 +212,9 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		"/board > cd /a": {
 			given: given{
-				cmd:          "cd",
-				args:         []string{"/a"},
-				currentBoard: &board1,
+				cmd:     "cd",
+				args:    []string{"/a"},
+				session: &trello.Session{CurrentBoard: &board1},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -237,6 +238,7 @@ func TestCompleter_Complete(t *testing.T) {
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
+				session: &trello.Session{},
 			},
 			expected: []prompt.Suggest{},
 		},
@@ -247,6 +249,7 @@ func TestCompleter_Complete(t *testing.T) {
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
+				session: &trello.Session{},
 			},
 			expected: []prompt.Suggest{},
 		},
@@ -268,6 +271,7 @@ func TestCompleter_Complete(t *testing.T) {
 						Return(cards, nil)
 					return tr
 				},
+				session: &trello.Session{},
 			},
 			expected: []prompt.Suggest{
 				{Text: card1.TCliID()},
@@ -290,6 +294,7 @@ func TestCompleter_Complete(t *testing.T) {
 						Return(lists, nil)
 					return tr
 				},
+				session: &trello.Session{},
 			},
 			expected: []prompt.Suggest{
 				{Text: list2.TCliID()},
@@ -302,6 +307,7 @@ func TestCompleter_Complete(t *testing.T) {
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
+				session: &trello.Session{},
 			},
 			expected: []prompt.Suggest{},
 		},
@@ -312,6 +318,7 @@ func TestCompleter_Complete(t *testing.T) {
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
+				session: &trello.Session{},
 			},
 			expected: []prompt.Suggest{},
 		},
@@ -330,6 +337,7 @@ func TestCompleter_Complete(t *testing.T) {
 						Return(nil, errors.New("unexpected error"))
 					return tr
 				},
+				session: &trello.Session{},
 			},
 			expected: []prompt.Suggest{},
 		},
@@ -350,6 +358,7 @@ func TestCompleter_Complete(t *testing.T) {
 						Return(nil, errors.New("unexpected error"))
 					return tr
 				},
+				session: &trello.Session{},
 			},
 			expected: []prompt.Suggest{},
 		},
@@ -370,6 +379,7 @@ func TestCompleter_Complete(t *testing.T) {
 						Return(nil, errors.New("unexpected error"))
 					return tr
 				},
+				session: &trello.Session{},
 			},
 			expected: []prompt.Suggest{},
 		},
@@ -380,6 +390,7 @@ func TestCompleter_Complete(t *testing.T) {
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
+				session: &trello.Session{},
 			},
 			expected: []prompt.Suggest{},
 		},
@@ -390,13 +401,14 @@ func TestCompleter_Complete(t *testing.T) {
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
+				session: &trello.Session{},
 			},
 			expected: []prompt.Suggest{},
 		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			c := New(tt.given.buildTrelloRepository(), tt.given.currentBoard, tt.given.currentList)
+			c := New(tt.given.buildTrelloRepository(), tt.given.session)
 			actual := c.Complete(tt.given.cmd, tt.given.args)
 			if len(actual) != len(tt.expected) {
 				t.Errorf("expected %v, actual %v", tt.expected, actual)

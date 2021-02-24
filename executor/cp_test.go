@@ -315,9 +315,10 @@ func TestCp_Execute(t *testing.T) {
 
 			r := cp{
 				executor: executor{
-					tr:     tt.given.buildTrelloRepository(),
-					stdout: &stdoutBuf,
-					stderr: &stderrBuf,
+					tr:      tt.given.buildTrelloRepository(),
+					session: &trello.Session{},
+					stdout:  &stdoutBuf,
+					stderr:  &stderrBuf,
 				},
 			}
 			r.Execute(tt.given.args)

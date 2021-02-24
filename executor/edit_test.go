@@ -23,8 +23,6 @@ func TestEdit_Execute(t *testing.T) {
 		args                  []string
 		buildTrelloRepository func() trello.Repository
 		buildEditor           func() Editor
-		currentBoard          *trello.Board
-		currentList           *trello.List
 		stdin                 io.ReadCloser
 	}
 	type expected struct {
@@ -342,11 +340,10 @@ func TestEdit_Execute(t *testing.T) {
 			stderrBuf := bytes.Buffer{}
 			e := edit{
 				executor: executor{
-					tr:           tt.given.buildTrelloRepository(),
-					currentBoard: tt.given.currentBoard,
-					currentList:  tt.given.currentList,
-					stdout:       &stdoutBuf,
-					stderr:       &stderrBuf,
+					tr:      tt.given.buildTrelloRepository(),
+					session: &trello.Session{},
+					stdout:  &stdoutBuf,
+					stderr:  &stderrBuf,
 				},
 				editor:       tt.given.buildEditor(),
 				stdin:        tt.given.stdin,

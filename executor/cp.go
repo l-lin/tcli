@@ -9,9 +9,7 @@ type cp struct {
 	executor
 }
 
-func (c cp) Execute(args []string) (currentBoard *trello.Board, currentList *trello.List) {
-	currentBoard = c.currentBoard
-	currentList = c.currentList
+func (c cp) Execute(args []string) {
 	if len(args) == 0 {
 		fmt.Fprintf(c.stderr, "missing card source operand\n")
 		return
@@ -45,5 +43,4 @@ func (c cp) Execute(args []string) (currentBoard *trello.Board, currentList *tre
 		fmt.Fprintf(c.stderr, "could not copy card '%s': %v\n", sourceCard.Name, err)
 		return
 	}
-	return
 }

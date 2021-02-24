@@ -16,8 +16,7 @@ func TestTouch_Execute(t *testing.T) {
 	type given struct {
 		args                  []string
 		buildTrelloRepository func() trello.Repository
-		currentBoard          *trello.Board
-		currentList           *trello.List
+		session               *trello.Session
 	}
 	type expected struct {
 		stdout string
@@ -45,6 +44,7 @@ func TestTouch_Execute(t *testing.T) {
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
+				session: &trello.Session{},
 			},
 			expected: expected{
 				stderr: "missing card operand\n",
@@ -56,6 +56,7 @@ func TestTouch_Execute(t *testing.T) {
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
+				session: &trello.Session{},
 			},
 			expected: expected{
 				stderr: "missing card operand\n",
@@ -77,14 +78,17 @@ func TestTouch_Execute(t *testing.T) {
 						Return(nil, nil)
 					return tr
 				},
+				session: &trello.Session{},
 			},
 			expected: expected{},
 		},
 		"/board/list: create card from relative path": {
 			given: given{
-				args:         []string{"card"},
-				currentBoard: &board,
-				currentList:  &list,
+				args: []string{"card"},
+				session: &trello.Session{
+					CurrentBoard: &board,
+					CurrentList:  &list,
+				},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -122,6 +126,7 @@ func TestTouch_Execute(t *testing.T) {
 						Return(nil, nil)
 					return tr
 				},
+				session: &trello.Session{},
 			},
 			expected: expected{},
 		},
@@ -132,6 +137,7 @@ func TestTouch_Execute(t *testing.T) {
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
+				session: &trello.Session{},
 			},
 			expected: expected{
 				stderr: "nothing to create\n",
@@ -147,6 +153,7 @@ func TestTouch_Execute(t *testing.T) {
 						Return(&board, nil)
 					return tr
 				},
+				session: &trello.Session{},
 			},
 			expected: expected{
 				stderr: "board creation not implemented yet\n",
@@ -162,6 +169,7 @@ func TestTouch_Execute(t *testing.T) {
 						Return(nil, errors.New("not found"))
 					return tr
 				},
+				session: &trello.Session{},
 			},
 			expected: expected{
 				stderr: "no board found with name 'board'\n",
@@ -180,6 +188,7 @@ func TestTouch_Execute(t *testing.T) {
 						Return(&list, nil)
 					return tr
 				},
+				session: &trello.Session{},
 			},
 			expected: expected{
 				stderr: "list creation not implemented yet\n",
@@ -198,6 +207,7 @@ func TestTouch_Execute(t *testing.T) {
 						Return(nil, errors.New("not found"))
 					return tr
 				},
+				session: &trello.Session{},
 			},
 			expected: expected{
 				stderr: "no list found with name 'list'\n",
@@ -209,6 +219,7 @@ func TestTouch_Execute(t *testing.T) {
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
+				session: &trello.Session{},
 			},
 			expected: expected{
 				stderr: "invalid path\n",
@@ -230,6 +241,7 @@ func TestTouch_Execute(t *testing.T) {
 						Return(nil, errors.New("unexpected error"))
 					return tr
 				},
+				session: &trello.Session{},
 			},
 			expected: expected{
 				stderr: fmt.Sprintf("could not create card '%s': unexpected error\n", createCard1.Name),
@@ -242,11 +254,10 @@ func TestTouch_Execute(t *testing.T) {
 			stderrBuf := bytes.Buffer{}
 			to := touch{
 				executor{
-					tr:           tt.given.buildTrelloRepository(),
-					currentBoard: tt.given.currentBoard,
-					currentList:  tt.given.currentList,
-					stdout:       &stdoutBuf,
-					stderr:       &stderrBuf,
+					tr:      tt.given.buildTrelloRepository(),
+					session: tt.given.session,
+					stdout:  &stdoutBuf,
+					stderr:  &stderrBuf,
 				}}
 			to.Execute(tt.given.args)
 

@@ -11,20 +11,18 @@ import (
 
 const maxCardDescriptionLength = 20
 
-func New(tr trello.Repository, currentBoard *trello.Board, currentList *trello.List) Completer {
+func New(tr trello.Repository, session *trello.Session) Completer {
 	return Completer{
-		tr:           tr,
-		currentBoard: currentBoard,
-		currentList:  currentList,
+		tr:      tr,
+		session: session,
 	}
 }
 
 // Completer used to provide the content of the auto-completion for go-prompt
 type Completer struct {
-	tr           trello.Repository
-	currentBoard *trello.Board
-	currentList  *trello.List
-	suggestions  []prompt.Suggest
+	tr          trello.Repository
+	session     *trello.Session
+	suggestions []prompt.Suggest
 }
 
 func (c Completer) Complete(cmd string, args []string) []prompt.Suggest {
@@ -59,7 +57,7 @@ func (c Completer) suggestForMVOrCP(args []string) []prompt.Suggest {
 }
 
 func (c Completer) suggestBoardsAndLists(args []string) []prompt.Suggest {
-	arg, boardName, listName, cardName, err := c.resolvePath(args)
+	arg, p, err := c.resolvePath(args)
 	if err != nil {
 		log.Debug().
 			Err(err).
@@ -67,21 +65,21 @@ func (c Completer) suggestBoardsAndLists(args []string) []prompt.Suggest {
 			Msg("could not resolve path")
 		return []prompt.Suggest{}
 	}
-	if cardName != "" {
+	if p.CardName != "" {
 		return []prompt.Suggest{}
 	}
 
-	board, suggestions := c.suggestBoards(arg, boardName)
+	board, suggestions := c.suggestBoards(arg, p.BoardName)
 	if suggestions != nil {
 		return suggestions
 	}
 
-	_, suggestions = c.suggestLists(arg, board, listName)
+	_, suggestions = c.suggestLists(arg, board, p.ListName)
 	return suggestions
 }
 
 func (c Completer) suggestBoardsAndListsAndCards(args []string) []prompt.Suggest {
-	arg, boardName, listName, _, err := c.resolvePath(args)
+	arg, p, err := c.resolvePath(args)
 	if err != nil {
 		log.Debug().
 			Err(err).
@@ -90,12 +88,12 @@ func (c Completer) suggestBoardsAndListsAndCards(args []string) []prompt.Suggest
 		return []prompt.Suggest{}
 	}
 
-	board, suggestions := c.suggestBoards(arg, boardName)
+	board, suggestions := c.suggestBoards(arg, p.BoardName)
 	if suggestions != nil {
 		return suggestions
 	}
 
-	list, suggestions := c.suggestLists(arg, board, listName)
+	list, suggestions := c.suggestLists(arg, board, p.ListName)
 	if suggestions != nil {
 		return suggestions
 	}
@@ -103,13 +101,13 @@ func (c Completer) suggestBoardsAndListsAndCards(args []string) []prompt.Suggest
 	return c.suggestCards(arg, list)
 }
 
-func (c Completer) resolvePath(args []string) (arg, boardName, listName, cardName string, err error) {
+func (c Completer) resolvePath(args []string) (arg string, p trello.Path, err error) {
 	arg = ""
 	if len(args) > 0 {
 		arg = args[len(args)-1]
 	}
-	pathResolver := trello.NewPathResolver(c.currentBoard, c.currentList)
-	boardName, listName, cardName, err = pathResolver.Resolve(arg)
+	pathResolver := trello.NewPathResolver(c.session)
+	p, err = pathResolver.Resolve(arg)
 	return
 }
 

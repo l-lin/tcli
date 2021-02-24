@@ -333,10 +333,11 @@ func TestLs_Execute(t *testing.T) {
 			stderrBuf := bytes.Buffer{}
 			l := ls{
 				executor{
-					tr:     tt.given.buildTrelloRepository(),
-					r:      tt.given.buildRenderer(),
-					stdout: &stdoutBuf,
-					stderr: &stderrBuf,
+					tr:      tt.given.buildTrelloRepository(),
+					r:       tt.given.buildRenderer(),
+					session: &trello.Session{},
+					stdout:  &stdoutBuf,
+					stderr:  &stderrBuf,
 				},
 			}
 			l.Execute(tt.given.args)

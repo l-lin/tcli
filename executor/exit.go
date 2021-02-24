@@ -1,13 +1,11 @@
 package executor
 
 import (
-	"github.com/l-lin/tcli/trello"
 	"os"
 )
 
 type exit struct{}
 
-func (e exit) Execute(_ []string) (*trello.Board, *trello.List) {
+func (e exit) Execute(_ []string) {
 	os.Exit(0)
-	return nil, nil
 }
