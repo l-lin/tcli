@@ -129,8 +129,8 @@ pos: 123
 # id sky: sky [name sky]
 # id black: black
 labels:
-  - red [name red]
-  - black
+  - "red [name red]"
+  - "black"
 desc: |-
   # card description
 
@@ -171,8 +171,8 @@ pos: 123
 # id sky: sky [name sky]
 # id black: black
 labels:
-  - red [name red]
-  - black
+  - "red [name red]"
+  - "black"
 desc: |-
   # card description
 

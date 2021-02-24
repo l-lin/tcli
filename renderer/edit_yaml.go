@@ -104,7 +104,7 @@ pos: {{.Card.Pos}}
 labels:
 {{- if .Card.Labels -}}
 {{range $label := .Card.Labels}}
-  - {{$label}}
+  - "{{$label}}"
 {{- end -}}
 {{end}}
 {{/* ---------------- DESCRIPTION ---------------- */ -}}
