@@ -1,6 +1,7 @@
 package trello
 
 type Session struct {
-	CurrentBoard *Board
-	CurrentList  *List
+	Board *Board
+	List  *List
+	Card  *Card
 }

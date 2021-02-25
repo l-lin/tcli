@@ -10,17 +10,19 @@ import (
 type CacheInMemory struct {
 	r Repository
 	*Boards
-	mapLabels map[string]Labels // <idBoard, Labels>
-	mapLists  map[string]Lists  // <idBoard, Lists>
-	mapCards  map[string]Cards  // <idList, Cards>
+	mapLabelsByIDBoard  map[string]Labels   // <idBoard, Labels>
+	mapListsByIDBoard   map[string]Lists    // <idBoard, Lists>
+	mapCardsByIDList    map[string]Cards    // <idList, Cards>
+	mapCommentsByIDCard map[string]Comments // <idCard, Comments>
 }
 
 func NewCacheInMemory(r Repository) Repository {
 	return &CacheInMemory{
-		r:         r,
-		mapLabels: map[string]Labels{},
-		mapLists:  map[string]Lists{},
-		mapCards:  map[string]Cards{},
+		r:                   r,
+		mapLabelsByIDBoard:  map[string]Labels{},
+		mapListsByIDBoard:   map[string]Lists{},
+		mapCardsByIDList:    map[string]Cards{},
+		mapCommentsByIDCard: map[string]Comments{},
 	}
 }
 
@@ -47,24 +49,24 @@ func (c *CacheInMemory) FindBoard(query string) (*Board, error) {
 }
 
 func (c *CacheInMemory) FindLabels(idBoard string) (Labels, error) {
-	if c.mapLabels[idBoard] != nil {
+	if c.mapLabelsByIDBoard[idBoard] != nil {
 		log.Debug().Msg("fetching labels from cache")
-		return c.mapLabels[idBoard], nil
+		return c.mapLabelsByIDBoard[idBoard], nil
 	}
 	log.Debug().Str("idBoard", idBoard).Msg("fetching labels from remote")
 	labels, err := c.r.FindLabels(idBoard)
-	c.mapLabels[idBoard] = labels
+	c.mapLabelsByIDBoard[idBoard] = labels
 	return labels, err
 }
 
 func (c *CacheInMemory) FindLists(idBoard string) (Lists, error) {
-	if c.mapLists[idBoard] != nil {
+	if c.mapListsByIDBoard[idBoard] != nil {
 		log.Debug().Str("idBoard", idBoard).Msg("fetching lists from cache")
-		return c.mapLists[idBoard], nil
+		return c.mapListsByIDBoard[idBoard], nil
 	}
 	log.Debug().Str("idBoard", idBoard).Msg("fetching lists from remote")
 	lists, err := c.r.FindLists(idBoard)
-	c.mapLists[idBoard] = lists
+	c.mapListsByIDBoard[idBoard] = lists
 	return lists, err
 }
 
@@ -80,13 +82,13 @@ func (c *CacheInMemory) FindList(idBoard string, query string) (*List, error) {
 }
 
 func (c *CacheInMemory) FindCards(idList string) (Cards, error) {
-	if c.mapCards[idList] != nil {
+	if c.mapCardsByIDList[idList] != nil {
 		log.Debug().Str("idList", idList).Msg("fetching cards from cache")
-		return c.mapCards[idList], nil
+		return c.mapCardsByIDList[idList], nil
 	}
 	log.Debug().Str("idList", idList).Msg("fetching cards from remote")
 	cards, err := c.r.FindCards(idList)
-	c.mapCards[idList] = cards
+	c.mapCardsByIDList[idList] = cards
 	return cards, err
 }
 
@@ -108,7 +110,7 @@ func (c *CacheInMemory) CreateCard(createCard CreateCard) (*Card, error) {
 	}
 
 	// add card to cache
-	c.mapCards[createCard.IDList] = append(c.mapCards[createCard.IDList], *card)
+	c.mapCardsByIDList[createCard.IDList] = append(c.mapCardsByIDList[createCard.IDList], *card)
 	return card, nil
 }
 
@@ -122,19 +124,41 @@ func (c *CacheInMemory) UpdateCard(updateCard UpdateCard) (*Card, error) {
 	if cardIndex == -1 {
 		// card may have been moved, so clear cache completely like a brute
 		// we can find a smarter way, but well, performance wise, it's still acceptable...
-		c.mapCards = map[string]Cards{}
+		c.mapCardsByIDList = map[string]Cards{}
 	} else {
 		if card.Closed {
 			c.removeCard(updateCard.IDList, cardIndex)
 		} else {
-			c.mapCards[updateCard.IDList][cardIndex] = *card
+			c.mapCardsByIDList[updateCard.IDList][cardIndex] = *card
 		}
 	}
 	return card, nil
 }
 
+func (c *CacheInMemory) FindComments(idCard string) (Comments, error) {
+	if c.mapCommentsByIDCard[idCard] != nil {
+		log.Debug().Str("idCard", idCard).Msg("fetching comments from cache")
+		return c.mapCommentsByIDCard[idCard], nil
+	}
+	log.Debug().Str("idCard", idCard).Msg("fetching comments from remote")
+	comments, err := c.r.FindComments(idCard)
+	c.mapCommentsByIDCard[idCard] = comments
+	return comments, err
+}
+
+func (c *CacheInMemory) FindComment(idCard string, idComment string) (*Comment, error) {
+	comments, err := c.FindComments(idCard)
+	if err != nil {
+		return nil, err
+	}
+	if comment := FindComment(comments, idComment); comment != nil {
+		return comment, nil
+	}
+	return nil, fmt.Errorf("no comment found with id %s", idComment)
+}
+
 func (c *CacheInMemory) findCardIndex(idList, cardID string) int {
-	for i, cachedCard := range c.mapCards[idList] {
+	for i, cachedCard := range c.mapCardsByIDList[idList] {
 		if cachedCard.ID == cardID {
 			return i
 		}
@@ -146,12 +170,12 @@ func (c *CacheInMemory) removeCard(idList string, cardIndex int) {
 	if cardIndex == -1 {
 		return
 	}
-	cards, found := c.mapCards[idList]
+	cards, found := c.mapCardsByIDList[idList]
 	if !found {
 		return
 	}
 	if cardIndex >= len(cards) {
 		return
 	}
-	c.mapCards[idList] = append(cards[:cardIndex], cards[cardIndex+1:]...)
+	c.mapCardsByIDList[idList] = append(cards[:cardIndex], cards[cardIndex+1:]...)
 }

@@ -33,6 +33,9 @@ func TestLs_Execute(t *testing.T) {
 	card1 := trello.Card{ID: "card 1", Name: "card"}
 	card2 := trello.Card{ID: "card 2", Name: "another card"}
 	cards := trello.Cards{card1, card2}
+	comment1 := trello.Comment{ID: "comment"}
+	comment2 := trello.Comment{ID: "another comment"}
+	comments := trello.Comments{comment1, comment2}
 
 	var tests = map[string]struct {
 		given    given
@@ -127,32 +130,6 @@ func TestLs_Execute(t *testing.T) {
 			},
 			expected: expected{stdout: "cards content\n"},
 		},
-		"show single card": {
-			given: given{
-				args: []string{"board/list/card"},
-				buildTrelloRepository: func() trello.Repository {
-					tr := trello.NewMockRepository(ctrl)
-					tr.EXPECT().
-						FindBoard(board1.Name).
-						Return(&board1, nil)
-					tr.EXPECT().
-						FindList(board1.ID, list1.Name).
-						Return(&list1, nil)
-					tr.EXPECT().
-						FindCard(list1.ID, card1.Name).
-						Return(&card1, nil)
-					return tr
-				},
-				buildRenderer: func() renderer.Renderer {
-					r := renderer.NewMockRenderer(ctrl)
-					r.EXPECT().
-						RenderCards(trello.Cards{card1}).
-						Return("card 1 content")
-					return r
-				},
-			},
-			expected: expected{stdout: "card 1 content\n"},
-		},
 		"show 2 lists": {
 			given: given{
 				args: []string{board1.Name, board2.Name},
@@ -184,6 +161,64 @@ func TestLs_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{stdout: "lists 1 content\nlists 2 content\n"},
+		},
+		"show comments": {
+			given: given{
+				args: []string{"board/list/card"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board1.Name).
+						Return(&board1, nil)
+					tr.EXPECT().
+						FindList(board1.ID, list1.Name).
+						Return(&list1, nil)
+					tr.EXPECT().
+						FindCard(list1.ID, card1.Name).
+						Return(&card1, nil)
+					tr.EXPECT().
+						FindComments(card1.ID).
+						Return(comments, nil)
+					return tr
+				},
+				buildRenderer: func() renderer.Renderer {
+					r := renderer.NewMockRenderer(ctrl)
+					r.EXPECT().
+						RenderComments(comments).
+						Return("comments content")
+					return r
+				},
+			},
+			expected: expected{stdout: "comments content\n"},
+		},
+		"show single comment": {
+			given: given{
+				args: []string{"board/list/card/comment"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board1.Name).
+						Return(&board1, nil)
+					tr.EXPECT().
+						FindList(board1.ID, list1.Name).
+						Return(&list1, nil)
+					tr.EXPECT().
+						FindCard(list1.ID, card1.Name).
+						Return(&card1, nil)
+					tr.EXPECT().
+						FindComment(card1.ID, comment1.ID).
+						Return(&comment1, nil)
+					return tr
+				},
+				buildRenderer: func() renderer.Renderer {
+					r := renderer.NewMockRenderer(ctrl)
+					r.EXPECT().
+						RenderComment(comment1).
+						Return("comment 1 content")
+					return r
+				},
+			},
+			expected: expected{stdout: "comment 1 content\n"},
 		},
 		// ERRORS
 		"invalid path": {

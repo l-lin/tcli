@@ -13,8 +13,9 @@ type cd struct {
 func (c cd) Execute(args []string) {
 	if len(args) == 0 {
 		log.Debug().Msg("returning to top parent")
-		c.session.CurrentBoard = nil
-		c.session.CurrentList = nil
+		c.session.Board = nil
+		c.session.List = nil
+		c.session.Card = nil
 		return
 	}
 	if len(args) > 1 {
@@ -25,8 +26,9 @@ func (c cd) Execute(args []string) {
 	arg := args[0]
 	if arg == "" {
 		log.Debug().Msg("returning to top parent")
-		c.session.CurrentBoard = nil
-		c.session.CurrentList = nil
+		c.session.Board = nil
+		c.session.List = nil
+		c.session.Card = nil
 		return
 	}
 
@@ -38,8 +40,9 @@ func (c cd) Execute(args []string) {
 	}
 
 	if p.BoardName == "" {
-		c.session.CurrentBoard = nil
-		c.session.CurrentList = nil
+		c.session.Board = nil
+		c.session.List = nil
+		c.session.Card = nil
 		return
 	}
 
@@ -50,8 +53,9 @@ func (c cd) Execute(args []string) {
 	}
 
 	if p.ListName == "" {
-		c.session.CurrentBoard = board
-		c.session.CurrentList = nil
+		c.session.Board = board
+		c.session.List = nil
+		c.session.Card = nil
 		return
 	}
 
@@ -61,11 +65,19 @@ func (c cd) Execute(args []string) {
 		return
 	}
 
-	if p.CardName != "" {
-		fmt.Fprintf(c.stderr, "cannot cd on card\n")
+	if p.CardName == "" {
+		c.session.Board = board
+		c.session.List = list
+		c.session.Card = nil
 		return
 	}
 
-	c.session.CurrentBoard = board
-	c.session.CurrentList = list
+	var card *trello.Card
+	if card, err = c.tr.FindCard(list.ID, p.CardName); err != nil || card == nil {
+		fmt.Fprintf(c.stderr, "no card found with name '%s'\n", p.CardName)
+		return
+	}
+	c.session.Board = board
+	c.session.List = list
+	c.session.Card = card
 }

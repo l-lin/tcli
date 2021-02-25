@@ -1,6 +1,9 @@
 package trello
 
-import "strconv"
+import (
+	"sort"
+	"strconv"
+)
 
 func FindCard(cards Cards, query string) *Card {
 	sanitizedQuery := sanitize(query)
@@ -17,6 +20,14 @@ func FindCard(cards Cards, query string) *Card {
 }
 
 type Cards []Card
+
+func (c Cards) SortedByPos() Cards {
+	sort.Slice(c, func(i, j int) bool {
+		return c[i].Pos < c[j].Pos
+	})
+	return c
+}
+
 type Card struct {
 	ID        string  `json:"id"`
 	Name      string  `json:"name"`

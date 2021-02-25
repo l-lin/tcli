@@ -43,3 +43,14 @@ func truncateCardDescription(description string) string {
 	}
 	return description
 }
+
+func commentsToSuggestions(comments trello.Comments) []prompt.Suggest {
+	suggestions := make([]prompt.Suggest, len(comments))
+	for i, comment := range comments {
+		suggestions[i] = prompt.Suggest{
+			Text:        fmt.Sprintf("%s", comment.ID),
+			Description: fmt.Sprintf("%s @ %s", comment.MemberCreator.Username, comment.Date),
+		}
+	}
+	return suggestions
+}

@@ -14,21 +14,27 @@ type Path struct {
 	BoardName string
 	ListName  string
 	CardName  string
+	CommentID string
 }
 
 func NewPathResolver(session *Session) PathResolver {
 	boardName := ""
-	if session.CurrentBoard != nil {
-		boardName = session.CurrentBoard.Name
+	if session.Board != nil {
+		boardName = session.Board.Name
 	}
 	listName := ""
-	if session.CurrentList != nil {
-		listName = session.CurrentList.Name
+	if session.List != nil {
+		listName = session.List.Name
+	}
+	cardName := ""
+	if session.Card != nil {
+		cardName = session.Card.Name
 	}
 	return PathResolver{
 		Path: Path{
 			BoardName: boardName,
 			ListName:  listName,
+			CardName:  cardName,
 		},
 	}
 }
@@ -47,7 +53,7 @@ func (pr *PathResolver) Resolve(relativePath string) (p Path, err error) {
 	if path.IsAbs(relativePath) {
 		resolvedPath = strings.Trim(relativePath, "/")
 	} else {
-		resolvedPath = strings.Trim(filepath.Join(pr.BoardName, pr.ListName, relativePath), "/")
+		resolvedPath = strings.Trim(filepath.Join(pr.BoardName, pr.ListName, pr.CardName, relativePath), "/")
 	}
 	if isInvalid(resolvedPath) {
 		err = invalidPathErr
@@ -58,16 +64,17 @@ func (pr *PathResolver) Resolve(relativePath string) (p Path, err error) {
 		return
 	}
 	paths := strings.Split(resolvedPath, "/")
-	if len(paths) > 3 {
+	if len(paths) > 4 {
 		err = invalidPathErr
 		return
 	}
-	// only 3 levels: boards > lists > cards
-	result := make([]string, 3)
+	// only 4 levels: boards > lists > cards > comments
+	result := make([]string, 4)
 	copy(result, paths[0:])
 	p.BoardName = result[0]
 	p.ListName = result[1]
 	p.CardName = result[2]
+	p.CommentID = result[3]
 	pr.logResolved(p)
 	return
 }

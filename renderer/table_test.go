@@ -358,3 +358,121 @@ Here are some markdown contents
 		})
 	}
 }
+
+func TestInTable_RenderComments(t *testing.T) {
+	var tests = map[string]struct {
+		given    trello.Comments
+		expected string
+	}{
+		"3 comments": {
+			given: trello.Comments{
+				{
+					ID:   "comment 1",
+					Date: "2014-11-12T11:45:26.371Z",
+					MemberCreator: trello.CommentMemberCreator{
+						Username: "user 1",
+					},
+					Data: trello.CommentData{
+						Text: `# Comment title
+
+> some context
+
+Here are some markdown content.`,
+					},
+				},
+				{
+					ID:   "comment 2",
+					Date: "2014-11-13T11:45:26.371Z",
+					MemberCreator: trello.CommentMemberCreator{
+						Username: "user 2",
+					},
+					Data: trello.CommentData{
+						Text: "NO",
+					},
+				},
+				{
+					ID:   "comment 3",
+					Date: "2014-11-14T11:45:26.371Z",
+					MemberCreator: trello.CommentMemberCreator{
+						Username: "user 1",
+					},
+					Data: trello.CommentData{
+						Text: "But why?",
+					},
+				},
+			},
+			expected: `
+user 1 @ 2014-11-14T11:45:26.371Z [comment 3]
+---------------------------------------------
+But why?
+
+user 2 @ 2014-11-13T11:45:26.371Z [comment 2]
+---------------------------------------------
+NO
+
+user 1 @ 2014-11-12T11:45:26.371Z [comment 1]
+---------------------------------------------
+# Comment title
+
+> some context
+
+Here are some markdown content.
+`,
+		},
+		"no comment": {
+			given:    trello.Comments{},
+			expected: "",
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			r := NewInTableRenderer(PlainLabel{}, PlainDescription{})
+			actual := r.RenderComments(tt.given)
+			if actual != tt.expected {
+				t.Errorf("expected:\n%v\nactual:\n%v", tt.expected, actual)
+			}
+		})
+	}
+}
+
+func TestInTable_RenderComment(t *testing.T) {
+	var tests = map[string]struct {
+		given    trello.Comment
+		expected string
+	}{
+		"long text": {
+			given: trello.Comment{
+				ID:   "comment 1",
+				Date: "2014-11-12T11:45:26.371Z",
+				MemberCreator: trello.CommentMemberCreator{
+					Username: "user 1",
+				},
+				Data: trello.CommentData{
+					Text: `# Comment title
+
+> some context
+
+Here are some markdown content.`,
+				},
+			},
+			expected: `
+user 1 @ 2014-11-12T11:45:26.371Z [comment 1]
+---------------------------------------------
+# Comment title
+
+> some context
+
+Here are some markdown content.
+`,
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			r := NewInTableRenderer(PlainLabel{}, PlainDescription{})
+			actual := r.RenderComment(tt.given)
+			if actual != tt.expected {
+				t.Errorf("expected:\n%v\nactual:\n%v", tt.expected, actual)
+			}
+		})
+	}
+}

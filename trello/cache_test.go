@@ -30,14 +30,8 @@ func TestCacheInMemory_FindBoards(t *testing.T) {
 	if err1 != nil || err2 != nil {
 		t.Error("expected no error")
 	}
-	if len(actual1) != len(expected) || len(actual2) != len(expected) {
+	if !reflect.DeepEqual(expected, actual1) || !reflect.DeepEqual(expected, actual2) {
 		t.Errorf("expected %v, actual1 %v, actual2 %v", expected, actual1, actual2)
-		t.FailNow()
-	}
-	for i := 0; i < len(expected); i++ {
-		if expected[i] != actual1[i] || expected[i] != actual2[i] {
-			t.Errorf("%d: expected %v, actual1 %v, actual2 %v", i, expected[i], actual1[i], actual2[i])
-		}
 	}
 }
 
@@ -176,14 +170,8 @@ func TestCacheInMemory_FindLists(t *testing.T) {
 	if err1 != nil || err2 != nil {
 		t.Error("expected no error")
 	}
-	if len(actual1) != len(expected) || len(actual2) != len(expected) {
+	if !reflect.DeepEqual(expected, actual1) || !reflect.DeepEqual(expected, actual2) {
 		t.Errorf("expected %v, actual1 %v, actual2 %v", expected, actual1, actual2)
-		t.FailNow()
-	}
-	for i := 0; i < len(expected); i++ {
-		if expected[i] != actual1[i] || expected[i] != actual2[i] {
-			t.Errorf("%d: expected %v, actual1 %v, actual2 %v", i, expected[i], actual1[i], actual2[i])
-		}
 	}
 }
 
@@ -291,14 +279,8 @@ func TestCacheInMemory_FindCards(t *testing.T) {
 	if err1 != nil || err2 != nil {
 		t.Error("expected no error")
 	}
-	if len(actual1) != len(expected) || len(actual2) != len(expected) {
+	if !reflect.DeepEqual(expected, actual1) || !reflect.DeepEqual(expected, actual2) {
 		t.Errorf("expected %v, actual1 %v, actual2 %v", expected, actual1, actual2)
-		t.FailNow()
-	}
-	for i := 0; i < len(expected); i++ {
-		if expected[i].ID != actual1[i].ID || expected[i].ID != actual2[i].ID {
-			t.Errorf("%d: expected %v, actual1 %v, actual2 %v", i, expected[i], actual1[i], actual2[i])
-		}
 	}
 }
 
@@ -393,9 +375,9 @@ func TestCacheInMemory_CreateCard(t *testing.T) {
 			CreateCard(NewCreateCard(expected)).
 			Return(&expected, nil)
 		cr := &CacheInMemory{
-			r:        r,
-			mapLists: map[string]Lists{},
-			mapCards: map[string]Cards{
+			r:                 r,
+			mapListsByIDBoard: map[string]Lists{},
+			mapCardsByIDList: map[string]Cards{
 				expected.IDList: {
 					{ID: "card 2", Name: "another card", IDList: expected.IDList},
 				},
@@ -413,7 +395,7 @@ func TestCacheInMemory_CreateCard(t *testing.T) {
 			t.Error("expected no nil card returned")
 			t.FailNow()
 		}
-		cardInCache := cr.mapCards[expected.IDList][1]
+		cardInCache := cr.mapCardsByIDList[expected.IDList][1]
 		if cardInCache.ID != expected.ID && cardInCache.Name != expected.Name &&
 			actual.ID != expected.ID && actual.Name != expected.Name {
 			t.Errorf("expected %v, actual %v, card in cache %v", expected, actual, cardInCache)
@@ -429,9 +411,9 @@ func TestCacheInMemory_CreateCard(t *testing.T) {
 			CreateCard(NewCreateCard(card)).
 			Return(nil, errors.New("unexpected error"))
 		cr := &CacheInMemory{
-			r:        r,
-			mapLists: map[string]Lists{},
-			mapCards: map[string]Cards{
+			r:                 r,
+			mapListsByIDBoard: map[string]Lists{},
+			mapCardsByIDList: map[string]Cards{
 				card.IDList: {
 					{ID: "card 2", Name: "another card", IDList: card.IDList},
 				},
@@ -464,9 +446,9 @@ func TestCacheInMemory_UpdateCard(t *testing.T) {
 			UpdateCard(NewUpdateCard(cardToUpdate)).
 			Return(&expected, nil)
 		cr := &CacheInMemory{
-			r:        r,
-			mapLists: map[string]Lists{},
-			mapCards: map[string]Cards{
+			r:                 r,
+			mapListsByIDBoard: map[string]Lists{},
+			mapCardsByIDList: map[string]Cards{
 				cardToUpdate.IDList: {
 					{ID: "card 2", Name: "another card", IDList: cardToUpdate.IDList},
 					cardToUpdate,
@@ -485,7 +467,7 @@ func TestCacheInMemory_UpdateCard(t *testing.T) {
 			t.Error("expected no nil card returned")
 			t.FailNow()
 		}
-		cardInCache := cr.mapCards[cardToUpdate.IDList][1]
+		cardInCache := cr.mapCardsByIDList[cardToUpdate.IDList][1]
 		if cardInCache.ID != expected.ID && cardInCache.Name != expected.Name &&
 			actual.ID != expected.ID && actual.Name != expected.Name {
 			t.Errorf("expected %v, actual %v, card in cache %v", expected, actual, cardInCache)
@@ -505,9 +487,9 @@ func TestCacheInMemory_UpdateCard(t *testing.T) {
 			UpdateCard(updateCard).
 			Return(&expected, nil)
 		cr := &CacheInMemory{
-			r:        r,
-			mapLists: map[string]Lists{},
-			mapCards: map[string]Cards{
+			r:                 r,
+			mapListsByIDBoard: map[string]Lists{},
+			mapCardsByIDList: map[string]Cards{
 				cardToUpdate.IDList: {
 					{ID: "card 2", Name: "another card", IDList: cardToUpdate.IDList},
 					cardToUpdate,
@@ -526,8 +508,8 @@ func TestCacheInMemory_UpdateCard(t *testing.T) {
 			t.Error("expected no nil card returned")
 			t.FailNow()
 		}
-		if len(cr.mapCards[cardToUpdate.IDList]) != 1 {
-			t.Errorf("expected updated card removed from cache, got %v", cr.mapCards[cardToUpdate.IDList])
+		if len(cr.mapCardsByIDList[cardToUpdate.IDList]) != 1 {
+			t.Errorf("expected updated card removed from cache, got %v", cr.mapCardsByIDList[cardToUpdate.IDList])
 		}
 	})
 	t.Run("error when updating card", func(t *testing.T) {
@@ -542,9 +524,9 @@ func TestCacheInMemory_UpdateCard(t *testing.T) {
 			UpdateCard(updateCard).
 			Return(nil, errors.New("unexpected error"))
 		cr := &CacheInMemory{
-			r:        r,
-			mapLists: map[string]Lists{},
-			mapCards: map[string]Cards{
+			r:                 r,
+			mapListsByIDBoard: map[string]Lists{},
+			mapCardsByIDList: map[string]Cards{
 				cardToUpdate.IDList: {
 					{ID: "card 2", Name: "another card", IDList: cardToUpdate.IDList},
 					cardToUpdate,
@@ -563,15 +545,15 @@ func TestCacheInMemory_UpdateCard(t *testing.T) {
 			t.Errorf("expected nil card returned, actual %v", actual)
 			t.FailNow()
 		}
-		if len(cr.mapCards[cardToUpdate.IDList]) != 2 {
-			t.Errorf("expected cache not modified, got %v", cr.mapCards[cardToUpdate.IDList])
+		if len(cr.mapCardsByIDList[cardToUpdate.IDList]) != 2 {
+			t.Errorf("expected cache not modified, got %v", cr.mapCardsByIDList[cardToUpdate.IDList])
 		}
 	})
 }
 
 func TestCacheInMemory_findCardIndex(t *testing.T) {
 	cr := &CacheInMemory{
-		mapCards: map[string]Cards{
+		mapCardsByIDList: map[string]Cards{
 			"list 1": {
 				{ID: "card 1"},
 				{ID: "card 2"},
@@ -696,7 +678,7 @@ func TestCacheInMemory_removeCard(t *testing.T) {
 				},
 			},
 		},
-		"index greater than mapCards": {
+		"index greater than mapCardsByIDList": {
 			given: given{
 				mapCards: map[string]Cards{
 					"list 1": {
@@ -743,12 +725,121 @@ func TestCacheInMemory_removeCard(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			cr := &CacheInMemory{mapCards: tt.given.mapCards}
+			cr := &CacheInMemory{mapCardsByIDList: tt.given.mapCards}
 			cr.removeCard(tt.given.idList, tt.given.cardIndex)
-			actual := cr.mapCards
+			actual := cr.mapCardsByIDList
 			if !reflect.DeepEqual(tt.expected.mapCards, actual) {
 				t.Errorf("expected %v, actual %v", tt.expected.mapCards, actual)
 			}
 		})
 	}
+}
+
+func TestCacheInMemory_FindComments(t *testing.T) {
+	// GIVEN
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	r := NewMockRepository(ctrl)
+	expected := Comments{
+		{ID: "card 1", Date: "2021-02-02T16:18:41.228Z", Data: CommentData{Text: "text comment 1"}},
+		{ID: "card 2", Date: "2021-02-02T18:17:41.228Z", Data: CommentData{Text: "text comment 2"}},
+	}
+	idCard := "card 1"
+	r.EXPECT().
+		FindComments(idCard).
+		Return(expected, nil).
+		Times(1)
+	cr := NewCacheInMemory(r)
+
+	// WHEN
+	actual1, err1 := cr.FindComments(idCard)
+	actual2, err2 := cr.FindComments(idCard)
+
+	// THEN
+	if err1 != nil || err2 != nil {
+		t.Error("expected no error")
+	}
+	if !reflect.DeepEqual(expected, actual1) || !reflect.DeepEqual(expected, actual2) {
+		t.Errorf("expected %v, actual1 %v, actual2 %v", expected, actual1, actual2)
+	}
+}
+
+func TestCacheInMemory_FindComment(t *testing.T) {
+	t.Run("happy path", func(t *testing.T) {
+		// GIVEN
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		r := NewMockRepository(ctrl)
+		comments := Comments{
+			{ID: "comment 1"},
+			{ID: "comment 2"},
+		}
+		idCard := "card 1"
+		r.EXPECT().
+			FindComments(idCard).
+			Return(comments, nil).
+			Times(1)
+		cr := NewCacheInMemory(r)
+
+		// WHEN
+		actual, err := cr.FindComment(idCard, "comment 2")
+
+		// THEN
+		if err != nil {
+			t.Error("expected no error")
+		}
+		expected := &comments[1]
+		if !reflect.DeepEqual(expected, actual) {
+			t.Errorf("expected %v, actual %v", expected, actual)
+		}
+	})
+	t.Run("comment not found", func(t *testing.T) {
+		// GIVEN
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		r := NewMockRepository(ctrl)
+		comments := Comments{
+			{ID: "comment 1"},
+			{ID: "comment 2"},
+		}
+		idCard := "card 1"
+		r.EXPECT().
+			FindComments(idCard).
+			Return(comments, nil).
+			Times(1)
+		cr := NewCacheInMemory(r)
+
+		// WHEN
+		actual, err := cr.FindComment(idCard, "unknown comment")
+
+		// THEN
+		if err == nil {
+			t.Error("expected error")
+		}
+		if actual != nil {
+			t.Errorf("expected nil returned value, actual %v", actual)
+		}
+	})
+	t.Run("error when finding cards", func(t *testing.T) {
+		// GIVEN
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		r := NewMockRepository(ctrl)
+		idList := "list 1"
+		r.EXPECT().
+			FindCards(idList).
+			Return(nil, errors.New("unexpected error"))
+		cr := NewCacheInMemory(r)
+
+		// WHEN
+		actual, err := cr.FindCard(idList, "card")
+
+		// THEN
+		if err == nil {
+			t.Error("expected error")
+		}
+		if actual != nil {
+			t.Errorf("expected nil returned value, actual %v", actual)
+		}
+	})
 }

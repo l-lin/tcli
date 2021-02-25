@@ -56,5 +56,16 @@ func (c cat) execute(arg string) {
 		fmt.Fprintf(c.stderr, "no card found with name '%s'\n", p.CardName)
 		return
 	}
-	fmt.Fprintf(c.stdout, "%s\n", c.r.RenderCard(*card))
+
+	if p.CommentID == "" {
+		fmt.Fprintf(c.stdout, "%s\n", c.r.RenderCard(*card))
+		return
+	}
+
+	var comment *trello.Comment
+	if comment, err = c.tr.FindComment(card.ID, p.CommentID); err != nil || comment == nil {
+		fmt.Fprintf(c.stderr, "no comment found with id '%s'\n", p.CommentID)
+		return
+	}
+	fmt.Fprintf(c.stdout, "%s\n", c.r.RenderComment(*comment))
 }

@@ -122,6 +122,29 @@ func (h HttpRepository) UpdateCard(updateCard UpdateCard) (*Card, error) {
 	return &card, nil
 }
 
+func (h HttpRepository) FindComments(idCard string) (Comments, error) {
+	v := h.buildQueries("")
+	v.Set("filter", "commentCard")
+	u := fmt.Sprintf("%s/cards/%s/actions?%v", h.BaseURL, idCard, v.Encode())
+
+	var comments Comments
+	if err := h.get(u, &comments); err != nil {
+		return nil, err
+	}
+	return comments, nil
+}
+
+func (h HttpRepository) FindComment(_, idComment string) (*Comment, error) {
+	v := h.buildQueries("")
+	u := fmt.Sprintf("%s/actions/%s?%v", h.BaseURL, idComment, v.Encode())
+
+	var comment Comment
+	if err := h.get(u, &comment); err != nil {
+		return nil, err
+	}
+	return &comment, nil
+}
+
 func (h HttpRepository) get(url string, ret interface{}) error {
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {

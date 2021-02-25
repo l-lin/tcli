@@ -26,6 +26,7 @@ func TestCat_Execute(t *testing.T) {
 	list := trello.List{ID: "list 1", Name: "list"}
 	card1 := trello.Card{ID: "card 1", Name: "card"}
 	card2 := trello.Card{ID: "card 2", Name: "another-card"}
+	comment := trello.Comment{ID: "comment"}
 
 	var tests = map[string]struct {
 		given    given
@@ -115,6 +116,35 @@ func TestCat_Execute(t *testing.T) {
 				},
 			},
 			expected: expected{stdout: "card content\n"},
+		},
+		"show comment info": {
+			given: given{
+				args: []string{"board/list/card/comment"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board.Name).
+						Return(&board, nil)
+					tr.EXPECT().
+						FindList(board.ID, list.Name).
+						Return(&list, nil)
+					tr.EXPECT().
+						FindCard(list.ID, card1.Name).
+						Return(&card1, nil)
+					tr.EXPECT().
+						FindComment(card1.ID, comment.ID).
+						Return(&comment, nil)
+					return tr
+				},
+				buildRenderer: func() renderer.Renderer {
+					r := renderer.NewMockRenderer(ctrl)
+					r.EXPECT().
+						RenderComment(comment).
+						Return("comment content")
+					return r
+				},
+			},
+			expected: expected{stdout: "comment content\n"},
 		},
 		"two cards": {
 			given: given{
@@ -226,6 +256,33 @@ func TestCat_Execute(t *testing.T) {
 			},
 			expected: expected{
 				stderr: "no card found with name 'unknown-card'\n",
+			},
+		},
+		"unknown-comment": {
+			given: given{
+				args: []string{"board/list/card/unknown-comment"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board.Name).
+						Return(&board, nil)
+					tr.EXPECT().
+						FindList(board.ID, list.Name).
+						Return(&list, nil)
+					tr.EXPECT().
+						FindCard(list.ID, card1.Name).
+						Return(&card1, nil)
+					tr.EXPECT().
+						FindComment(card1.ID, "unknown-comment").
+						Return(nil, errors.New("not found"))
+					return tr
+				},
+				buildRenderer: func() renderer.Renderer {
+					return nil
+				},
+			},
+			expected: expected{
+				stderr: "no comment found with id 'unknown-comment'\n",
 			},
 		},
 	}

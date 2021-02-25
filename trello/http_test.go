@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 )
 
@@ -47,14 +48,8 @@ func TestHttpRepository_FindBoards(t *testing.T) {
 					{ID: "board 1", Name: "board"},
 					{ID: "board 2", Name: "another board"},
 				}
-				if len(expected) != len(actual) {
+				if !reflect.DeepEqual(expected, actual) {
 					t.Errorf("expected %v, actual %v", expected, actual)
-					t.FailNow()
-				}
-				for i := 0; i < len(expected); i++ {
-					if actual[i] != expected[i] {
-						t.Errorf("%d: expected %v, actual %v", i, expected[i], actual[i])
-					}
 				}
 			},
 		},
@@ -305,14 +300,8 @@ func TestHttpRepository_FindLists(t *testing.T) {
 					{ID: "list 1", Name: "list"},
 					{ID: "list 2", Name: "another list"},
 				}
-				if len(expected) != len(actual) {
+				if !reflect.DeepEqual(expected, actual) {
 					t.Errorf("expected %v, actual %v", expected, actual)
-					t.FailNow()
-				}
-				for i := 0; i < len(expected); i++ {
-					if actual[i] != expected[i] {
-						t.Errorf("%d: expected %v, actual %v", i, expected[i], actual[i])
-					}
 				}
 			},
 		},
@@ -479,14 +468,8 @@ func TestHttpRepository_FindCards(t *testing.T) {
 					{ID: "card 1", Name: "card"},
 					{ID: "card 2", Name: "another card"},
 				}
-				if len(expected) != len(actual) {
+				if !reflect.DeepEqual(expected, actual) {
 					t.Errorf("expected %v, actual %v", expected, actual)
-					t.FailNow()
-				}
-				for i := 0; i < len(expected); i++ {
-					if actual[i].ID != expected[i].ID || actual[i].Name != expected[i].Name {
-						t.Errorf("%d: expected %v, actual %v", i, expected[i], actual[i])
-					}
 				}
 			},
 		},
@@ -758,6 +741,166 @@ func TestHttpRepository_UpdateCard(t *testing.T) {
 					t.Errorf("expected %v, actual %v", tt.expected.card, actual)
 				}
 			}
+		})
+	}
+}
+
+func TestHttpRepository_FindComments(t *testing.T) {
+	type given struct {
+		tsFn func() *httptest.Server
+	}
+
+	var tests = map[string]struct {
+		given given
+		test  func(actual Comments, err error)
+	}{
+		"happy path": {
+			given: given{
+				tsFn: func() *httptest.Server {
+					return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						w.WriteHeader(http.StatusOK)
+						w.Write([]byte(`
+[{
+  "id": "comment 1",
+  "date": "2021-02-02T16:18:41.228Z",
+  "data": {
+    "text": "text comment 1"
+  },
+  "memberCreator": {
+    "fullName": "foobar"
+  }
+}, {
+  "id": "comment 2",
+  "date": "2021-02-02T18:17:41.228Z",
+  "data": {
+    "text": "text comment 2"
+  },
+  "memberCreator": {
+    "fullName": "foobar"
+  }
+}]`))
+					}))
+				},
+			},
+			test: func(actual Comments, err error) {
+				if err != nil {
+					t.Errorf("expected no error, got: %v", err)
+					t.FailNow()
+				}
+				if actual == nil {
+					t.Error("expected not nil comments")
+					t.FailNow()
+				}
+				expected := Comments{
+					{ID: "comment 1", Date: "2021-02-02T16:18:41.228Z", Data: CommentData{Text: "text comment 1"}, MemberCreator: CommentMemberCreator{FullName: "foobar"}},
+					{ID: "comment 2", Date: "2021-02-02T18:17:41.228Z", Data: CommentData{Text: "text comment 2"}, MemberCreator: CommentMemberCreator{FullName: "foobar"}},
+				}
+				if !reflect.DeepEqual(expected, actual) {
+					t.Errorf("expected %v, actual %v", expected, actual)
+				}
+			},
+		},
+		"server error": {
+			given: given{
+				tsFn: func() *httptest.Server {
+					return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						w.WriteHeader(http.StatusInternalServerError)
+					}))
+				},
+			},
+			test: func(actual Comments, err error) {
+				if err == nil {
+					t.Error("expected error")
+				}
+				if actual != nil {
+					t.Error("expected nil comments")
+				}
+			},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			ts := tt.given.tsFn()
+			repository := NewHttpRepository(conf.Conf{
+				Trello: conf.Trello{
+					BaseURL: ts.URL,
+				},
+			}, false)
+			tt.test(repository.FindComments("card 1"))
+		})
+	}
+}
+
+func TestHttpRepository_FindComment(t *testing.T) {
+	type given struct {
+		tsFn func() *httptest.Server
+	}
+
+	var tests = map[string]struct {
+		given given
+		test  func(actual *Comment, err error)
+	}{
+		"happy path": {
+			given: given{
+				tsFn: func() *httptest.Server {
+					return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						w.WriteHeader(http.StatusOK)
+						w.Write([]byte(`
+{
+  "id": "comment 1",
+  "date": "2021-02-02T16:18:41.228Z",
+  "data": {
+    "text": "text comment 1"
+  },
+  "memberCreator": {
+    "fullName": "foobar"
+  }
+}`))
+					}))
+				},
+			},
+			test: func(actual *Comment, err error) {
+				if err != nil {
+					t.Errorf("expected no error, got: %v", err)
+					t.FailNow()
+				}
+				if actual == nil {
+					t.Error("expected not nil comment")
+					t.FailNow()
+				}
+				expected := &Comment{ID: "comment 1", Date: "2021-02-02T16:18:41.228Z", Data: CommentData{Text: "text comment 1"}, MemberCreator: CommentMemberCreator{FullName: "foobar"}}
+				if !reflect.DeepEqual(expected, actual) {
+					t.Errorf("expected %v, actual %v", expected, actual)
+				}
+			},
+		},
+		"server error": {
+			given: given{
+				tsFn: func() *httptest.Server {
+					return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						w.WriteHeader(http.StatusInternalServerError)
+					}))
+				},
+			},
+			test: func(actual *Comment, err error) {
+				if err == nil {
+					t.Error("expected error")
+				}
+				if actual != nil {
+					t.Error("expected nil comment")
+				}
+			},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			ts := tt.given.tsFn()
+			repository := NewHttpRepository(conf.Conf{
+				Trello: conf.Trello{
+					BaseURL: ts.URL,
+				},
+			}, false)
+			tt.test(repository.FindComment("card 1", "comment 1"))
 		})
 	}
 }

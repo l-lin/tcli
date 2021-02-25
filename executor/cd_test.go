@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/golang/mock/gomock"
 	"github.com/l-lin/tcli/trello"
+	"reflect"
 	"testing"
 )
 
@@ -21,11 +22,13 @@ func TestCd_Execute(t *testing.T) {
 		stderr string
 		board  *trello.Board
 		list   *trello.List
+		card   *trello.Card
 	}
 
 	board1 := trello.Board{ID: "board 1", Name: "board"}
 	list1 := trello.List{ID: "list 1", Name: "list"}
 	list2 := trello.List{ID: "list 2", Name: "another-list"}
+	card1 := trello.Card{ID: "card 1", Name: "card"}
 
 	var tests = map[string]struct {
 		given    given
@@ -71,7 +74,7 @@ func TestCd_Execute(t *testing.T) {
 			given: given{
 				args: []string{},
 				session: &trello.Session{
-					CurrentBoard: &board1,
+					Board: &board1,
 				},
 				buildTrelloRepository: func() trello.Repository {
 					return nil
@@ -86,7 +89,7 @@ func TestCd_Execute(t *testing.T) {
 			given: given{
 				args: []string{""},
 				session: &trello.Session{
-					CurrentBoard: &board1,
+					Board: &board1,
 				},
 				buildTrelloRepository: func() trello.Repository {
 					return nil
@@ -101,7 +104,7 @@ func TestCd_Execute(t *testing.T) {
 			given: given{
 				args: []string{list1.Name},
 				session: &trello.Session{
-					CurrentBoard: &board1,
+					Board: &board1,
 				},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
@@ -123,7 +126,7 @@ func TestCd_Execute(t *testing.T) {
 			given: given{
 				args: []string{".."},
 				session: &trello.Session{
-					CurrentBoard: &board1,
+					Board: &board1,
 				},
 				buildTrelloRepository: func() trello.Repository {
 					return nil
@@ -138,8 +141,8 @@ func TestCd_Execute(t *testing.T) {
 			given: given{
 				args: []string{"../" + list2.Name},
 				session: &trello.Session{
-					CurrentBoard: &board1,
-					CurrentList:  &list1,
+					Board: &board1,
+					List:  &list1,
 				},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
@@ -155,6 +158,30 @@ func TestCd_Execute(t *testing.T) {
 			expected: expected{
 				board: &board1,
 				list:  &list2,
+			},
+		},
+		"/ > cd board/list/card": {
+			given: given{
+				args: []string{"board/list/card"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board1.Name).
+						Return(&board1, nil)
+					tr.EXPECT().
+						FindList(board1.ID, list1.Name).
+						Return(&list1, nil)
+					tr.EXPECT().
+						FindCard(list1.ID, card1.Name).
+						Return(&card1, nil)
+					return tr
+				},
+				session: &trello.Session{},
+			},
+			expected: expected{
+				board: &board1,
+				list:  &list1,
+				card:  &card1,
 			},
 		},
 		// ERRORS
@@ -205,25 +232,6 @@ func TestCd_Execute(t *testing.T) {
 				stderr: "no list found with name 'unknown-list'\n",
 			},
 		},
-		"/ > cd board/list/card": {
-			given: given{
-				args: []string{"board/list/card"},
-				buildTrelloRepository: func() trello.Repository {
-					tr := trello.NewMockRepository(ctrl)
-					tr.EXPECT().
-						FindBoard(board1.Name).
-						Return(&board1, nil)
-					tr.EXPECT().
-						FindList(board1.ID, list1.Name).
-						Return(&list1, nil)
-					return tr
-				},
-				session: &trello.Session{},
-			},
-			expected: expected{
-				stderr: "cannot cd on card\n",
-			},
-		},
 		"/ > cd ..": {
 			given: given{
 				args: []string{".."},
@@ -242,8 +250,8 @@ func TestCd_Execute(t *testing.T) {
 			given: given{
 				args: []string{"../../.."},
 				session: &trello.Session{
-					CurrentBoard: &board1,
-					CurrentList:  &list1,
+					Board: &board1,
+					List:  &list1,
 				},
 				buildTrelloRepository: func() trello.Repository {
 					return nil
@@ -259,8 +267,8 @@ func TestCd_Execute(t *testing.T) {
 			given: given{
 				args: []string{"board", "board2"},
 				session: &trello.Session{
-					CurrentBoard: &board1,
-					CurrentList:  &list1,
+					Board: &board1,
+					List:  &list1,
 				},
 				buildTrelloRepository: func() trello.Repository {
 					return nil
@@ -284,8 +292,9 @@ func TestCd_Execute(t *testing.T) {
 				},
 			}
 			c.Execute(tt.given.args)
-			actualBoard := tt.given.session.CurrentBoard
-			actualList := tt.given.session.CurrentList
+			actualBoard := tt.given.session.Board
+			actualList := tt.given.session.List
+			actualCard := tt.given.session.Card
 			if tt.expected.board != nil && actualBoard == nil || tt.expected.board == nil && actualBoard != nil {
 				t.Errorf("expected board %v, actual board %v", tt.expected.board, actualBoard)
 				t.FailNow()
@@ -302,6 +311,15 @@ func TestCd_Execute(t *testing.T) {
 			if tt.expected.list != nil {
 				if *actualList != *tt.expected.list {
 					t.Errorf("expected list %v, actual list %v", tt.expected.list, actualList)
+				}
+			}
+			if tt.expected.card != nil && actualCard == nil || tt.expected.card == nil && actualCard != nil {
+				t.Errorf("expected card %v, actual card %v", tt.expected.card, actualCard)
+				t.FailNow()
+			}
+			if tt.expected.card != nil {
+				if !reflect.DeepEqual(actualCard, tt.expected.card) {
+					t.Errorf("expected card %v, actual card %v", tt.expected.card, actualCard)
 				}
 			}
 			actualStderr := stderrBuf.String()

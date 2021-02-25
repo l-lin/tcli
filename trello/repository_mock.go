@@ -108,6 +108,36 @@ func (mr *MockRepositoryMockRecorder) FindCards(idList interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindCards", reflect.TypeOf((*MockRepository)(nil).FindCards), idList)
 }
 
+// FindComment mocks base method.
+func (m *MockRepository) FindComment(idCard, idComment string) (*Comment, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindComment", idCard, idComment)
+	ret0, _ := ret[0].(*Comment)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindComment indicates an expected call of FindComment.
+func (mr *MockRepositoryMockRecorder) FindComment(idCard, idComment interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindComment", reflect.TypeOf((*MockRepository)(nil).FindComment), idCard, idComment)
+}
+
+// FindComments mocks base method.
+func (m *MockRepository) FindComments(idCard string) (Comments, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindComments", idCard)
+	ret0, _ := ret[0].(Comments)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindComments indicates an expected call of FindComments.
+func (mr *MockRepositoryMockRecorder) FindComments(idCard interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindComments", reflect.TypeOf((*MockRepository)(nil).FindComments), idCard)
+}
+
 // FindLabels mocks base method.
 func (m *MockRepository) FindLabels(idBoard string) (Labels, error) {
 	m.ctrl.T.Helper()

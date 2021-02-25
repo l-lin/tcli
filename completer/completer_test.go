@@ -75,15 +75,12 @@ func TestCompleter_Complete(t *testing.T) {
 			given: given{
 				cmd:     "cat",
 				args:    []string{""},
-				session: &trello.Session{CurrentBoard: &board1},
+				session: &trello.Session{Board: &board1},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
 						FindBoard(board1.Name).
 						Return(&board1, nil)
-					tr.EXPECT().
-						FindList(board1.ID, "").
-						Return(nil, errNotFound)
 					tr.EXPECT().
 						FindLists(board1.ID).
 						Return(lists, nil)
@@ -99,7 +96,7 @@ func TestCompleter_Complete(t *testing.T) {
 			given: given{
 				cmd:     "cat",
 				args:    []string{"l"},
-				session: &trello.Session{CurrentBoard: &board1},
+				session: &trello.Session{Board: &board1},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -122,7 +119,7 @@ func TestCompleter_Complete(t *testing.T) {
 			given: given{
 				cmd:     "cat",
 				args:    []string{"list/"},
-				session: &trello.Session{CurrentBoard: &board1},
+				session: &trello.Session{Board: &board1},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -146,7 +143,7 @@ func TestCompleter_Complete(t *testing.T) {
 			given: given{
 				cmd:     "cat",
 				args:    []string{"list/c"},
-				session: &trello.Session{CurrentBoard: &board1},
+				session: &trello.Session{Board: &board1},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -155,6 +152,9 @@ func TestCompleter_Complete(t *testing.T) {
 					tr.EXPECT().
 						FindList(board1.ID, list1.Name).
 						Return(&list1, nil)
+					tr.EXPECT().
+						FindCard(list1.ID, "c").
+						Return(nil, errNotFound)
 					tr.EXPECT().
 						FindCards(list1.ID).
 						Return(cards, nil)
@@ -169,7 +169,7 @@ func TestCompleter_Complete(t *testing.T) {
 			given: given{
 				cmd:     "cat",
 				args:    []string{"../a"},
-				session: &trello.Session{CurrentBoard: &board1, CurrentList: &list1},
+				session: &trello.Session{Board: &board1, List: &list1},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -193,12 +193,9 @@ func TestCompleter_Complete(t *testing.T) {
 			given: given{
 				cmd:     "cd",
 				args:    []string{"/"},
-				session: &trello.Session{CurrentBoard: &board1},
+				session: &trello.Session{Board: &board1},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
-					tr.EXPECT().
-						FindBoard("").
-						Return(nil, errNotFound)
 					tr.EXPECT().
 						FindBoards().
 						Return(boards, nil)
@@ -214,7 +211,7 @@ func TestCompleter_Complete(t *testing.T) {
 			given: given{
 				cmd:     "cd",
 				args:    []string{"/a"},
-				session: &trello.Session{CurrentBoard: &board1},
+				session: &trello.Session{Board: &board1},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -231,10 +228,10 @@ func TestCompleter_Complete(t *testing.T) {
 			},
 		},
 		// CD
-		"/ > cd board/list/c": {
+		"/ > cd board/list/card/c": {
 			given: given{
 				cmd:  "cd",
-				args: []string{"board/list/c"},
+				args: []string{"board/list/card/c"},
 				buildTrelloRepository: func() trello.Repository {
 					return nil
 				},
@@ -266,6 +263,9 @@ func TestCompleter_Complete(t *testing.T) {
 					tr.EXPECT().
 						FindList(board1.ID, list1.Name).
 						Return(&list1, nil)
+					tr.EXPECT().
+						FindCard(list1.ID, "c").
+						Return(nil, errNotFound)
 					tr.EXPECT().
 						FindCards(list1.ID).
 						Return(cards, nil)
@@ -374,6 +374,9 @@ func TestCompleter_Complete(t *testing.T) {
 					tr.EXPECT().
 						FindList(board1.ID, list1.Name).
 						Return(&list1, nil)
+					tr.EXPECT().
+						FindCard(list1.ID, "c").
+						Return(nil, errors.New("not found"))
 					tr.EXPECT().
 						FindCards(list1.ID).
 						Return(nil, errors.New("unexpected error"))

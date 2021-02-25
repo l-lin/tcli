@@ -2,10 +2,10 @@ package renderer
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/cheynewallace/tabby"
 	"github.com/l-lin/tcli/trello"
 	"github.com/rs/zerolog/log"
-	"sort"
 	"text/tabwriter"
 )
 
@@ -89,10 +89,7 @@ func (b InTable) RenderCards(cards trello.Cards) string {
 	w := tabwriter.NewWriter(&buffer, b.minWidth, b.tabWidth, b.padding, b.padChar, b.flags)
 	t := tabby.NewCustom(w)
 	t.AddHeader("Name", "ID", "Short URL", "Position", "Labels")
-	sort.Slice(cards, func(i, j int) bool {
-		return cards[i].Pos < cards[j].Pos
-	})
-	for _, card := range cards {
+	for _, card := range cards.SortedByPos() {
 		line := make([]interface{}, 5)
 		line[0] = card.Name
 		line[1] = card.ID
@@ -127,4 +124,48 @@ func (b InTable) RenderCard(card trello.Card) string {
 	}
 	t.Print()
 	return buffer.String()
+}
+
+func (b InTable) RenderComments(comments trello.Comments) string {
+	var buffer bytes.Buffer
+	w := tabwriter.NewWriter(&buffer, b.minWidth, b.tabWidth, b.padding, b.padChar, b.flags)
+	t := tabby.NewCustom(w)
+	for _, comment := range comments.SortedByDateDesc() {
+		t.AddLine()
+		t.AddHeader(renderCommentHeader(comment))
+		renderedText, err := b.cdr.Render(comment.Data.Text)
+		if err != nil {
+			log.Debug().
+				Err(err).
+				Str("idComment", comment.ID).
+				Msg("could not render comment text")
+		} else {
+			t.AddLine(renderedText)
+		}
+	}
+	t.Print()
+	return buffer.String()
+}
+
+func (b InTable) RenderComment(comment trello.Comment) string {
+	var buffer bytes.Buffer
+	w := tabwriter.NewWriter(&buffer, b.minWidth, b.tabWidth, b.padding, b.padChar, b.flags)
+	t := tabby.NewCustom(w)
+	t.AddLine()
+	t.AddHeader(renderCommentHeader(comment))
+	renderedText, err := b.cdr.Render(comment.Data.Text)
+	if err != nil {
+		log.Debug().
+			Err(err).
+			Str("idComment", comment.ID).
+			Msg("could not render comment text")
+	} else {
+		t.AddLine(renderedText)
+	}
+	t.Print()
+	return buffer.String()
+}
+
+func renderCommentHeader(comment trello.Comment) string {
+	return fmt.Sprintf("%s @ %s [%s]", comment.MemberCreator.Username, comment.Date, comment.ID)
 }

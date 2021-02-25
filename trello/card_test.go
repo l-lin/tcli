@@ -68,6 +68,38 @@ func TestFindCards(t *testing.T) {
 	}
 }
 
+func TestCards_SortedByPos(t *testing.T) {
+	var tests = map[string]struct {
+		given    Cards
+		expected Cards
+	}{
+		"3 cards": {
+			given: Cards{
+				{ID: "card 1", Pos: 10},
+				{ID: "card 2", Pos: 1},
+				{ID: "card 3", Pos: 11},
+			},
+			expected: Cards{
+				{ID: "card 2", Pos: 1},
+				{ID: "card 1", Pos: 10},
+				{ID: "card 3", Pos: 11},
+			},
+		},
+		"no card": {
+			given:    Cards{},
+			expected: Cards{},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			actual := tt.given.SortedByPos()
+			if !reflect.DeepEqual(tt.expected, actual) {
+				t.Errorf("expected %v, actual %v", tt.expected, actual)
+			}
+		})
+	}
+}
+
 func TestNewCreateCard(t *testing.T) {
 	// GIVEN
 	c := Card{

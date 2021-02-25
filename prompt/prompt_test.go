@@ -11,16 +11,24 @@ func TestPrompt_LivePrefix(t *testing.T) {
 		given    *trello.Session
 		expected string
 	}{
+		"/board/list/card": {
+			given: &trello.Session{
+				Board: &trello.Board{Name: "board"},
+				List:  &trello.List{Name: "list"},
+				Card:  &trello.Card{Name: "card"},
+			},
+			expected: "/board/list/card> ",
+		},
 		"/board/list": {
 			given: &trello.Session{
-				CurrentBoard: &trello.Board{Name: "board"},
-				CurrentList:  &trello.List{Name: "list"},
+				Board: &trello.Board{Name: "board"},
+				List:  &trello.List{Name: "list"},
 			},
 			expected: "/board/list> ",
 		},
 		"/board": {
 			given: &trello.Session{
-				CurrentBoard: &trello.Board{Name: "board"},
+				Board: &trello.Board{Name: "board"},
 			},
 			expected: "/board> ",
 		},

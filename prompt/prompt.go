@@ -75,11 +75,14 @@ func (p *Prompt) Completer(d prompt.Document) []prompt.Suggest {
 func (p *Prompt) LivePrefix() (string, bool) {
 	builder := strings.Builder{}
 	builder.WriteString("/")
-	if p.Session.CurrentBoard != nil {
-		builder.WriteString(fmt.Sprintf("%s", p.Session.CurrentBoard.Name))
+	if p.Session.Board != nil {
+		builder.WriteString(fmt.Sprintf("%s", p.Session.Board.Name))
 	}
-	if p.Session.CurrentList != nil {
-		builder.WriteString(fmt.Sprintf("/%s", p.Session.CurrentList.Name))
+	if p.Session.List != nil {
+		builder.WriteString(fmt.Sprintf("/%s", p.Session.List.Name))
+	}
+	if p.Session.Card != nil {
+		builder.WriteString(fmt.Sprintf("/%s", p.Session.Card.Name))
 	}
 	builder.WriteString("> ")
 	return builder.String(), true

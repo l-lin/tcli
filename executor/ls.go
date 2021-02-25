@@ -58,7 +58,18 @@ func (l ls) execute(arg string) {
 		fmt.Fprintf(l.stderr, "no card found with name '%s'\n", p.CardName)
 		return
 	}
-	l.renderCard(*card)
+
+	if p.CommentID == "" {
+		l.renderComments(*card)
+		return
+	}
+
+	var comment *trello.Comment
+	if comment, err = l.tr.FindComment(card.ID, p.CommentID); err != nil || comment == nil {
+		fmt.Fprintf(l.stderr, "no comment found with id '%s'\n", p.CommentID)
+		return
+	}
+	l.renderComment(*comment)
 }
 
 func (l ls) renderBoards() {
@@ -90,4 +101,17 @@ func (l ls) renderCards(list trello.List) {
 
 func (l ls) renderCard(card trello.Card) {
 	fmt.Fprintf(l.stdout, "%s\n", l.r.RenderCards(trello.Cards{card}))
+}
+
+func (l ls) renderComments(card trello.Card) {
+	comments, err := l.tr.FindComments(card.ID)
+	if err != nil {
+		fmt.Fprintf(l.stderr, "could not fetch comments for card '%s': %v\n", card.Name, err)
+	} else {
+		fmt.Fprintf(l.stdout, "%s\n", l.r.RenderComments(comments))
+	}
+}
+
+func (l ls) renderComment(comment trello.Comment) {
+	fmt.Fprintf(l.stdout, "%s\n", l.r.RenderComment(comment))
 }

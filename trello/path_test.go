@@ -10,10 +10,24 @@ func TestNewPathResolver(t *testing.T) {
 		given    *Session
 		expected PathResolver
 	}{
+		"existing board, list, card": {
+			given: &Session{
+				Board: &Board{Name: "board"},
+				List:  &List{Name: "list"},
+				Card:  &Card{Name: "card"},
+			},
+			expected: PathResolver{
+				Path: Path{
+					BoardName: "board",
+					ListName:  "list",
+					CardName:  "card",
+				},
+			},
+		},
 		"existing board and list": {
 			given: &Session{
-				CurrentBoard: &Board{Name: "board"},
-				CurrentList:  &List{Name: "list"},
+				Board: &Board{Name: "board"},
+				List:  &List{Name: "list"},
 			},
 			expected: PathResolver{
 				Path: Path{
@@ -24,8 +38,8 @@ func TestNewPathResolver(t *testing.T) {
 		},
 		"existing board and non existing list": {
 			given: &Session{
-				CurrentBoard: &Board{Name: "board"},
-				CurrentList:  nil,
+				Board: &Board{Name: "board"},
+				List:  nil,
 			},
 			expected: PathResolver{
 				Path: Path{
@@ -35,8 +49,8 @@ func TestNewPathResolver(t *testing.T) {
 		},
 		"non existing board and non existing list": {
 			given: &Session{
-				CurrentBoard: nil,
-				CurrentList:  nil,
+				Board: nil,
+				List:  nil,
 			},
 			expected: PathResolver{},
 		},
@@ -69,14 +83,16 @@ func TestPathResolver_Resolve(t *testing.T) {
 				currentPath: Path{
 					BoardName: "board",
 					ListName:  "list",
+					CardName:  "card",
 				},
-				relativePath: "card",
+				relativePath: "comment",
 			},
 			expected: expected{
 				resolvedPath: Path{
 					BoardName: "board",
 					ListName:  "list",
 					CardName:  "card",
+					CommentID: "comment",
 				},
 				err: nil,
 			},
@@ -288,8 +304,9 @@ func TestPathResolver_Resolve(t *testing.T) {
 				currentPath: Path{
 					BoardName: "board",
 					ListName:  "list",
+					CardName:  "card",
 				},
-				relativePath: "card/invalid",
+				relativePath: "comment/invalid",
 			},
 			expected: expected{
 				err: invalidPathErr,

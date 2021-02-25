@@ -36,14 +36,14 @@ func (c Completer) Complete(cmd string, args []string) []prompt.Suggest {
 	case "mv", "cp":
 		return c.suggestForMVOrCP(args)
 	}
-	return c.suggestBoardsAndListsAndCards(args)
+	return c.suggestBoardsAndListsAndCardsAndCommentIDs(args)
 }
 
 func (c Completer) suggestForCD(args []string) []prompt.Suggest {
 	if len(args) > 1 {
 		return []prompt.Suggest{}
 	}
-	return c.suggestBoardsAndLists(args)
+	return c.suggestBoardsAndListsAndCards(args)
 }
 
 func (c Completer) suggestForMVOrCP(args []string) []prompt.Suggest {
@@ -88,6 +88,10 @@ func (c Completer) suggestBoardsAndListsAndCards(args []string) []prompt.Suggest
 		return []prompt.Suggest{}
 	}
 
+	if p.CommentID != "" {
+		return []prompt.Suggest{}
+	}
+
 	board, suggestions := c.suggestBoards(arg, p.BoardName)
 	if suggestions != nil {
 		return suggestions
@@ -98,7 +102,37 @@ func (c Completer) suggestBoardsAndListsAndCards(args []string) []prompt.Suggest
 		return suggestions
 	}
 
-	return c.suggestCards(arg, list)
+	if _, suggestions = c.suggestCards(arg, list, p.CardName); suggestions != nil {
+		return suggestions
+	}
+	return []prompt.Suggest{}
+}
+
+func (c Completer) suggestBoardsAndListsAndCardsAndCommentIDs(args []string) []prompt.Suggest {
+	arg, p, err := c.resolvePath(args)
+	if err != nil {
+		log.Debug().
+			Err(err).
+			Str("arg", arg).
+			Msg("could not resolve path")
+		return []prompt.Suggest{}
+	}
+
+	board, suggestions := c.suggestBoards(arg, p.BoardName)
+	if suggestions != nil {
+		return suggestions
+	}
+
+	list, suggestions := c.suggestLists(arg, board, p.ListName)
+	if suggestions != nil {
+		return suggestions
+	}
+
+	card, suggestions := c.suggestCards(arg, list, p.CardName)
+	if suggestions != nil {
+		return suggestions
+	}
+	return c.suggestComments(arg, card)
 }
 
 func (c Completer) resolvePath(args []string) (arg string, p trello.Path, err error) {
@@ -123,7 +157,10 @@ func (c Completer) suggestCommands(arg string) []prompt.Suggest {
 }
 
 func (c Completer) suggestBoards(arg string, boardName string) (*trello.Board, []prompt.Suggest) {
-	board, _ := c.tr.FindBoard(boardName)
+	var board *trello.Board
+	if boardName != "" {
+		board, _ = c.tr.FindBoard(boardName)
+	}
 	if board == nil {
 		boards, err := c.tr.FindBoards()
 		if err != nil {
@@ -138,7 +175,10 @@ func (c Completer) suggestBoards(arg string, boardName string) (*trello.Board, [
 }
 
 func (c Completer) suggestLists(arg string, board *trello.Board, listName string) (*trello.List, []prompt.Suggest) {
-	list, _ := c.tr.FindList(board.ID, listName)
+	var list *trello.List
+	if listName != "" {
+		list, _ = c.tr.FindList(board.ID, listName)
+	}
 	if list == nil {
 		lists, err := c.tr.FindLists(board.ID)
 		if err != nil {
@@ -153,17 +193,36 @@ func (c Completer) suggestLists(arg string, board *trello.Board, listName string
 	return list, nil
 }
 
-func (c Completer) suggestCards(arg string, list *trello.List) []prompt.Suggest {
-	var cards trello.Cards
+func (c Completer) suggestCards(arg string, list *trello.List, cardName string) (*trello.Card, []prompt.Suggest) {
+	var card *trello.Card
+	if cardName != "" {
+		card, _ = c.tr.FindCard(list.ID, cardName)
+	}
+	if card == nil {
+		cards, err := c.tr.FindCards(list.ID)
+		if err != nil {
+			log.Debug().
+				Err(err).
+				Str("idList", list.ID).
+				Msg("could not find cards")
+			return card, []prompt.Suggest{}
+		}
+		return card, prompt.FilterHasPrefix(cardsToSuggestions(cards), getBase(arg), true)
+	}
+	return card, nil
+}
+
+func (c Completer) suggestComments(arg string, card *trello.Card) []prompt.Suggest {
+	var comments trello.Comments
 	var err error
-	if cards, err = c.tr.FindCards(list.ID); err != nil {
+	if comments, err = c.tr.FindComments(card.ID); err != nil {
 		log.Debug().
 			Err(err).
-			Str("idList", list.ID).
-			Msg("could not find cards")
+			Str("idCard", card.ID).
+			Msg("could not find comments")
 		return []prompt.Suggest{}
 	}
-	return prompt.FilterHasPrefix(cardsToSuggestions(cards), getBase(arg), true)
+	return prompt.FilterHasPrefix(commentsToSuggestions(comments), getBase(arg), true)
 }
 
 func isKnownCmd(cmd string) bool {

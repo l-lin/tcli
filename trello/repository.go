@@ -13,4 +13,6 @@ type Repository interface {
 	FindCard(idList string, query string) (*Card, error)
 	CreateCard(createCard CreateCard) (*Card, error)
 	UpdateCard(updateCard UpdateCard) (*Card, error)
+	FindComments(idCard string) (Comments, error)
+	FindComment(idCard string, idComment string) (*Comment, error)
 }

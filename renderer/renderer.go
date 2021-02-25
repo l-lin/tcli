@@ -13,4 +13,6 @@ type Renderer interface {
 	RenderList(trello.List) string
 	RenderCards(trello.Cards) string
 	RenderCard(trello.Card) string
+	RenderComments(trello.Comments) string
+	RenderComment(trello.Comment) string
 }

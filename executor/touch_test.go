@@ -86,8 +86,8 @@ func TestTouch_Execute(t *testing.T) {
 			given: given{
 				args: []string{"card"},
 				session: &trello.Session{
-					CurrentBoard: &board,
-					CurrentList:  &list,
+					Board: &board,
+					List:  &list,
 				},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
