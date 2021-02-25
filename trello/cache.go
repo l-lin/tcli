@@ -157,6 +157,17 @@ func (c *CacheInMemory) FindComment(idCard string, idComment string) (*Comment, 
 	return nil, fmt.Errorf("no comment found with id %s", idComment)
 }
 
+func (c *CacheInMemory) CreateComment(createComment CreateComment) (*Comment, error) {
+	comment, err := c.r.CreateComment(createComment)
+	if err != nil {
+		return nil, err
+	}
+
+	// add comment to cache
+	c.mapCommentsByIDCard[createComment.IDCard] = append(c.mapCommentsByIDCard[createComment.IDCard], *comment)
+	return comment, nil
+}
+
 func (c *CacheInMemory) findCardIndex(idList, cardID string) int {
 	for i, cachedCard := range c.mapCardsByIDList[idList] {
 		if cachedCard.ID == cardID {

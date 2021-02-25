@@ -30,14 +30,18 @@ func (c *cd) Execute(args []string) {
 
 	exec := start(c.tr).
 		resolvePath(c.session, arg).
+		then().
 		doOnEmptyBoardName(func() {
 			c.registerSession(&trello.Session{})
 		}).
-		thenFindBoard().
+		findBoard().
+		then().
 		doOnEmptyListName(c.registerSession).
-		thenFindList().
+		findList().
+		then().
 		doOnEmptyCardName(c.registerSession).
-		thenFindCard().
+		findCard().
+		then().
 		doOnEmptyCommentID(c.registerSession)
 	if exec.err != nil {
 		fmt.Fprintf(c.stderr, "%s\n", exec.err)

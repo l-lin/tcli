@@ -30,31 +30,34 @@ func (r rm) execute(arg string) {
 	}
 	exec := start(r.tr).
 		resolvePath(r.session, arg).
+		then().
 		doOnEmptyBoardName(func() {
 			fmt.Fprintf(r.stderr, "nothing to archive\n")
 		}).
-		thenFindBoard().
-		doOnEmptyListName(func(_ *trello.Session) {
+		findBoard().
+		doOnBoard(func(board *trello.Board) {
 			fmt.Fprintf(r.stderr, "board archiving not implemented yet\n")
 		}).
-		thenFindList().
-		doOnEmptyCardName(func(_ *trello.Session) {
+		then().
+		findList().
+		doOnList(func(list *trello.List) {
 			fmt.Fprintf(r.stderr, "list archiving not implemented yet\n")
 		}).
-		thenFindCard().
-		doOnEmptyCommentID(func(session *trello.Session) {
+		then().
+		findCard().
+		doOnCard(func(card *trello.Card) {
 			prompt := promptui.Prompt{
-				Label:     fmt.Sprintf("Archive card '%s'?", session.Card.Name),
+				Label:     fmt.Sprintf("Archive card '%s'?", card.Name),
 				IsConfirm: true,
 				Stdin:     r.stdin,
 			}
 			if _, err := prompt.Run(); err != nil {
 				return
 			}
-			updatedCard := trello.NewUpdateCard(*session.Card)
+			updatedCard := trello.NewUpdateCard(*card)
 			updatedCard.Closed = true
 			if _, err := r.tr.UpdateCard(updatedCard); err != nil {
-				fmt.Fprintf(r.stderr, "could not archive card '%s': %s\n", session.Card.Name, err)
+				fmt.Fprintf(r.stderr, "could not archive card '%s': %s\n", card.Name, err)
 			}
 		})
 	if exec.err != nil {

@@ -3,6 +3,7 @@ package executor
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"github.com/golang/mock/gomock"
 	"github.com/l-lin/tcli/trello"
 	"io"
@@ -32,7 +33,7 @@ func TestRm_Execute(t *testing.T) {
 		given    given
 		expected expected
 	}{
-		"no arg": {
+		"rm": {
 			given: given{
 				args:                  []string{},
 				buildTrelloRepository: func() trello.Repository { return nil },
@@ -41,7 +42,7 @@ func TestRm_Execute(t *testing.T) {
 				stderr: "missing card operand\n",
 			},
 		},
-		"empty string as first arg": {
+		"rm ": {
 			given: given{
 				args:                  []string{""},
 				buildTrelloRepository: func() trello.Repository { return nil },
@@ -50,7 +51,7 @@ func TestRm_Execute(t *testing.T) {
 				stderr: "missing card operand\n",
 			},
 		},
-		"archive /board/list/card - user accepts to archive": {
+		"rm /board/list/card (user accepts to archive)": {
 			given: given{
 				args: []string{"/board/list/card"},
 				buildTrelloRepository: func() trello.Repository {
@@ -73,7 +74,7 @@ func TestRm_Execute(t *testing.T) {
 			},
 			expected: expected{},
 		},
-		"archive /board/list/card - user refuses to archive": {
+		"rm /board/list/card (user refuses to archive)": {
 			given: given{
 				args: []string{"/board/list/card"},
 				buildTrelloRepository: func() trello.Repository {
@@ -94,7 +95,7 @@ func TestRm_Execute(t *testing.T) {
 			expected: expected{},
 		},
 		// ERRORS
-		"invalid path": {
+		"rm /../..": {
 			given: given{
 				args: []string{"/../.."},
 				buildTrelloRepository: func() trello.Repository {
@@ -105,7 +106,7 @@ func TestRm_Execute(t *testing.T) {
 				stderr: "invalid path\n",
 			},
 		},
-		"no board name": {
+		"rm /": {
 			given: given{
 				args: []string{"/"},
 				buildTrelloRepository: func() trello.Repository {
@@ -116,9 +117,9 @@ func TestRm_Execute(t *testing.T) {
 				stderr: "nothing to archive\n",
 			},
 		},
-		"unknown-board": {
+		"rm /unknown-board": {
 			given: given{
-				args: []string{"unknown-board"},
+				args: []string{"/unknown-board"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -131,9 +132,9 @@ func TestRm_Execute(t *testing.T) {
 				stderr: "no board found with name 'unknown-board'\n",
 			},
 		},
-		"no list name": {
+		"rm /board": {
 			given: given{
-				args: []string{"board/"},
+				args: []string{"/board"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -146,9 +147,9 @@ func TestRm_Execute(t *testing.T) {
 				stderr: "board archiving not implemented yet\n",
 			},
 		},
-		"unknown-list": {
+		"rm /board/unknown-list": {
 			given: given{
-				args: []string{"board/unknown-list"},
+				args: []string{"/board/unknown-list"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -164,9 +165,9 @@ func TestRm_Execute(t *testing.T) {
 				stderr: "no list found with name 'unknown-list'\n",
 			},
 		},
-		"no card name": {
+		"rm /board/list/": {
 			given: given{
-				args: []string{"board/list/"},
+				args: []string{"/board/list/"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -182,9 +183,9 @@ func TestRm_Execute(t *testing.T) {
 				stderr: "list archiving not implemented yet\n",
 			},
 		},
-		"unknown-card": {
+		"rm /board/list/unknown-card": {
 			given: given{
-				args: []string{"board/list/unknown-card"},
+				args: []string{"/board/list/unknown-card"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -201,6 +202,31 @@ func TestRm_Execute(t *testing.T) {
 			},
 			expected: expected{
 				stderr: "no card found with name 'unknown-card'\n",
+			},
+		},
+		"rm /board/list/card (error when archiving card)": {
+			given: given{
+				args: []string{"/board/list/card"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board.Name).
+						Return(&board, nil)
+					tr.EXPECT().
+						FindList(board.ID, list.Name).
+						Return(&list, nil)
+					tr.EXPECT().
+						FindCard(list.ID, card.Name).
+						Return(&card, nil)
+					tr.EXPECT().
+						UpdateCard(updatedCard).
+						Return(nil, errors.New("unexpected error"))
+					return tr
+				},
+				stdin: acceptStdin(),
+			},
+			expected: expected{
+				stderr: fmt.Sprintf("could not archive card '%s': unexpected error\n", updatedCard.Name),
 			},
 		},
 	}

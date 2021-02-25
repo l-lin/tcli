@@ -145,6 +145,16 @@ func (h HttpRepository) FindComment(_, idComment string) (*Comment, error) {
 	return &comment, nil
 }
 
+func (h HttpRepository) CreateComment(createComment CreateComment) (*Comment, error) {
+	v := h.buildQueries("")
+	u := fmt.Sprintf("%s/cards/%s/actions/comments?%v", h.BaseURL, createComment.IDCard, v.Encode())
+	var comment Comment
+	if err := h.post(u, createComment, &comment); err != nil {
+		return nil, err
+	}
+	return &comment, nil
+}
+
 func (h HttpRepository) get(url string, ret interface{}) error {
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {

@@ -15,4 +15,5 @@ type Repository interface {
 	UpdateCard(updateCard UpdateCard) (*Card, error)
 	FindComments(idCard string) (Comments, error)
 	FindComment(idCard string, idComment string) (*Comment, error)
+	CreateComment(createComment CreateComment) (*Comment, error)
 }

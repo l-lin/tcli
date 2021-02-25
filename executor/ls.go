@@ -21,23 +21,27 @@ func (l ls) Execute(args []string) {
 func (l ls) execute(arg string) {
 	if err := start(l.tr).
 		resolvePath(l.session, arg).
+		then().
 		doOnEmptyBoardName(func() {
 			l.renderBoards()
 		}).
-		thenFindBoard().
-		doOnEmptyListName(func(session *trello.Session) {
-			l.renderLists(*session.Board)
+		findBoard().
+		doOnBoard(func(board *trello.Board) {
+			l.renderLists(*board)
 		}).
-		thenFindList().
-		doOnEmptyCardName(func(session *trello.Session) {
-			l.renderCards(*session.List)
+		then().
+		findList().
+		doOnList(func(list *trello.List) {
+			l.renderCards(*list)
 		}).
-		thenFindCard().
-		doOnEmptyCommentID(func(session *trello.Session) {
-			l.renderComments(*session.Card)
+		then().
+		findCard().
+		doOnCard(func(card *trello.Card) {
+			l.renderComments(*card)
 		}).
-		thenFindComment().
-		andDoOnComment(func(comment *trello.Comment) {
+		then().
+		findComment().
+		doOnComment(func(comment *trello.Comment) {
 			l.renderComment(*comment)
 		}); err != nil {
 		fmt.Fprintf(l.stderr, "%s\n", err)
@@ -69,10 +73,6 @@ func (l ls) renderCards(list trello.List) {
 	} else {
 		fmt.Fprintf(l.stdout, "%s\n", l.r.RenderCards(cards))
 	}
-}
-
-func (l ls) renderCard(card trello.Card) {
-	fmt.Fprintf(l.stdout, "%s\n", l.r.RenderCards(trello.Cards{card}))
 }
 
 func (l ls) renderComments(card trello.Card) {

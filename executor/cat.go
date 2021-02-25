@@ -24,20 +24,24 @@ func (c cat) execute(arg string) {
 
 	if err := start(c.tr).
 		resolvePath(c.session, arg).
-		thenFindBoard().
-		doOnEmptyListName(func(session *trello.Session) {
-			fmt.Fprintf(c.stdout, "%s\n", c.r.RenderBoard(*session.Board))
+		then().
+		findBoard().
+		doOnBoard(func(board *trello.Board) {
+			fmt.Fprintf(c.stdout, "%s\n", c.r.RenderBoard(*board))
 		}).
-		thenFindList().
-		doOnEmptyCardName(func(session *trello.Session) {
-			fmt.Fprintf(c.stdout, "%s\n", c.r.RenderList(*session.List))
+		then().
+		findList().
+		doOnList(func(list *trello.List) {
+			fmt.Fprintf(c.stdout, "%s\n", c.r.RenderList(*list))
 		}).
-		thenFindCard().
-		doOnEmptyCommentID(func(session *trello.Session) {
-			fmt.Fprintf(c.stdout, "%s\n", c.r.RenderCard(*session.Card))
+		then().
+		findCard().
+		doOnCard(func(card *trello.Card) {
+			fmt.Fprintf(c.stdout, "%s\n", c.r.RenderCard(*card))
 		}).
-		thenFindComment().
-		andDoOnComment(func(comment *trello.Comment) {
+		then().
+		findComment().
+		doOnComment(func(comment *trello.Comment) {
 			fmt.Fprintf(c.stdout, "%s\n", c.r.RenderComment(*comment))
 		}); err != nil {
 		fmt.Fprintf(c.stderr, "%s\n", err)

@@ -41,7 +41,7 @@ func TestLs_Execute(t *testing.T) {
 		given    given
 		expected expected
 	}{
-		"no arg": {
+		"ls": {
 			given: given{
 				args: []string{},
 				buildTrelloRepository: func() trello.Repository {
@@ -61,7 +61,7 @@ func TestLs_Execute(t *testing.T) {
 			},
 			expected: expected{stdout: "boards content\n"},
 		},
-		"empty string as 1st arg": {
+		"ls ": {
 			given: given{
 				args: []string{""},
 				buildTrelloRepository: func() trello.Repository {
@@ -81,7 +81,7 @@ func TestLs_Execute(t *testing.T) {
 			},
 			expected: expected{stdout: "boards content\n"},
 		},
-		"show lists": {
+		"ls /board": {
 			given: given{
 				args: []string{board1.Name},
 				buildTrelloRepository: func() trello.Repository {
@@ -104,9 +104,9 @@ func TestLs_Execute(t *testing.T) {
 			},
 			expected: expected{stdout: "lists content\n"},
 		},
-		"show cards": {
+		"ls /board/list": {
 			given: given{
-				args: []string{"board/list"},
+				args: []string{"/board/list"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -130,7 +130,7 @@ func TestLs_Execute(t *testing.T) {
 			},
 			expected: expected{stdout: "cards content\n"},
 		},
-		"show 2 lists": {
+		"ls /board /another-board": {
 			given: given{
 				args: []string{board1.Name, board2.Name},
 				buildTrelloRepository: func() trello.Repository {
@@ -162,9 +162,9 @@ func TestLs_Execute(t *testing.T) {
 			},
 			expected: expected{stdout: "lists 1 content\nlists 2 content\n"},
 		},
-		"show comments": {
+		"ls /board/list/card": {
 			given: given{
-				args: []string{"board/list/card"},
+				args: []string{"/board/list/card"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -191,9 +191,9 @@ func TestLs_Execute(t *testing.T) {
 			},
 			expected: expected{stdout: "comments content\n"},
 		},
-		"show single comment": {
+		"ls /board/list/card/comment": {
 			given: given{
-				args: []string{"board/list/card/comment"},
+				args: []string{"/board/list/card/comment"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -221,7 +221,7 @@ func TestLs_Execute(t *testing.T) {
 			expected: expected{stdout: "comment 1 content\n"},
 		},
 		// ERRORS
-		"invalid path": {
+		"ls /../..": {
 			given: given{
 				args: []string{"/../.."},
 				buildTrelloRepository: func() trello.Repository {
@@ -235,9 +235,9 @@ func TestLs_Execute(t *testing.T) {
 				stderr: "invalid path\n",
 			},
 		},
-		"unknown-board": {
+		"ls /unknown-board": {
 			given: given{
-				args: []string{"unknown-board"},
+				args: []string{"/unknown-board"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -253,9 +253,9 @@ func TestLs_Execute(t *testing.T) {
 				stderr: "no board found with name 'unknown-board'\n",
 			},
 		},
-		"unknown-list": {
+		"ls /board/unknown-list": {
 			given: given{
-				args: []string{"board/unknown-list"},
+				args: []string{"/board/unknown-list"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -274,9 +274,9 @@ func TestLs_Execute(t *testing.T) {
 				stderr: "no list found with name 'unknown-list'\n",
 			},
 		},
-		"unknown-card": {
+		"ls /board/list/unknown-card": {
 			given: given{
-				args: []string{"board/list/unknown-card"},
+				args: []string{"/board/list/unknown-card"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -298,7 +298,7 @@ func TestLs_Execute(t *testing.T) {
 				stderr: "no card found with name 'unknown-card'\n",
 			},
 		},
-		"cannot find boards": {
+		"ls (cannot find boards)": {
 			given: given{
 				args: []string{""},
 				buildTrelloRepository: func() trello.Repository {
@@ -316,7 +316,7 @@ func TestLs_Execute(t *testing.T) {
 				stderr: "could not fetch boards: unexpected error\n",
 			},
 		},
-		"cannot find lists": {
+		"ls /board (cannot find lists)": {
 			given: given{
 				args: []string{board1.Name},
 				buildTrelloRepository: func() trello.Repository {
@@ -337,9 +337,9 @@ func TestLs_Execute(t *testing.T) {
 				stderr: "could not fetch lists for board 'board': unexpected error\n",
 			},
 		},
-		"cannot find cards": {
+		"ls /board/list (cannot find cards)": {
 			given: given{
-				args: []string{"board/list"},
+				args: []string{"/board/list"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -359,6 +359,33 @@ func TestLs_Execute(t *testing.T) {
 			},
 			expected: expected{
 				stderr: "could not fetch cards for list 'list': unexpected error\n",
+			},
+		},
+		"ls /board/list/card (cannot find comments)": {
+			given: given{
+				args: []string{"/board/list/card"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board1.Name).
+						Return(&board1, nil)
+					tr.EXPECT().
+						FindList(board1.ID, list1.Name).
+						Return(&list1, nil)
+					tr.EXPECT().
+						FindCard(list1.ID, card1.Name).
+						Return(&card1, nil)
+					tr.EXPECT().
+						FindComments(card1.ID).
+						Return(nil, errors.New("unexpected error"))
+					return tr
+				},
+				buildRenderer: func() renderer.Renderer {
+					return nil
+				},
+			},
+			expected: expected{
+				stderr: "could not fetch comments for card 'card': unexpected error\n",
 			},
 		},
 	}

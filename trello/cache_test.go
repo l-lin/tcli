@@ -843,3 +843,73 @@ func TestCacheInMemory_FindComment(t *testing.T) {
 		}
 	})
 }
+
+func TestCacheInMemory_CreateComment(t *testing.T) {
+	t.Run("happy path", func(t *testing.T) {
+		// GIVEN
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		r := NewMockRepository(ctrl)
+		expected := &Comment{ID: "comment 2"}
+		idCard := "card 1"
+		createComment := CreateComment{IDCard: idCard, Text: "comment content"}
+		r.EXPECT().
+			CreateComment(createComment).
+			Return(expected, nil)
+		cr := &CacheInMemory{
+			r: r,
+			mapCommentsByIDCard: map[string]Comments{
+				idCard: {
+					{ID: "comment 1"},
+				},
+			},
+		}
+
+		// WHEN
+		actual, err := cr.CreateComment(createComment)
+
+		// THEN
+		if err != nil {
+			t.Error("expected no error")
+		}
+		if actual == nil {
+			t.Error("expected no nil comment returned")
+			t.FailNow()
+		}
+		commentInCache := cr.mapCommentsByIDCard[idCard][1]
+		if !reflect.DeepEqual(expected, actual) || !reflect.DeepEqual(expected, &commentInCache) {
+			t.Errorf("expected %v, actual %v, card in cache %v", expected, actual, &commentInCache)
+		}
+	})
+	t.Run("error when creating comment", func(t *testing.T) {
+		// GIVEN
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		r := NewMockRepository(ctrl)
+		idCard := "card 1"
+		createComment := CreateComment{IDCard: idCard, Text: "comment content"}
+		r.EXPECT().
+			CreateComment(createComment).
+			Return(nil, errors.New("unexpected error"))
+		cr := &CacheInMemory{
+			r: r,
+			mapCommentsByIDCard: map[string]Comments{
+				idCard: {
+					{ID: "comment 1"},
+				},
+			},
+		}
+
+		// WHEN
+		actual, err := cr.CreateComment(createComment)
+
+		// THEN
+		if err == nil {
+			t.Error("expected error")
+		}
+		if actual != nil {
+			t.Errorf("expected nil card returned, got %v", actual)
+			t.FailNow()
+		}
+	})
+}

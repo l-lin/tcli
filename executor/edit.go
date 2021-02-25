@@ -27,37 +27,44 @@ func (e edit) Execute(args []string) {
 func (e edit) execute(arg string) {
 	exec := start(e.tr).
 		resolvePath(e.session, arg).
+		then().
 		doOnEmptyBoardName(func() {
 			fmt.Fprintf(e.stderr, "nothing to edit\n")
 		}).
-		thenFindBoard().
-		doOnEmptyListName(func(session *trello.Session) {
+		findBoard().
+		doOnBoard(func(board *trello.Board) {
 			fmt.Fprintf(e.stderr, "board edition not implemented yet\n")
 		}).
-		thenFindList().
-		doOnEmptyCardName(func(session *trello.Session) {
+		then().
+		findList().
+		doOnList(func(list *trello.List) {
 			fmt.Fprintf(e.stderr, "list edition not implemented yet\n")
 		}).
+		then().
+		findCard().
+		doOnCard(func(card *trello.Card) {
+			if err := e.editCard(*card); err != nil {
+				fmt.Fprintf(e.stderr, "could not edit card '%s': %v\n", card.Name, err)
+			}
+		}).
 		doOnCardName(func(cardName string, session *trello.Session) {
-			var card *trello.Card
-			var err error
-			if card, err = e.tr.FindCard(session.List.ID, cardName); err != nil || card == nil {
-				log.Debug().
-					Str("cardName", cardName).
-					Msg("no card found => creating new card")
-				card = &trello.Card{
-					Name:    cardName,
-					Desc:    "",
-					IDBoard: session.Board.ID,
-					IDList:  session.List.ID,
-				}
-				if err = e.createCard(*card); err != nil {
-					fmt.Fprintf(e.stderr, "could not create card '%s': %v\n", cardName, err)
-				}
-			} else {
-				if err = e.editCard(*card); err != nil {
-					fmt.Fprintf(e.stderr, "could not edit card '%s': %v\n", cardName, err)
-				}
+			log.Debug().
+				Str("cardName", cardName).
+				Msg("no card found => creating new card")
+			card := &trello.Card{
+				Name:    cardName,
+				Desc:    "",
+				IDBoard: session.Board.ID,
+				IDList:  session.List.ID,
+			}
+			if err := e.createCard(*card); err != nil {
+				fmt.Fprintf(e.stderr, "could not create card '%s': %v\n", cardName, err)
+			}
+		}).
+		then().
+		doOnCommentText(func(commentText string, session *trello.Session) {
+			if err := e.createComment(commentText, session.Card.ID); err != nil {
+				fmt.Fprintf(e.stderr, "could not create comment '%s': %v\n", commentText, err)
 			}
 		})
 	if exec.err != nil {
@@ -160,5 +167,32 @@ func (e edit) editCard(card trello.Card) (err error) {
 		return nil
 	}
 	_, err = e.tr.UpdateCard(updatedCard)
+	return
+}
+
+func (e edit) createComment(commentText, idCard string) (err error) {
+	in := []byte(commentText)
+
+	var out []byte
+	if out, err = e.editor.Edit(in); err != nil {
+		return
+	}
+
+	editedText := string(out)
+
+	prompt := promptui.Prompt{
+		Label:     fmt.Sprintf("Do you want to create the comment?"),
+		IsConfirm: true,
+		Stdin:     e.stdin,
+	}
+	if _, err = prompt.Run(); err != nil {
+		return nil
+	}
+
+	createComment := trello.CreateComment{
+		IDCard: idCard,
+		Text:   editedText,
+	}
+	_, err = e.tr.CreateComment(createComment)
 	return
 }

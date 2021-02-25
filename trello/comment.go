@@ -51,3 +51,8 @@ type CommentMemberCreator struct {
 	Initials string `json:"initials"`
 	Username string `json:"username"`
 }
+
+type CreateComment struct {
+	IDCard string `json:"idCard"`
+	Text   string `json:"text"`
+}

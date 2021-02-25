@@ -41,11 +41,11 @@ func TestCp_Execute(t *testing.T) {
 						FindList(board.ID, list1.Name).
 						Return(&list1, nil)
 					tr.EXPECT().
-						FindList(board.ID, list2.Name).
-						Return(&list2, nil)
-					tr.EXPECT().
 						FindCard(list1.ID, card.Name).
 						Return(&card, nil)
+					tr.EXPECT().
+						FindList(board.ID, list2.Name).
+						Return(&list2, nil)
 					createCard := trello.NewCreateCard(card)
 					createCard.IDList = list2.ID
 					tr.EXPECT().

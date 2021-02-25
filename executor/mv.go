@@ -25,32 +25,47 @@ func (m mv) Execute(args []string) {
 
 	execSource := start(m.tr).
 		resolvePath(m.session, args[0]).
-		thenFindBoard().
-		thenFindList().
-		thenFindCard()
+		then().
+		findBoard().
+		then().
+		findList().
+		then().
+		findCard()
 	if execSource.err != nil {
 		fmt.Fprintf(m.stderr, "%s\n", execSource.err)
+		return
+	}
+	if execSource.p.CommentID != "" {
+		fmt.Fprintf(m.stderr, "cannot move comments\n")
 		return
 	}
 	sourceCard := execSource.session.Card
 
 	execDest := start(m.tr).
 		resolvePath(m.session, args[1]).
-		thenFindBoard().
-		thenFindList().
+		then().
+		findBoard().
+		then().
+		findList().
+		doOnList(func(list *trello.List) {
+			m.move("", list.ID, sourceCard)
+		}).
+		then().
 		doOnCardName(func(cardName string, session *trello.Session) {
-			updateCard := trello.NewUpdateCard(*sourceCard)
-			updateCard.IDList = session.List.ID
-			if cardName != "" {
-				updateCard.Name = cardName
-			}
-			if _, err := m.tr.UpdateCard(updateCard); err != nil {
-				fmt.Fprintf(m.stderr, "could not update card: %v\n", err)
-			}
+			m.move(cardName, session.List.ID, sourceCard)
 		})
 	if execDest.err != nil {
 		fmt.Fprintf(m.stderr, "%s\n", execDest.err)
-	} else if !execDest.isFinished {
-		fmt.Fprintf(m.stderr, "comment move not supported yet\n")
+	}
+}
+
+func (m mv) move(cardName, idList string, sourceCard *trello.Card) {
+	updateCard := trello.NewUpdateCard(*sourceCard)
+	updateCard.IDList = idList
+	if cardName != "" {
+		updateCard.Name = cardName
+	}
+	if _, err := m.tr.UpdateCard(updateCard); err != nil {
+		fmt.Fprintf(m.stderr, "could not update card: %v\n", err)
 	}
 }

@@ -28,7 +28,7 @@ func TestMv_Execute(t *testing.T) {
 		given    given
 		expected expected
 	}{
-		"/ > mv /board/list/card /board/another-list": {
+		"/> mv /board/list/card /board/another-list": {
 			given: given{
 				args: []string{"/board/list/card", "/board/another-list"},
 				buildTrelloRepository: func() trello.Repository {
@@ -56,7 +56,7 @@ func TestMv_Execute(t *testing.T) {
 			},
 			expected: expected{},
 		},
-		"/ > mv /board/list/card /board/list/new-card-name": {
+		"/> mv /board/list/card /board/list/new-card-name": {
 			given: given{
 				args: []string{"/board/list/card", "/board/list/new-card-name"},
 				buildTrelloRepository: func() trello.Repository {
@@ -83,7 +83,7 @@ func TestMv_Execute(t *testing.T) {
 			expected: expected{},
 		},
 		// ERRORS
-		"no arg": {
+		"mv": {
 			given: given{
 				args: []string{},
 				buildTrelloRepository: func() trello.Repository {
@@ -94,7 +94,7 @@ func TestMv_Execute(t *testing.T) {
 				stderr: "missing card source operand\n",
 			},
 		},
-		"single arg": {
+		"mv /board/list/card": {
 			given: given{
 				args: []string{"/board/list/card"},
 				buildTrelloRepository: func() trello.Repository {
@@ -105,7 +105,7 @@ func TestMv_Execute(t *testing.T) {
 				stderr: "missing list destination operand\n",
 			},
 		},
-		"more than 2 args": {
+		"mv 1 2 3": {
 			given: given{
 				args: []string{"1", "2", "3"},
 				buildTrelloRepository: func() trello.Repository {
@@ -116,7 +116,7 @@ func TestMv_Execute(t *testing.T) {
 				stderr: "command only accepts two arguments\n",
 			},
 		},
-		"board not found": {
+		"mv /unknown-board/list/card /board/another-lise (board not found)": {
 			given: given{
 				args: []string{"/unknown-board/list/card", "/board/another-list"},
 				buildTrelloRepository: func() trello.Repository {
@@ -131,7 +131,7 @@ func TestMv_Execute(t *testing.T) {
 				stderr: "no board found with name 'unknown-board'\n",
 			},
 		},
-		"list not found": {
+		"mv /board/unknown-list/card /board/another-list (list not found)": {
 			given: given{
 				args: []string{"/board/unknown-list/card", "/board/another-list"},
 				buildTrelloRepository: func() trello.Repository {
@@ -149,7 +149,7 @@ func TestMv_Execute(t *testing.T) {
 				stderr: "no list found with name 'unknown-list'\n",
 			},
 		},
-		"card not found": {
+		"mv /board/list/unknown-card /board/another-lise (card not found)": {
 			given: given{
 				args: []string{"/board/list/unknown-card", "/board/another-list"},
 				buildTrelloRepository: func() trello.Repository {
@@ -170,7 +170,7 @@ func TestMv_Execute(t *testing.T) {
 				stderr: "no card found with name 'unknown-card'\n",
 			},
 		},
-		"invalid path at first arg": {
+		"mv /../.. /foo (invalid path at first arg)": {
 			given: given{
 				args: []string{"/../..", "/foo"},
 				buildTrelloRepository: func() trello.Repository {
@@ -181,7 +181,7 @@ func TestMv_Execute(t *testing.T) {
 				stderr: "invalid path\n",
 			},
 		},
-		"invalid path at second arg": {
+		"mv /board/list/card /../.. (invalid path at second arg)": {
 			given: given{
 				args: []string{"/board/list/card", "/../.."},
 				buildTrelloRepository: func() trello.Repository {
@@ -202,7 +202,7 @@ func TestMv_Execute(t *testing.T) {
 				stderr: "invalid path\n",
 			},
 		},
-		"empty board name at 1st argument": {
+		"mv / /board/another-list (empty board name at 1st argument)": {
 			given: given{
 				args: []string{"/", "/board/another-list"},
 				buildTrelloRepository: func() trello.Repository {
@@ -213,7 +213,7 @@ func TestMv_Execute(t *testing.T) {
 				stderr: "invalid path\n",
 			},
 		},
-		"empty board name at 2nd argument": {
+		"mv /board/list/card / (empty board name at 2nd argument)": {
 			given: given{
 				args: []string{"/board/list/card", "/"},
 				buildTrelloRepository: func() trello.Repository {
@@ -234,9 +234,9 @@ func TestMv_Execute(t *testing.T) {
 				stderr: "invalid path\n",
 			},
 		},
-		"empty list name at 1st argument": {
+		"mv /board /board/another-list (empty list name at 1st argument)": {
 			given: given{
-				args: []string{"/board/", "/board/another-list"},
+				args: []string{"/board", "/board/another-list"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
@@ -249,7 +249,7 @@ func TestMv_Execute(t *testing.T) {
 				stderr: "invalid path\n",
 			},
 		},
-		"empty list name at 2nd argument": {
+		"mv /board/list/card /board (empty list name at 2nd argument)": {
 			given: given{
 				args: []string{"/board/list/card", "/board"},
 				buildTrelloRepository: func() trello.Repository {
@@ -271,7 +271,7 @@ func TestMv_Execute(t *testing.T) {
 				stderr: "invalid path\n",
 			},
 		},
-		"empty card name": {
+		"mv /board/list /board/another-list (empty card name)": {
 			given: given{
 				args: []string{"/board/list/", "/board/another-list"},
 				buildTrelloRepository: func() trello.Repository {
@@ -289,7 +289,7 @@ func TestMv_Execute(t *testing.T) {
 				stderr: "invalid path\n",
 			},
 		},
-		"error when updating card": {
+		"mv /board/list/card /board/another-list (error when updating card)": {
 			given: given{
 				args: []string{"/board/list/card", "/board/another-list"},
 				buildTrelloRepository: func() trello.Repository {
@@ -317,6 +317,27 @@ func TestMv_Execute(t *testing.T) {
 			},
 			expected: expected{
 				stderr: "could not update card: unexpected error\n",
+			},
+		},
+		"mv /board/list/card/comment /board/another-list": {
+			given: given{
+				args: []string{"/board/list/card/comment", "/board/another-list"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board.Name).
+						Return(&board, nil)
+					tr.EXPECT().
+						FindList(board.ID, list1.Name).
+						Return(&list1, nil)
+					tr.EXPECT().
+						FindCard(list1.ID, card.Name).
+						Return(&card, nil)
+					return tr
+				},
+			},
+			expected: expected{
+				stderr: "cannot move comments\n",
 			},
 		},
 	}

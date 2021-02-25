@@ -44,6 +44,10 @@ func TestEdit_Execute(t *testing.T) {
 		{ID: "label 2", Name: "label name 2", Color: "sky"},
 		{ID: "label 3", Name: "", Color: "black"},
 	}
+	createComment := trello.CreateComment{
+		IDCard: card1.ID,
+		Text:   "edited comment",
+	}
 
 	editRenderer := renderer.NewEditInYaml()
 	var tests = map[string]struct {
@@ -172,6 +176,39 @@ func TestEdit_Execute(t *testing.T) {
 					return e
 				},
 				stdin: refuseStdin(),
+			},
+			expected: expected{},
+		},
+		// COMMENTS
+		"edit /board/list/card/comment - comment creation": {
+			given: given{
+				args: []string{"/board/list/card/comment"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board1.Name).
+						Return(&board1, nil)
+					tr.EXPECT().
+						FindList(board1.ID, list1.Name).
+						Return(&list1, nil)
+					tr.EXPECT().
+						FindCard(list1.ID, card1.Name).
+						Return(&card1, nil)
+					tr.EXPECT().
+						CreateComment(createComment).
+						Return(nil, nil)
+					return tr
+				},
+				buildEditor: func() Editor {
+					in := []byte("comment")
+					out := []byte(createComment.Text)
+					e := NewMockEditor(ctrl)
+					e.EXPECT().
+						Edit(in).
+						Return(out, nil)
+					return e
+				},
+				stdin: acceptStdin(),
 			},
 			expected: expected{},
 		},
@@ -332,6 +369,40 @@ func TestEdit_Execute(t *testing.T) {
 			},
 			expected: expected{
 				stderr: "could not edit card 'card': unexpected error\n",
+			},
+		},
+		"edit /board/list/card/comment - error when creating comment": {
+			given: given{
+				args: []string{"/board/list/card/comment"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board1.Name).
+						Return(&board1, nil)
+					tr.EXPECT().
+						FindList(board1.ID, list1.Name).
+						Return(&list1, nil)
+					tr.EXPECT().
+						FindCard(list1.ID, card1.Name).
+						Return(&card1, nil)
+					tr.EXPECT().
+						CreateComment(createComment).
+						Return(nil, errors.New("unexpected error"))
+					return tr
+				},
+				buildEditor: func() Editor {
+					in := []byte("comment")
+					out := []byte(createComment.Text)
+					e := NewMockEditor(ctrl)
+					e.EXPECT().
+						Edit(in).
+						Return(out, nil)
+					return e
+				},
+				stdin: acceptStdin(),
+			},
+			expected: expected{
+				stderr: "could not create comment 'comment': unexpected error\n",
 			},
 		},
 	}
