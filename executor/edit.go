@@ -25,59 +25,44 @@ func (e edit) Execute(args []string) {
 }
 
 func (e edit) execute(arg string) {
-
-	pathResolver := trello.NewPathResolver(e.session)
-	p, err := pathResolver.Resolve(arg)
-	if err != nil {
-		fmt.Fprintf(e.stderr, "%v\n", err)
+	exec := start(e.tr).
+		resolvePath(e.session, arg).
+		doOnEmptyBoardName(func() {
+			fmt.Fprintf(e.stderr, "nothing to edit\n")
+		}).
+		thenFindBoard().
+		doOnEmptyListName(func(session *trello.Session) {
+			fmt.Fprintf(e.stderr, "board edition not implemented yet\n")
+		}).
+		thenFindList().
+		doOnEmptyCardName(func(session *trello.Session) {
+			fmt.Fprintf(e.stderr, "list edition not implemented yet\n")
+		}).
+		doOnCardName(func(cardName string, session *trello.Session) {
+			var card *trello.Card
+			var err error
+			if card, err = e.tr.FindCard(session.List.ID, cardName); err != nil || card == nil {
+				log.Debug().
+					Str("cardName", cardName).
+					Msg("no card found => creating new card")
+				card = &trello.Card{
+					Name:    cardName,
+					Desc:    "",
+					IDBoard: session.Board.ID,
+					IDList:  session.List.ID,
+				}
+				if err = e.createCard(*card); err != nil {
+					fmt.Fprintf(e.stderr, "could not create card '%s': %v\n", cardName, err)
+				}
+			} else {
+				if err = e.editCard(*card); err != nil {
+					fmt.Fprintf(e.stderr, "could not edit card '%s': %v\n", cardName, err)
+				}
+			}
+		})
+	if exec.err != nil {
+		fmt.Fprintf(e.stderr, "%s\n", exec.err)
 		return
-	}
-
-	if p.BoardName == "" {
-		fmt.Fprintf(e.stderr, "nothing to edit\n")
-		return
-	}
-
-	var board *trello.Board
-	if board, err = e.tr.FindBoard(p.BoardName); err != nil || board == nil {
-		fmt.Fprintf(e.stderr, "no board found with name '%s'\n", p.BoardName)
-		return
-	}
-
-	if p.ListName == "" {
-		fmt.Fprintf(e.stderr, "board edition not implemented yet\n")
-		return
-	}
-
-	var list *trello.List
-	if list, err = e.tr.FindList(board.ID, p.ListName); err != nil || list == nil {
-		fmt.Fprintf(e.stderr, "no list found with name '%s'\n", p.ListName)
-		return
-	}
-
-	if p.CardName == "" {
-		fmt.Fprintf(e.stderr, "list edition not implemented yet\n")
-		return
-	}
-
-	var card *trello.Card
-	if card, err = e.tr.FindCard(list.ID, p.CardName); err != nil || card == nil {
-		log.Debug().
-			Str("cardName", p.CardName).
-			Msg("no card found => creating new card")
-		card = &trello.Card{
-			Name:    p.CardName,
-			Desc:    "",
-			IDBoard: board.ID,
-			IDList:  list.ID,
-		}
-		if err = e.createCard(*card); err != nil {
-			fmt.Fprintf(e.stderr, "could not create card '%s': %v\n", p.CardName, err)
-		}
-	} else {
-		if err = e.editCard(*card); err != nil {
-			fmt.Fprintf(e.stderr, "could not edit card '%s': %v\n", p.CardName, err)
-		}
 	}
 }
 

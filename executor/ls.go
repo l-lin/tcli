@@ -19,57 +19,29 @@ func (l ls) Execute(args []string) {
 }
 
 func (l ls) execute(arg string) {
-	pathResolver := trello.NewPathResolver(l.session)
-	p, err := pathResolver.Resolve(arg)
-	if err != nil {
-		fmt.Fprintf(l.stderr, "%v\n", err)
-		return
+	if err := start(l.tr).
+		resolvePath(l.session, arg).
+		doOnEmptyBoardName(func() {
+			l.renderBoards()
+		}).
+		thenFindBoard().
+		doOnEmptyListName(func(session *trello.Session) {
+			l.renderLists(*session.Board)
+		}).
+		thenFindList().
+		doOnEmptyCardName(func(session *trello.Session) {
+			l.renderCards(*session.List)
+		}).
+		thenFindCard().
+		doOnEmptyCommentID(func(session *trello.Session) {
+			l.renderComments(*session.Card)
+		}).
+		thenFindComment().
+		andDoOnComment(func(comment *trello.Comment) {
+			l.renderComment(*comment)
+		}); err != nil {
+		fmt.Fprintf(l.stderr, "%s\n", err)
 	}
-
-	if p.BoardName == "" {
-		l.renderBoards()
-		return
-	}
-
-	var board *trello.Board
-	if board, err = l.tr.FindBoard(p.BoardName); err != nil || board == nil {
-		fmt.Fprintf(l.stderr, "no board found with name '%s'\n", p.BoardName)
-		return
-	}
-
-	if p.ListName == "" {
-		l.renderLists(*board)
-		return
-	}
-
-	var list *trello.List
-	if list, err = l.tr.FindList(board.ID, p.ListName); err != nil || list == nil {
-		fmt.Fprintf(l.stderr, "no list found with name '%s'\n", p.ListName)
-		return
-	}
-
-	if p.CardName == "" {
-		l.renderCards(*list)
-		return
-	}
-
-	var card *trello.Card
-	if card, err = l.tr.FindCard(list.ID, p.CardName); err != nil || card == nil {
-		fmt.Fprintf(l.stderr, "no card found with name '%s'\n", p.CardName)
-		return
-	}
-
-	if p.CommentID == "" {
-		l.renderComments(*card)
-		return
-	}
-
-	var comment *trello.Comment
-	if comment, err = l.tr.FindComment(card.ID, p.CommentID); err != nil || comment == nil {
-		fmt.Fprintf(l.stderr, "no comment found with id '%s'\n", p.CommentID)
-		return
-	}
-	l.renderComment(*comment)
 }
 
 func (l ls) renderBoards() {

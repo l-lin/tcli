@@ -280,6 +280,35 @@ func TestCd_Execute(t *testing.T) {
 				list:   &list1,
 			},
 		},
+		"/board/list/card > cd comment": {
+			given: given{
+				args: []string{"comment"},
+				session: &trello.Session{
+					Board: &board1,
+					List:  &list1,
+					Card:  &card1,
+				},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board1.Name).
+						Return(&board1, nil)
+					tr.EXPECT().
+						FindList(board1.ID, list1.Name).
+						Return(&list1, nil)
+					tr.EXPECT().
+						FindCard(list1.ID, card1.Name).
+						Return(&card1, nil)
+					return tr
+				},
+			},
+			expected: expected{
+				stderr: "cannot cd on comment\n",
+				board:  &board1,
+				list:   &list1,
+				card:   &card1,
+			},
+		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {

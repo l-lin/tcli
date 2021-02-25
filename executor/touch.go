@@ -24,45 +24,32 @@ func (t touch) execute(arg string) {
 		fmt.Fprintf(t.stderr, "missing card operand\n")
 		return
 	}
-	pathResolver := trello.NewPathResolver(t.session)
-	p, err := pathResolver.Resolve(arg)
-	if err != nil {
-		fmt.Fprintf(t.stderr, "%v\n", err)
-		return
-	}
 
-	if p.BoardName == "" {
-		fmt.Fprintf(t.stderr, "nothing to create\n")
-		return
-	}
-
-	var board *trello.Board
-	if board, err = t.tr.FindBoard(p.BoardName); err != nil || board == nil {
-		fmt.Fprintf(t.stderr, "no board found with name '%s'\n", p.BoardName)
-		return
-	}
-
-	if p.ListName == "" {
-		fmt.Fprintf(t.stderr, "board creation not implemented yet\n")
-		return
-	}
-
-	var list *trello.List
-	if list, err = t.tr.FindList(board.ID, p.ListName); err != nil || list == nil {
-		fmt.Fprintf(t.stderr, "no list found with name '%s'\n", p.ListName)
-		return
-	}
-
-	if p.CardName == "" {
-		fmt.Fprintf(t.stderr, "list creation not implemented yet\n")
-		return
-	}
-
-	createCard := trello.CreateCard{
-		Name:   p.CardName,
-		IDList: list.ID,
-	}
-	if _, err = t.tr.CreateCard(createCard); err != nil {
-		fmt.Fprintf(t.stderr, "could not create card '%s': %v\n", p.CardName, err)
+	exec := start(t.tr).
+		resolvePath(t.session, arg).
+		doOnEmptyBoardName(func() {
+			fmt.Fprintf(t.stderr, "nothing to create\n")
+		}).
+		thenFindBoard().
+		doOnEmptyListName(func(_ *trello.Session) {
+			fmt.Fprintf(t.stderr, "board creation not implemented yet\n")
+		}).
+		thenFindList().
+		doOnEmptyCardName(func(_ *trello.Session) {
+			fmt.Fprintf(t.stderr, "list creation not implemented yet\n")
+		}).
+		doOnCardName(func(cardName string, session *trello.Session) {
+			createCard := trello.CreateCard{
+				Name:   cardName,
+				IDList: session.List.ID,
+			}
+			if _, err := t.tr.CreateCard(createCard); err != nil {
+				fmt.Fprintf(t.stderr, "could not create card '%s': %v\n", cardName, err)
+			}
+		})
+	if exec.err != nil {
+		fmt.Fprintf(t.stderr, "%s\n", exec.err)
+	} else if !exec.isFinished {
+		fmt.Fprintf(t.stderr, "comment creation not implemented yet\n")
 	}
 }

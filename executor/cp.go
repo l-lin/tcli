@@ -23,24 +23,36 @@ func (c cp) Execute(args []string) {
 		return
 	}
 
-	sourceCard, err := c.getCardFromArg(args[0])
-	if err != nil {
-		fmt.Fprintf(c.stderr, "%s\n", err.Error())
+	execSource := start(c.tr).
+		resolvePath(c.session, args[0]).
+		thenFindBoard().
+		thenFindList().
+		thenFindCard()
+	if execSource.err != nil {
+		fmt.Fprintf(c.stderr, "%s\n", execSource.err)
 		return
 	}
-	destList, destCardName, err := c.getListAndCardNameFromArg(args[1])
-	if err != nil {
-		fmt.Fprintf(c.stderr, "%s\n", err.Error())
-		return
-	}
-	var createCard trello.CreateCard
-	createCard = trello.NewCreateCard(*sourceCard)
-	createCard.IDList = destList.ID
-	if destCardName != "" {
-		createCard.Name = destCardName
-	}
-	if _, err = c.tr.CreateCard(createCard); err != nil {
-		fmt.Fprintf(c.stderr, "could not copy card '%s': %v\n", sourceCard.Name, err)
-		return
+	sourceCard := execSource.session.Card
+
+	execDest := start(c.tr).
+		resolvePath(c.session, args[1]).
+		thenFindBoard().
+		thenFindList().
+		doOnCardName(func(cardName string, session *trello.Session) {
+			var createCard trello.CreateCard
+			createCard = trello.NewCreateCard(*sourceCard)
+			createCard.IDList = session.List.ID
+			if cardName != "" {
+				createCard.Name = cardName
+			}
+			if _, err := c.tr.CreateCard(createCard); err != nil {
+				fmt.Fprintf(c.stderr, "could not copy card '%s': %v\n", sourceCard.Name, err)
+				return
+			}
+		})
+	if execDest.err != nil {
+		fmt.Fprintf(c.stderr, "%s\n", execDest.err)
+	} else if !execDest.isFinished {
+		fmt.Fprintf(c.stderr, "comment copy not supported yet\n")
 	}
 }

@@ -238,7 +238,11 @@ func TestCp_Execute(t *testing.T) {
 			given: given{
 				args: []string{"/board/", "/board/another-list"},
 				buildTrelloRepository: func() trello.Repository {
-					return nil
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board.Name).
+						Return(&board, nil)
+					return tr
 				},
 			},
 			expected: expected{
@@ -252,7 +256,8 @@ func TestCp_Execute(t *testing.T) {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
 						FindBoard(board.Name).
-						Return(&board, nil)
+						Return(&board, nil).
+						Times(2)
 					tr.EXPECT().
 						FindList(board.ID, list1.Name).
 						Return(&list1, nil)
@@ -270,7 +275,14 @@ func TestCp_Execute(t *testing.T) {
 			given: given{
 				args: []string{"/board/list/", "/board/another-list"},
 				buildTrelloRepository: func() trello.Repository {
-					return nil
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board.Name).
+						Return(&board, nil)
+					tr.EXPECT().
+						FindList(board.ID, list1.Name).
+						Return(&list1, nil)
+					return tr
 				},
 			},
 			expected: expected{

@@ -176,7 +176,7 @@ func TestEdit_Execute(t *testing.T) {
 			expected: expected{},
 		},
 		// ERRORS
-		"no arg": {
+		"edit": {
 			given: given{
 				args: []string{},
 				buildTrelloRepository: func() trello.Repository {
@@ -188,7 +188,7 @@ func TestEdit_Execute(t *testing.T) {
 			},
 			expected: expected{},
 		},
-		"invalid path": {
+		"edit /../..": {
 			given: given{
 				args: []string{"/../.."},
 				buildTrelloRepository: func() trello.Repository {
@@ -202,11 +202,12 @@ func TestEdit_Execute(t *testing.T) {
 				stderr: "invalid path\n",
 			},
 		},
-		"no board name": {
+		"edit /": {
 			given: given{
 				args: []string{"/"},
 				buildTrelloRepository: func() trello.Repository {
-					return nil
+					tr := trello.NewMockRepository(ctrl)
+					return tr
 				},
 				buildEditor: func() Editor {
 					return nil
