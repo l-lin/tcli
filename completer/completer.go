@@ -33,8 +33,10 @@ func (c Completer) Complete(cmd string, args []string) []prompt.Suggest {
 	switch cmd {
 	case "cd":
 		return c.suggestForCD(args)
-	case "mv", "cp":
-		return c.suggestForMVOrCP(args)
+	case "cp":
+		return c.suggestForCP(args)
+	case "mv":
+		return c.suggestForMV(args)
 	}
 	return c.suggestBoardsAndListsAndCardsAndCommentIDs(args)
 }
@@ -46,7 +48,17 @@ func (c Completer) suggestForCD(args []string) []prompt.Suggest {
 	return c.suggestBoardsAndListsAndCards(args)
 }
 
-func (c Completer) suggestForMVOrCP(args []string) []prompt.Suggest {
+func (c Completer) suggestForCP(args []string) []prompt.Suggest {
+	if len(args) < 2 {
+		return c.suggestBoardsAndListsAndCardsAndCommentIDs(args)
+	}
+	if len(args) > 2 {
+		return []prompt.Suggest{}
+	}
+	return c.suggestBoardsAndListsAndCards(args)
+}
+
+func (c Completer) suggestForMV(args []string) []prompt.Suggest {
 	if len(args) < 2 {
 		return c.suggestBoardsAndListsAndCards(args)
 	}
@@ -102,10 +114,8 @@ func (c Completer) suggestBoardsAndListsAndCards(args []string) []prompt.Suggest
 		return suggestions
 	}
 
-	if _, suggestions = c.suggestCards(arg, list, p.CardName); suggestions != nil {
-		return suggestions
-	}
-	return []prompt.Suggest{}
+	_, suggestions = c.suggestCards(arg, list, p.CardName)
+	return suggestions
 }
 
 func (c Completer) suggestBoardsAndListsAndCardsAndCommentIDs(args []string) []prompt.Suggest {

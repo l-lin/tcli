@@ -15,7 +15,17 @@ func TestCp_Execute(t *testing.T) {
 	board := trello.Board{ID: "board 1", Name: "board"}
 	list1 := trello.List{ID: "list 1", Name: "list"}
 	list2 := trello.List{ID: "list 2", Name: "another-list"}
-	card := trello.Card{ID: "card 1", Name: "card", IDList: list1.ID}
+	card1 := trello.Card{ID: "card 1", Name: "card", IDList: list1.ID}
+	card2 := trello.Card{ID: "card 2", Name: "another-card", IDList: list1.ID}
+	comment := trello.Comment{
+		ID: "comment",
+		Data: trello.CommentData{
+			Card: trello.CommentDataCard{
+				ID: card1.ID,
+			},
+			Text: "comment content",
+		},
+	}
 	type given struct {
 		args                  []string
 		buildTrelloRepository func() trello.Repository
@@ -28,6 +38,7 @@ func TestCp_Execute(t *testing.T) {
 		given    given
 		expected expected
 	}{
+		// CARDS
 		"/ > cp /board/list/card /board/another-list": {
 			given: given{
 				args: []string{"/board/list/card", "/board/another-list"},
@@ -41,12 +52,12 @@ func TestCp_Execute(t *testing.T) {
 						FindList(board.ID, list1.Name).
 						Return(&list1, nil)
 					tr.EXPECT().
-						FindCard(list1.ID, card.Name).
-						Return(&card, nil)
+						FindCard(list1.ID, card1.Name).
+						Return(&card1, nil)
 					tr.EXPECT().
 						FindList(board.ID, list2.Name).
 						Return(&list2, nil)
-					createCard := trello.NewCreateCard(card)
+					createCard := trello.NewCreateCard(card1)
 					createCard.IDList = list2.ID
 					tr.EXPECT().
 						CreateCard(createCard).
@@ -70,12 +81,49 @@ func TestCp_Execute(t *testing.T) {
 						Return(&list1, nil).
 						Times(2)
 					tr.EXPECT().
-						FindCard(list1.ID, card.Name).
-						Return(&card, nil)
-					createCard := trello.NewCreateCard(card)
-					createCard.Name = "another-card"
+						FindCard(list1.ID, card1.Name).
+						Return(&card1, nil)
+					tr.EXPECT().
+						FindCard(list1.ID, card2.Name).
+						Return(nil, cardNotFoundError(card2.ID))
+					createCard := trello.NewCreateCard(card1)
+					createCard.Name = card2.Name
 					tr.EXPECT().
 						CreateCard(createCard).
+						Return(nil, nil)
+					return tr
+				},
+			},
+			expected: expected{},
+		},
+		// COMMENTS
+		"/ > cp /board/list/card/comment /board/comment/another-card": {
+			given: given{
+				args: []string{"/board/list/card/comment", "/board/list/another-card"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board.Name).
+						Return(&board, nil).
+						Times(2)
+					tr.EXPECT().
+						FindList(board.ID, list1.Name).
+						Return(&list1, nil).
+						Times(2)
+					tr.EXPECT().
+						FindCard(list1.ID, card1.Name).
+						Return(&card1, nil)
+					tr.EXPECT().
+						FindComment(card1.ID, comment.ID).
+						Return(&comment, nil)
+					tr.EXPECT().
+						FindCard(list1.ID, card2.Name).
+						Return(&card2, nil)
+					tr.EXPECT().
+						CreateComment(trello.CreateComment{
+							IDCard: card2.ID,
+							Text:   comment.Data.Text,
+						}).
 						Return(nil, nil)
 					return tr
 				},
@@ -193,8 +241,8 @@ func TestCp_Execute(t *testing.T) {
 						FindList(board.ID, list1.Name).
 						Return(&list1, nil)
 					tr.EXPECT().
-						FindCard(list1.ID, card.Name).
-						Return(&card, nil)
+						FindCard(list1.ID, card1.Name).
+						Return(&card1, nil)
 					return tr
 				},
 			},
@@ -225,8 +273,8 @@ func TestCp_Execute(t *testing.T) {
 						FindList(board.ID, list1.Name).
 						Return(&list1, nil)
 					tr.EXPECT().
-						FindCard(list1.ID, card.Name).
-						Return(&card, nil)
+						FindCard(list1.ID, card1.Name).
+						Return(&card1, nil)
 					return tr
 				},
 			},
@@ -262,8 +310,8 @@ func TestCp_Execute(t *testing.T) {
 						FindList(board.ID, list1.Name).
 						Return(&list1, nil)
 					tr.EXPECT().
-						FindCard(list1.ID, card.Name).
-						Return(&card, nil)
+						FindCard(list1.ID, card1.Name).
+						Return(&card1, nil)
 					return tr
 				},
 			},
@@ -305,9 +353,9 @@ func TestCp_Execute(t *testing.T) {
 						FindList(board.ID, list2.Name).
 						Return(&list2, nil)
 					tr.EXPECT().
-						FindCard(list1.ID, card.Name).
-						Return(&card, nil)
-					createCard := trello.NewCreateCard(card)
+						FindCard(list1.ID, card1.Name).
+						Return(&card1, nil)
+					createCard := trello.NewCreateCard(card1)
 					createCard.IDList = list2.ID
 					tr.EXPECT().
 						CreateCard(createCard).
@@ -317,6 +365,32 @@ func TestCp_Execute(t *testing.T) {
 			},
 			expected: expected{
 				stderr: "could not copy card 'card': unexpected error\n",
+			},
+		},
+		"/ > cp /board/list/card/comment /board/comment": {
+			given: given{
+				args: []string{"/board/list/card/comment", "/board/list"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board.Name).
+						Return(&board, nil).
+						Times(2)
+					tr.EXPECT().
+						FindList(board.ID, list1.Name).
+						Return(&list1, nil).
+						Times(2)
+					tr.EXPECT().
+						FindCard(list1.ID, card1.Name).
+						Return(&card1, nil)
+					tr.EXPECT().
+						FindComment(card1.ID, comment.ID).
+						Return(&comment, nil)
+					return tr
+				},
+			},
+			expected: expected{
+				stderr: "cannot copy comment in list\n",
 			},
 		},
 	}

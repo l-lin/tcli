@@ -36,6 +36,10 @@ func (c cp) Execute(args []string) {
 		return
 	}
 	sourceCard := execSource.session.Card
+	var sourceComment *trello.Comment
+	if execSource.p.CommentID != "" {
+		sourceComment = execSource.then().findComment().comment
+	}
 
 	execDest := start(c.tr).
 		resolvePath(c.session, args[1]).
@@ -45,15 +49,21 @@ func (c cp) Execute(args []string) {
 		findList().
 		then().
 		doOnEmptyCardName(func(session *trello.Session) {
-			c.createCard("", session, sourceCard)
+			if sourceComment != nil {
+				fmt.Fprintf(c.stderr, "cannot copy comment in list\n")
+			} else {
+				c.createCard("", session, sourceCard)
+			}
+		}).
+		findCard().
+		doOnCard(func(destCard *trello.Card) {
+			c.createComment(destCard, sourceComment)
 		}).
 		doOnCardName(func(cardName string, session *trello.Session) {
 			c.createCard(cardName, session, sourceCard)
 		})
 	if execDest.err != nil {
 		fmt.Fprintf(c.stderr, "%s\n", execDest.err)
-	} else if !execDest.isFinished {
-		fmt.Fprintf(c.stderr, "comment copy not supported yet\n")
 	}
 }
 
@@ -66,5 +76,15 @@ func (c cp) createCard(cardName string, session *trello.Session, sourceCard *tre
 	}
 	if _, err := c.tr.CreateCard(createCard); err != nil {
 		fmt.Fprintf(c.stderr, "could not copy card '%s': %v\n", sourceCard.Name, err)
+	}
+}
+
+func (c cp) createComment(destCard *trello.Card, comment *trello.Comment) {
+	createComment := trello.CreateComment{
+		IDCard: destCard.ID,
+		Text:   comment.Data.Text,
+	}
+	if _, err := c.tr.CreateComment(createComment); err != nil {
+		fmt.Fprintf(c.stderr, "could not copy comment '%s': %v\n", comment.ID, err)
 	}
 }

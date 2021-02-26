@@ -2,6 +2,7 @@ package completer
 
 import (
 	"errors"
+	"fmt"
 	"github.com/c-bata/go-prompt"
 	"github.com/golang/mock/gomock"
 	"github.com/l-lin/tcli/executor"
@@ -31,20 +32,36 @@ func TestCompleter_Complete(t *testing.T) {
 	card2 := trello.Card{Name: "another card", ShortLink: "another shortLink"}
 	cards := trello.Cards{card1, card2}
 
-	errNotFound := errors.New("not found")
+	comment1 := trello.Comment{
+		ID: "comment",
+		MemberCreator: trello.CommentMemberCreator{
+			Username: "username 1",
+		},
+		Date: "2014-12-12T11:45:26.371Z",
+	}
+	comment2 := trello.Comment{
+		ID: "another comment",
+		MemberCreator: trello.CommentMemberCreator{
+			Username: "username 2",
+		},
+		Date: "2014-12-13T11:45:26.371Z",
+	}
+	comments := trello.Comments{comment1, comment2}
+
+	notFoundError := errors.New("not found")
 
 	var tests = map[string]struct {
 		given    given
 		expected []prompt.Suggest
 	}{
-		"/ > ": {
+		"/> ": {
 			given: given{
 				buildTrelloRepository: func() trello.Repository { return nil },
 				session:               &trello.Session{},
 			},
 			expected: commandSuggestions(),
 		},
-		"/ > unknown": {
+		"/> unknown": {
 			given: given{
 				cmd: "unknown",
 				buildTrelloRepository: func() trello.Repository {
@@ -55,7 +72,7 @@ func TestCompleter_Complete(t *testing.T) {
 			expected: []prompt.Suggest{},
 		},
 		// COMMANDS
-		"/ > c": {
+		"/> c": {
 			given: given{
 				cmd:  "c",
 				args: []string{""},
@@ -92,7 +109,7 @@ func TestCompleter_Complete(t *testing.T) {
 				{Text: list2.TCliID()},
 			},
 		},
-		"/board > cat b": {
+		"/board > cat l": {
 			given: given{
 				cmd:     "cat",
 				args:    []string{"l"},
@@ -104,7 +121,7 @@ func TestCompleter_Complete(t *testing.T) {
 						Return(&board1, nil)
 					tr.EXPECT().
 						FindList(board1.ID, "l").
-						Return(nil, errNotFound)
+						Return(nil, notFoundError)
 					tr.EXPECT().
 						FindLists(board1.ID).
 						Return(lists, nil)
@@ -114,6 +131,27 @@ func TestCompleter_Complete(t *testing.T) {
 			expected: []prompt.Suggest{
 				{Text: list1.TCliID()},
 			},
+		},
+		"/board > cd unknown": {
+			given: given{
+				cmd:     "cd",
+				args:    []string{"unknown"},
+				session: &trello.Session{Board: &board1},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board1.Name).
+						Return(&board1, nil)
+					tr.EXPECT().
+						FindList(board1.ID, "unknown").
+						Return(nil, notFoundError)
+					tr.EXPECT().
+						FindLists(board1.ID).
+						Return(lists, nil)
+					return tr
+				},
+			},
+			expected: []prompt.Suggest{},
 		},
 		"/board > cat list/": {
 			given: given{
@@ -154,7 +192,7 @@ func TestCompleter_Complete(t *testing.T) {
 						Return(&list1, nil)
 					tr.EXPECT().
 						FindCard(list1.ID, "c").
-						Return(nil, errNotFound)
+						Return(nil, notFoundError)
 					tr.EXPECT().
 						FindCards(list1.ID).
 						Return(cards, nil)
@@ -177,7 +215,7 @@ func TestCompleter_Complete(t *testing.T) {
 						Return(&board1, nil)
 					tr.EXPECT().
 						FindList(board1.ID, "a").
-						Return(nil, errNotFound)
+						Return(nil, notFoundError)
 					tr.EXPECT().
 						FindLists(board1.ID).
 						Return(lists, nil)
@@ -216,7 +254,7 @@ func TestCompleter_Complete(t *testing.T) {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
 						FindBoard("a").
-						Return(nil, errNotFound)
+						Return(nil, notFoundError)
 					tr.EXPECT().
 						FindBoards().
 						Return(boards, nil)
@@ -228,7 +266,7 @@ func TestCompleter_Complete(t *testing.T) {
 			},
 		},
 		// CD
-		"/ > cd board/list/card/c": {
+		"/> cd board/list/card/c": {
 			given: given{
 				cmd:  "cd",
 				args: []string{"board/list/card/c"},
@@ -239,7 +277,7 @@ func TestCompleter_Complete(t *testing.T) {
 			},
 			expected: []prompt.Suggest{},
 		},
-		"/ > cd board/list another-board": {
+		"/> cd board/list another-board": {
 			given: given{
 				cmd:  "cd",
 				args: []string{"board/list", "another-board"},
@@ -250,8 +288,103 @@ func TestCompleter_Complete(t *testing.T) {
 			},
 			expected: []prompt.Suggest{},
 		},
+		// CP
+		"/> cp board/list/card/c": {
+			given: given{
+				cmd:  "cp",
+				args: []string{"board/list/card/c"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board1.Name).
+						Return(&board1, nil)
+					tr.EXPECT().
+						FindList(board1.ID, list1.Name).
+						Return(&list1, nil)
+					tr.EXPECT().
+						FindCard(list1.ID, card1.Name).
+						Return(&card1, nil)
+					tr.EXPECT().
+						FindComments(card1.ID).
+						Return(comments, nil)
+					return tr
+				},
+				session: &trello.Session{},
+			},
+			expected: []prompt.Suggest{
+				{Text: comment1.ID, Description: fmt.Sprintf("%s @ %s", comment1.MemberCreator.Username, comment1.Date)},
+			},
+		},
+		"/> cp board/list/card/comment board/list/ano": {
+			given: given{
+				cmd:  "cp",
+				args: []string{"board/list/card/comment", "board/list/ano"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board1.Name).
+						Return(&board1, nil)
+					tr.EXPECT().
+						FindList(board1.ID, list1.Name).
+						Return(&list1, nil)
+					tr.EXPECT().
+						FindCard(list1.ID, "ano").
+						Return(nil, notFoundError)
+					tr.EXPECT().
+						FindCards(list1.ID).
+						Return(cards, nil)
+					return tr
+				},
+				session: &trello.Session{},
+			},
+			expected: []prompt.Suggest{
+				{Text: card2.TCliID()},
+			},
+		},
+		"/> cp board/list/card/comment board/list/card/ano": {
+			given: given{
+				cmd:  "cp",
+				args: []string{"board/list/card/comment", "board/list/card/ano"},
+				buildTrelloRepository: func() trello.Repository {
+					return nil
+				},
+				session: &trello.Session{},
+			},
+			expected: []prompt.Suggest{},
+		},
+		"/> cp 1 2 3": {
+			given: given{
+				cmd:  "cp",
+				args: []string{"1", "2", "3"},
+				buildTrelloRepository: func() trello.Repository {
+					return nil
+				},
+				session: &trello.Session{},
+			},
+			expected: []prompt.Suggest{},
+		},
 		// MV
-		"/ > mv board/list/c": {
+		"/> mv bo": {
+			given: given{
+				cmd:  "mv",
+				args: []string{"bo"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard("bo").
+						Return(nil, notFoundError)
+					tr.EXPECT().
+						FindBoards().
+						Return(boards, nil)
+					return tr
+				},
+				session: &trello.Session{},
+			},
+			expected: []prompt.Suggest{
+				{Text: board1.TCliID()},
+			},
+		},
+		"/> mv board/list/c": {
 			given: given{
 				cmd:  "mv",
 				args: []string{"board/list/c"},
@@ -265,7 +398,7 @@ func TestCompleter_Complete(t *testing.T) {
 						Return(&list1, nil)
 					tr.EXPECT().
 						FindCard(list1.ID, "c").
-						Return(nil, errNotFound)
+						Return(nil, notFoundError)
 					tr.EXPECT().
 						FindCards(list1.ID).
 						Return(cards, nil)
@@ -277,7 +410,27 @@ func TestCompleter_Complete(t *testing.T) {
 				{Text: card1.TCliID()},
 			},
 		},
-		"/ > mv board/list/card board/ano": {
+		"/> mv board/list/card bo": {
+			given: given{
+				cmd:  "mv",
+				args: []string{"board/list/card", "bo"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard("bo").
+						Return(nil, notFoundError)
+					tr.EXPECT().
+						FindBoards().
+						Return(boards, nil)
+					return tr
+				},
+				session: &trello.Session{},
+			},
+			expected: []prompt.Suggest{
+				{Text: board1.TCliID()},
+			},
+		},
+		"/> mv board/list/card board/ano": {
 			given: given{
 				cmd:  "mv",
 				args: []string{"board/list/card", "board/ano"},
@@ -288,7 +441,7 @@ func TestCompleter_Complete(t *testing.T) {
 						Return(&board1, nil)
 					tr.EXPECT().
 						FindList(board1.ID, "ano").
-						Return(nil, errNotFound)
+						Return(nil, notFoundError)
 					tr.EXPECT().
 						FindLists(board1.ID).
 						Return(lists, nil)
@@ -300,7 +453,7 @@ func TestCompleter_Complete(t *testing.T) {
 				{Text: list2.TCliID()},
 			},
 		},
-		"/ > mv board/list/card board/another-list/c": {
+		"/> mv board/list/card board/another-list/c": {
 			given: given{
 				cmd:  "mv",
 				args: []string{"board/list/card", "board/another-list/c"},
@@ -311,7 +464,7 @@ func TestCompleter_Complete(t *testing.T) {
 			},
 			expected: []prompt.Suggest{},
 		},
-		"/ > mv board/list/card board/another-list another-board/another-list": {
+		"/> mv board/list/card board/another-list another-board/another-list": {
 			given: given{
 				cmd:  "mv",
 				args: []string{"board/list/card", "board/another-list", "another-board/another-list"},
@@ -322,8 +475,19 @@ func TestCompleter_Complete(t *testing.T) {
 			},
 			expected: []prompt.Suggest{},
 		},
+		"/> mv board/list/card /../..": {
+			given: given{
+				cmd:  "mv",
+				args: []string{"board/list/card", "/../.."},
+				buildTrelloRepository: func() trello.Repository {
+					return nil
+				},
+				session: &trello.Session{},
+			},
+			expected: []prompt.Suggest{},
+		},
 		// ERRORS
-		"/ > cat a (server error when finding boards)": {
+		"/> cat a (server error when finding boards)": {
 			given: given{
 				cmd:  "cat",
 				args: []string{"/a"},
@@ -331,7 +495,7 @@ func TestCompleter_Complete(t *testing.T) {
 					tr := trello.NewMockRepository(ctrl)
 					tr.EXPECT().
 						FindBoard("a").
-						Return(nil, errNotFound)
+						Return(nil, notFoundError)
 					tr.EXPECT().
 						FindBoards().
 						Return(nil, errors.New("unexpected error"))
@@ -341,7 +505,7 @@ func TestCompleter_Complete(t *testing.T) {
 			},
 			expected: []prompt.Suggest{},
 		},
-		"/ > cat /board/l (server error when finding lists)": {
+		"/> cat /board/l (server error when finding lists)": {
 			given: given{
 				cmd:  "cat",
 				args: []string{"/board/l"},
@@ -352,7 +516,7 @@ func TestCompleter_Complete(t *testing.T) {
 						Return(&board1, nil)
 					tr.EXPECT().
 						FindList(board1.ID, "l").
-						Return(nil, errNotFound)
+						Return(nil, notFoundError)
 					tr.EXPECT().
 						FindLists(board1.ID).
 						Return(nil, errors.New("unexpected error"))
@@ -362,9 +526,9 @@ func TestCompleter_Complete(t *testing.T) {
 			},
 			expected: []prompt.Suggest{},
 		},
-		"/ > cat /board/list/c (server error when finding cards)": {
+		"/> cd /board/list/c (server error when finding cards)": {
 			given: given{
-				cmd:  "cat",
+				cmd:  "cd",
 				args: []string{"/board/list/c"},
 				buildTrelloRepository: func() trello.Repository {
 					tr := trello.NewMockRepository(ctrl)
@@ -386,7 +550,31 @@ func TestCompleter_Complete(t *testing.T) {
 			},
 			expected: []prompt.Suggest{},
 		},
-		"/ > cat /../../ (invalid path)": {
+		"/> cp /board/list/card/c (server error when finding comments)": {
+			given: given{
+				cmd:  "cp",
+				args: []string{"/board/list/card/c"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board1.Name).
+						Return(&board1, nil)
+					tr.EXPECT().
+						FindList(board1.ID, list1.Name).
+						Return(&list1, nil)
+					tr.EXPECT().
+						FindCard(list1.ID, card1.Name).
+						Return(&card1, nil)
+					tr.EXPECT().
+						FindComments(card1.ID).
+						Return(nil, errors.New("unexpected error"))
+					return tr
+				},
+				session: &trello.Session{},
+			},
+			expected: []prompt.Suggest{},
+		},
+		"/> cat /../../ (invalid path)": {
 			given: given{
 				cmd:  "cat",
 				args: []string{"/../../"},
@@ -397,7 +585,7 @@ func TestCompleter_Complete(t *testing.T) {
 			},
 			expected: []prompt.Suggest{},
 		},
-		"/ > cd /../../ (invalid path)": {
+		"/> cd /../../ (invalid path)": {
 			given: given{
 				cmd:  "cd",
 				args: []string{"/../../"},
