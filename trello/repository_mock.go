@@ -212,3 +212,18 @@ func (mr *MockRepositoryMockRecorder) UpdateCard(updateCard interface{}) *gomock
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCard", reflect.TypeOf((*MockRepository)(nil).UpdateCard), updateCard)
 }
+
+// UpdateComment mocks base method.
+func (m *MockRepository) UpdateComment(updateComment UpdateComment) (*Comment, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateComment", updateComment)
+	ret0, _ := ret[0].(*Comment)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateComment indicates an expected call of UpdateComment.
+func (mr *MockRepositoryMockRecorder) UpdateComment(updateComment interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateComment", reflect.TypeOf((*MockRepository)(nil).UpdateComment), updateComment)
+}

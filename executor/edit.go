@@ -62,6 +62,12 @@ func (e edit) execute(arg string) {
 			}
 		}).
 		then().
+		findComment().
+		doOnComment(func(comment *trello.Comment) {
+			if err := e.updateComment(comment); err != nil {
+				fmt.Fprintf(e.stderr, "could not update comment '%s': %v\n", comment.ID, err)
+			}
+		}).
 		doOnCommentText(func(commentText string, session *trello.Session) {
 			if err := e.createComment(commentText, session.Card.ID); err != nil {
 				fmt.Fprintf(e.stderr, "could not create comment '%s': %v\n", commentText, err)
@@ -181,7 +187,7 @@ func (e edit) createComment(commentText, idCard string) (err error) {
 	editedText := string(out)
 
 	prompt := promptui.Prompt{
-		Label:     fmt.Sprintf("Do you want to create the comment?"),
+		Label:     "Do you want to create the comment?",
 		IsConfirm: true,
 		Stdin:     e.stdin,
 	}
@@ -194,5 +200,33 @@ func (e edit) createComment(commentText, idCard string) (err error) {
 		Text:   editedText,
 	}
 	_, err = e.tr.CreateComment(createComment)
+	return
+}
+
+func (e edit) updateComment(comment *trello.Comment) (err error) {
+	in := []byte(comment.Data.Text)
+
+	var out []byte
+	if out, err = e.editor.Edit(in, markdownFileType); err != nil {
+		return
+	}
+
+	editedText := string(out)
+
+	prompt := promptui.Prompt{
+		Label:     fmt.Sprintf("Do you want to update the comment '%s'?", comment.ID),
+		IsConfirm: true,
+		Stdin:     e.stdin,
+	}
+	if _, err = prompt.Run(); err != nil {
+		return nil
+	}
+
+	updateComment := trello.UpdateComment{
+		ID:     comment.ID,
+		IDCard: comment.Data.Card.ID,
+		Text:   editedText,
+	}
+	_, err = e.tr.UpdateComment(updateComment)
 	return
 }

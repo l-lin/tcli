@@ -913,3 +913,113 @@ func TestCacheInMemory_CreateComment(t *testing.T) {
 		}
 	})
 }
+
+func TestCacheInMemory_UpdateComment(t *testing.T) {
+	t.Run("update comment existing in cache", func(t *testing.T) {
+		// GIVEN
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		r := NewMockRepository(ctrl)
+		updateComment := UpdateComment{ID: "comment 1", IDCard: "card 1", Text: "updated comment"}
+		expected := &Comment{ID: updateComment.ID, Data: CommentData{Text: updateComment.Text}}
+		r.EXPECT().
+			UpdateComment(updateComment).
+			Return(expected, nil)
+		cr := &CacheInMemory{
+			r: r,
+			mapCommentsByIDCard: map[string]Comments{
+				updateComment.IDCard: {
+					{ID: "comment 2"},
+					{ID: updateComment.ID, Data: CommentData{Text: "comment"}},
+				},
+			},
+		}
+
+		// WHEN
+		actual, err := cr.UpdateComment(updateComment)
+
+		// THEN
+		if err != nil {
+			t.Error("expected no error")
+		}
+		if actual == nil {
+			t.Error("expected no nil card returned")
+			t.FailNow()
+		}
+		commentInCache := cr.mapCommentsByIDCard[updateComment.IDCard][1]
+		if !reflect.DeepEqual(expected, &commentInCache) || !reflect.DeepEqual(expected, actual) {
+			t.Errorf("expected %v, actual %v, card in cache %v", expected, actual, &commentInCache)
+		}
+	})
+
+	t.Run("update comment not existing in cache", func(t *testing.T) {
+		// GIVEN
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		r := NewMockRepository(ctrl)
+		updateComment := UpdateComment{ID: "comment 1", IDCard: "card 1", Text: "updated comment"}
+		expected := &Comment{ID: updateComment.ID, Data: CommentData{Text: updateComment.Text}}
+		r.EXPECT().
+			UpdateComment(updateComment).
+			Return(expected, nil)
+		cr := &CacheInMemory{
+			r: r,
+			mapCommentsByIDCard: map[string]Comments{
+				updateComment.IDCard: {
+					{ID: "comment 2"},
+				},
+			},
+		}
+
+		// WHEN
+		actual, err := cr.UpdateComment(updateComment)
+
+		// THEN
+		if err != nil {
+			t.Error("expected no error")
+		}
+		if actual == nil {
+			t.Error("expected no nil card returned")
+			t.FailNow()
+		}
+		commentInCache := cr.mapCommentsByIDCard[updateComment.IDCard][1]
+		if !reflect.DeepEqual(expected, &commentInCache) || !reflect.DeepEqual(expected, actual) {
+			t.Errorf("expected %v, actual %v, card in cache %v", expected, actual, &commentInCache)
+		}
+	})
+
+	t.Run("error when updating comment", func(t *testing.T) {
+		// GIVEN
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		r := NewMockRepository(ctrl)
+		updateComment := UpdateComment{ID: "comment 1", IDCard: "card 1", Text: "updated comment"}
+		r.EXPECT().
+			UpdateComment(updateComment).
+			Return(nil, errors.New("unexpected error"))
+		cr := &CacheInMemory{
+			r: r,
+			mapCommentsByIDCard: map[string]Comments{
+				updateComment.IDCard: {
+					{ID: "comment 2"},
+					{ID: updateComment.ID, Data: CommentData{Text: "comment"}},
+				},
+			},
+		}
+
+		// WHEN
+		actual, err := cr.UpdateComment(updateComment)
+
+		// THEN
+		if err == nil {
+			t.Error("expected error")
+		}
+		if actual != nil {
+			t.Errorf("expected nil comment returned, actual %v", actual)
+			t.FailNow()
+		}
+		if len(cr.mapCommentsByIDCard[updateComment.IDCard]) != 2 {
+			t.Errorf("expected cache not modified, got %v", cr.mapCardsByIDList[updateComment.IDCard])
+		}
+	})
+}

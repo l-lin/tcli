@@ -42,7 +42,14 @@ type Comment struct {
 }
 
 type CommentData struct {
-	Text string `json:"text"`
+	Card CommentDataCard `json:"card"`
+	Text string          `json:"text"`
+}
+
+type CommentDataCard struct {
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	ShortLink string `json:"shortLink"`
 }
 
 type CommentMemberCreator struct {
@@ -53,6 +60,12 @@ type CommentMemberCreator struct {
 }
 
 type CreateComment struct {
+	IDCard string `json:"idCard"`
+	Text   string `json:"text"`
+}
+
+type UpdateComment struct {
+	ID     string `json:"id"`
 	IDCard string `json:"idCard"`
 	Text   string `json:"text"`
 }

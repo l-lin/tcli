@@ -44,7 +44,19 @@ func TestEdit_Execute(t *testing.T) {
 		{ID: "label 2", Name: "label name 2", Color: "sky"},
 		{ID: "label 3", Name: "", Color: "black"},
 	}
+	comment := trello.Comment{
+		ID: "comment",
+		Data: trello.CommentData{
+			Card: trello.CommentDataCard{ID: card1.ID},
+			Text: "comment content",
+		},
+	}
 	createComment := trello.CreateComment{
+		IDCard: card1.ID,
+		Text:   "edited comment",
+	}
+	updateComment := trello.UpdateComment{
+		ID:     comment.ID,
 		IDCard: card1.ID,
 		Text:   "edited comment",
 	}
@@ -195,13 +207,51 @@ func TestEdit_Execute(t *testing.T) {
 						FindCard(list1.ID, card1.Name).
 						Return(&card1, nil)
 					tr.EXPECT().
+						FindComment(card1.ID, comment.ID).
+						Return(nil, commentNotFoundError(comment.ID))
+					tr.EXPECT().
 						CreateComment(createComment).
 						Return(nil, nil)
 					return tr
 				},
 				buildEditor: func() Editor {
-					in := []byte("comment")
+					in := []byte(comment.ID)
 					out := []byte(createComment.Text)
+					e := NewMockEditor(ctrl)
+					e.EXPECT().
+						Edit(in, markdownFileType).
+						Return(out, nil)
+					return e
+				},
+				stdin: acceptStdin(),
+			},
+			expected: expected{},
+		},
+		"edit /board/list/card/comment - comment edition": {
+			given: given{
+				args: []string{"/board/list/card/comment"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board1.Name).
+						Return(&board1, nil)
+					tr.EXPECT().
+						FindList(board1.ID, list1.Name).
+						Return(&list1, nil)
+					tr.EXPECT().
+						FindCard(list1.ID, card1.Name).
+						Return(&card1, nil)
+					tr.EXPECT().
+						FindComment(card1.ID, comment.ID).
+						Return(&comment, nil)
+					tr.EXPECT().
+						UpdateComment(updateComment).
+						Return(&comment, nil)
+					return tr
+				},
+				buildEditor: func() Editor {
+					in := []byte(comment.Data.Text)
+					out := []byte(updateComment.Text)
 					e := NewMockEditor(ctrl)
 					e.EXPECT().
 						Edit(in, markdownFileType).
@@ -386,12 +436,15 @@ func TestEdit_Execute(t *testing.T) {
 						FindCard(list1.ID, card1.Name).
 						Return(&card1, nil)
 					tr.EXPECT().
+						FindComment(card1.ID, comment.ID).
+						Return(nil, commentNotFoundError(comment.ID))
+					tr.EXPECT().
 						CreateComment(createComment).
 						Return(nil, errors.New("unexpected error"))
 					return tr
 				},
 				buildEditor: func() Editor {
-					in := []byte("comment")
+					in := []byte(comment.ID)
 					out := []byte(createComment.Text)
 					e := NewMockEditor(ctrl)
 					e.EXPECT().
@@ -403,6 +456,43 @@ func TestEdit_Execute(t *testing.T) {
 			},
 			expected: expected{
 				stderr: "could not create comment 'comment': unexpected error\n",
+			},
+		},
+		"edit /board/list/card/comment - error when updating comment": {
+			given: given{
+				args: []string{"/board/list/card/comment"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board1.Name).
+						Return(&board1, nil)
+					tr.EXPECT().
+						FindList(board1.ID, list1.Name).
+						Return(&list1, nil)
+					tr.EXPECT().
+						FindCard(list1.ID, card1.Name).
+						Return(&card1, nil)
+					tr.EXPECT().
+						FindComment(card1.ID, comment.ID).
+						Return(&comment, nil)
+					tr.EXPECT().
+						UpdateComment(updateComment).
+						Return(nil, errors.New("unexpected error"))
+					return tr
+				},
+				buildEditor: func() Editor {
+					in := []byte(comment.Data.Text)
+					out := []byte(createComment.Text)
+					e := NewMockEditor(ctrl)
+					e.EXPECT().
+						Edit(in, markdownFileType).
+						Return(out, nil)
+					return e
+				},
+				stdin: acceptStdin(),
+			},
+			expected: expected{
+				stderr: "could not update comment 'comment': unexpected error\n",
 			},
 		},
 	}

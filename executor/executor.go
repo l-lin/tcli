@@ -153,7 +153,7 @@ func (lse *listStepExecutor) findList() *listStepExecutor {
 	if lse.p.ListName == "" {
 		lse.err = invalidPathError
 	} else if lse.session.List, err = lse.tr.FindList(lse.session.Board.ID, lse.p.ListName); err != nil || lse.session.List == nil {
-		lse.err = fmt.Errorf("no list found with name '%s'", lse.p.ListName)
+		lse.err = listNotFoundError(lse.p.ListName)
 	}
 	return lse
 }
@@ -265,33 +265,39 @@ func (cse *commentStepExecutor) findComment() *commentStepExecutor {
 	if cse.p.CommentID == "" {
 		cse.err = invalidPathError
 	} else if cse.comment, err = cse.tr.FindComment(cse.session.Card.ID, cse.p.CommentID); err != nil || cse.comment == nil {
-		cse.err = fmt.Errorf("no comment found with id '%s'", cse.p.CommentID)
+		cse.err = commentNotFoundError(cse.p.CommentID)
 	}
 	return cse
 }
 
-func (cse *commentStepExecutor) doOnComment(action func(comment *trello.Comment)) error {
+func (cse *commentStepExecutor) doOnComment(action func(comment *trello.Comment)) *commentStepExecutor {
 	if cse.err != nil || cse.isFinished {
-		return cse.err
+		return cse
 	}
 	if cse.comment != nil {
 		action(cse.comment)
 		cse.isFinished = true
 	}
-	return cse.err
+	return cse
 }
 
 func (cse *commentStepExecutor) doOnCommentText(action func(commentText string, session *trello.Session)) *commentStepExecutor {
-	return cse.doOnCommentID(action)
-}
-
-func (cse *commentStepExecutor) doOnCommentID(action func(commentID string, session *trello.Session)) *commentStepExecutor {
-	if cse.err != nil || cse.isFinished {
+	if cse.isFinished {
 		return cse
 	}
 
-	// commentID contains either the comment ID or the text of the comment to create
-	action(cse.p.CommentID, cse.session)
-	cse.isFinished = true
+	var e commentNotFoundError
+	if cse.err != nil {
+		if !errors.As(cse.err, &e) {
+			return cse
+		}
+		// reset error as we are already handling this case afterward
+		cse.err = nil
+	}
+	if cse.p.CommentID != "" {
+		// commentID contains either the comment ID or the text of the comment to create
+		action(cse.p.CommentID, cse.session)
+		cse.isFinished = true
+	}
 	return cse
 }

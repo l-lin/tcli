@@ -168,9 +168,33 @@ func (c *CacheInMemory) CreateComment(createComment CreateComment) (*Comment, er
 	return comment, nil
 }
 
-func (c *CacheInMemory) findCardIndex(idList, cardID string) int {
+func (c *CacheInMemory) UpdateComment(updateComment UpdateComment) (*Comment, error) {
+	comment, err := c.r.UpdateComment(updateComment)
+	if err != nil {
+		return nil, err
+	}
+
+	cardIndex := c.findCommentIndex(updateComment.IDCard, updateComment.ID)
+	if cardIndex != -1 {
+		c.mapCommentsByIDCard[updateComment.IDCard][cardIndex] = *comment
+	} else {
+		c.mapCommentsByIDCard[updateComment.IDCard] = append(c.mapCommentsByIDCard[updateComment.IDCard], *comment)
+	}
+	return comment, nil
+}
+
+func (c *CacheInMemory) findCardIndex(idList, idCard string) int {
 	for i, cachedCard := range c.mapCardsByIDList[idList] {
-		if cachedCard.ID == cardID {
+		if cachedCard.ID == idCard {
+			return i
+		}
+	}
+	return -1
+}
+
+func (c *CacheInMemory) findCommentIndex(idCard, idComment string) int {
+	for i, cachedComment := range c.mapCommentsByIDCard[idCard] {
+		if cachedComment.ID == idComment {
 			return i
 		}
 	}

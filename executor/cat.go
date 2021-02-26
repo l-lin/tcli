@@ -43,7 +43,7 @@ func (c cat) execute(arg string) {
 		findComment().
 		doOnComment(func(comment *trello.Comment) {
 			fmt.Fprintf(c.stdout, "%s\n", c.r.RenderComment(*comment))
-		}); err != nil {
+		}).err; err != nil {
 		fmt.Fprintf(c.stderr, "%s\n", err)
 	}
 }
