@@ -152,6 +152,21 @@ func (mr *MockRepositoryMockRecorder) FindComment(idCard, idComment interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindComment", reflect.TypeOf((*MockRepository)(nil).FindComment), idCard, idComment)
 }
 
+// FindCommentReactions mocks base method.
+func (m *MockRepository) FindReactionSummaries(idComment string) (ReactionSummaries, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindReactionSummaries", idComment)
+	ret0, _ := ret[0].(ReactionSummaries)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindCommentReactions indicates an expected call of FindCommentReactions.
+func (mr *MockRepositoryMockRecorder) FindCommentReactions(idComment interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindReactionSummaries", reflect.TypeOf((*MockRepository)(nil).FindReactionSummaries), idComment)
+}
+
 // FindComments mocks base method.
 func (m *MockRepository) FindComments(idCard string) (Comments, error) {
 	m.ctrl.T.Helper()

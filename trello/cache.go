@@ -10,19 +10,21 @@ import (
 type CacheInMemory struct {
 	r Repository
 	*Boards
-	mapLabelsByIDBoard  map[string]Labels   // <idBoard, Labels>
-	mapListsByIDBoard   map[string]Lists    // <idBoard, Lists>
-	mapCardsByIDList    map[string]Cards    // <idList, Cards>
-	mapCommentsByIDCard map[string]Comments // <idCard, Comments>
+	mapLabelsByIDBoard              map[string]Labels            // <idBoard, Labels>
+	mapListsByIDBoard               map[string]Lists             // <idBoard, Lists>
+	mapCardsByIDList                map[string]Cards             // <idList, Cards>
+	mapCommentsByIDCard             map[string]Comments          // <idCard, Comments>
+	mapReactionSummariesByIDComment map[string]ReactionSummaries // <idComment, ReactionSummaries>
 }
 
 func NewCacheInMemory(r Repository) Repository {
 	return &CacheInMemory{
-		r:                   r,
-		mapLabelsByIDBoard:  map[string]Labels{},
-		mapListsByIDBoard:   map[string]Lists{},
-		mapCardsByIDList:    map[string]Cards{},
-		mapCommentsByIDCard: map[string]Comments{},
+		r:                               r,
+		mapLabelsByIDBoard:              map[string]Labels{},
+		mapListsByIDBoard:               map[string]Lists{},
+		mapCardsByIDList:                map[string]Cards{},
+		mapCommentsByIDCard:             map[string]Comments{},
+		mapReactionSummariesByIDComment: map[string]ReactionSummaries{},
 	}
 }
 
@@ -191,6 +193,17 @@ func (c *CacheInMemory) DeleteComment(idCard, idComment string) error {
 	commentIndex := c.findCommentIndex(idCard, idComment)
 	c.removeComment(idCard, commentIndex)
 	return nil
+}
+
+func (c *CacheInMemory) FindReactionSummaries(idComment string) (ReactionSummaries, error) {
+	if c.mapReactionSummariesByIDComment[idComment] != nil {
+		log.Debug().Str("idComment", idComment).Msg("fetching comment reactions from cache")
+		return c.mapReactionSummariesByIDComment[idComment], nil
+	}
+	log.Debug().Str("idComment", idComment).Msg("fetching comment reactions from remote")
+	reactions, err := c.r.FindReactionSummaries(idComment)
+	c.mapReactionSummariesByIDComment[idComment] = reactions
+	return reactions, err
 }
 
 func (c *CacheInMemory) findCardIndex(idList, idCard string) int {

@@ -42,8 +42,17 @@ func (c cat) execute(arg string) {
 		then().
 		findComment().
 		doOnComment(func(comment *trello.Comment) {
-			fmt.Fprintf(c.stdout, "%s\n", c.r.RenderComment(*comment))
+			c.renderComment(*comment)
 		}).err; err != nil {
 		fmt.Fprintf(c.stderr, "%s\n", err)
+	}
+}
+
+func (c cat) renderComment(comment trello.Comment) {
+	reactionSummaries, err := c.tr.FindReactionSummaries(comment.ID)
+	if err != nil {
+		fmt.Fprintf(c.stderr, "could not fetch reaction summaries for comment '%s': %v\n", comment.ID, err)
+	} else {
+		fmt.Fprintf(c.stdout, "%s\n", c.r.RenderComment(comment, reactionSummaries))
 	}
 }

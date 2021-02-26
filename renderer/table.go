@@ -6,6 +6,7 @@ import (
 	"github.com/cheynewallace/tabby"
 	"github.com/l-lin/tcli/trello"
 	"github.com/rs/zerolog/log"
+	"strings"
 	"text/tabwriter"
 )
 
@@ -126,13 +127,16 @@ func (b InTable) RenderCard(card trello.Card) string {
 	return buffer.String()
 }
 
-func (b InTable) RenderComments(comments trello.Comments) string {
+func (b InTable) RenderComments(comments trello.Comments, mapReactionsByIDComment map[string]trello.ReactionSummaries) string {
 	var buffer bytes.Buffer
 	w := tabwriter.NewWriter(&buffer, b.minWidth, b.tabWidth, b.padding, b.padChar, b.flags)
 	t := tabby.NewCustom(w)
 	for _, comment := range comments.SortedByDateDesc() {
 		t.AddLine()
 		t.AddHeader(renderCommentHeader(comment))
+		if reactionSummaries := mapReactionsByIDComment[comment.ID]; reactionSummaries != nil && len(reactionSummaries) > 0 {
+			t.AddLine(renderReactionSummaries(reactionSummaries))
+		}
 		renderedText, err := b.cdr.Render(comment.Data.Text)
 		if err != nil {
 			log.Debug().
@@ -147,12 +151,15 @@ func (b InTable) RenderComments(comments trello.Comments) string {
 	return buffer.String()
 }
 
-func (b InTable) RenderComment(comment trello.Comment) string {
+func (b InTable) RenderComment(comment trello.Comment, reactionSummaries trello.ReactionSummaries) string {
 	var buffer bytes.Buffer
 	w := tabwriter.NewWriter(&buffer, b.minWidth, b.tabWidth, b.padding, b.padChar, b.flags)
 	t := tabby.NewCustom(w)
 	t.AddLine()
 	t.AddHeader(renderCommentHeader(comment))
+	if len(reactionSummaries) > 0 {
+		t.AddLine(renderReactionSummaries(reactionSummaries))
+	}
 	renderedText, err := b.cdr.Render(comment.Data.Text)
 	if err != nil {
 		log.Debug().
@@ -168,4 +175,12 @@ func (b InTable) RenderComment(comment trello.Comment) string {
 
 func renderCommentHeader(comment trello.Comment) string {
 	return fmt.Sprintf("%s @ %s [%s]", comment.MemberCreator.Username, comment.Date, comment.ID)
+}
+
+func renderReactionSummaries(reactions trello.ReactionSummaries) string {
+	sb := strings.Builder{}
+	for _, reaction := range reactions {
+		sb.WriteString(fmt.Sprintf("%s%d", reaction.Emoji.Native, reaction.Count))
+	}
+	return sb.String()
 }

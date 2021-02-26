@@ -91,31 +91,31 @@ func (mr *MockRendererMockRecorder) RenderCards(arg0 interface{}) *gomock.Call {
 }
 
 // RenderComment mocks base method.
-func (m *MockRenderer) RenderComment(arg0 trello.Comment) string {
+func (m *MockRenderer) RenderComment(arg0 trello.Comment, arg1 trello.ReactionSummaries) string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RenderComment", arg0)
+	ret := m.ctrl.Call(m, "RenderComment", arg0, arg1)
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
 // RenderComment indicates an expected call of RenderComment.
-func (mr *MockRendererMockRecorder) RenderComment(arg0 interface{}) *gomock.Call {
+func (mr *MockRendererMockRecorder) RenderComment(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenderComment", reflect.TypeOf((*MockRenderer)(nil).RenderComment), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenderComment", reflect.TypeOf((*MockRenderer)(nil).RenderComment), arg0, arg1)
 }
 
 // RenderComments mocks base method.
-func (m *MockRenderer) RenderComments(arg0 trello.Comments) string {
+func (m *MockRenderer) RenderComments(arg0 trello.Comments, arg1 map[string]trello.ReactionSummaries) string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RenderComments", arg0)
+	ret := m.ctrl.Call(m, "RenderComments", arg0, arg1)
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
 // RenderComments indicates an expected call of RenderComments.
-func (mr *MockRendererMockRecorder) RenderComments(arg0 interface{}) *gomock.Call {
+func (mr *MockRendererMockRecorder) RenderComments(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenderComments", reflect.TypeOf((*MockRenderer)(nil).RenderComments), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenderComments", reflect.TypeOf((*MockRenderer)(nil).RenderComments), arg0, arg1)
 }
 
 // RenderList mocks base method.

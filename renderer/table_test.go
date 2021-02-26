@@ -360,44 +360,68 @@ Here are some markdown contents
 }
 
 func TestInTable_RenderComments(t *testing.T) {
+	type given struct {
+		comments                        trello.Comments
+		mapReactionSummariesByIDComment map[string]trello.ReactionSummaries
+	}
 	var tests = map[string]struct {
-		given    trello.Comments
+		given    given
 		expected string
 	}{
 		"3 comments": {
-			given: trello.Comments{
-				{
-					ID:   "comment 1",
-					Date: "2014-11-12T11:45:26.371Z",
-					MemberCreator: trello.CommentMemberCreator{
-						Username: "user 1",
-					},
-					Data: trello.CommentData{
-						Text: `# Comment title
+			given: given{
+				comments: trello.Comments{
+					{
+						ID:   "comment 1",
+						Date: "2014-11-12T11:45:26.371Z",
+						MemberCreator: trello.CommentMemberCreator{
+							Username: "user 1",
+						},
+						Data: trello.CommentData{
+							Text: `# Comment title
 
 > some context
 
 Here are some markdown content.`,
+						},
+					},
+					{
+						ID:   "comment 2",
+						Date: "2014-11-13T11:45:26.371Z",
+						MemberCreator: trello.CommentMemberCreator{
+							Username: "user 2",
+						},
+						Data: trello.CommentData{
+							Text: "NO",
+						},
+					},
+					{
+						ID:   "comment 3",
+						Date: "2014-11-14T11:45:26.371Z",
+						MemberCreator: trello.CommentMemberCreator{
+							Username: "user 1",
+						},
+						Data: trello.CommentData{
+							Text: "But why?",
+						},
 					},
 				},
-				{
-					ID:   "comment 2",
-					Date: "2014-11-13T11:45:26.371Z",
-					MemberCreator: trello.CommentMemberCreator{
-						Username: "user 2",
-					},
-					Data: trello.CommentData{
-						Text: "NO",
-					},
-				},
-				{
-					ID:   "comment 3",
-					Date: "2014-11-14T11:45:26.371Z",
-					MemberCreator: trello.CommentMemberCreator{
-						Username: "user 1",
-					},
-					Data: trello.CommentData{
-						Text: "But why?",
+				mapReactionSummariesByIDComment: map[string]trello.ReactionSummaries{
+					"comment 1": {
+						{
+							Count: 2,
+							Emoji: trello.ReactionEmoji{
+								Native:    "👍",
+								ShortName: "+1",
+							},
+						},
+						{
+							Count: 1,
+							Emoji: trello.ReactionEmoji{
+								Native:    "😀",
+								ShortName: "grinning",
+							},
+						},
 					},
 				},
 			},
@@ -412,6 +436,7 @@ NO
 
 user 1 @ 2014-11-12T11:45:26.371Z [comment 1]
 ---------------------------------------------
+👍2😀1
 # Comment title
 
 > some context
@@ -420,14 +445,14 @@ Here are some markdown content.
 `,
 		},
 		"no comment": {
-			given:    trello.Comments{},
+			given:    given{comments: trello.Comments{}},
 			expected: "",
 		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			r := NewInTableRenderer(PlainLabel{}, PlainDescription{})
-			actual := r.RenderComments(tt.given)
+			actual := r.RenderComments(tt.given.comments, tt.given.mapReactionSummariesByIDComment)
 			if actual != tt.expected {
 				t.Errorf("expected:\n%v\nactual:\n%v", tt.expected, actual)
 			}
@@ -436,24 +461,75 @@ Here are some markdown content.
 }
 
 func TestInTable_RenderComment(t *testing.T) {
+	type given struct {
+		comment   trello.Comment
+		reactions trello.ReactionSummaries
+	}
 	var tests = map[string]struct {
-		given    trello.Comment
+		given    given
 		expected string
 	}{
 		"long text": {
-			given: trello.Comment{
-				ID:   "comment 1",
-				Date: "2014-11-12T11:45:26.371Z",
-				MemberCreator: trello.CommentMemberCreator{
-					Username: "user 1",
-				},
-				Data: trello.CommentData{
-					Text: `# Comment title
+			given: given{
+				comment: trello.Comment{
+					ID:   "comment 1",
+					Date: "2014-11-12T11:45:26.371Z",
+					MemberCreator: trello.CommentMemberCreator{
+						Username: "user 1",
+					},
+					Data: trello.CommentData{
+						Text: `# Comment title
 
 > some context
 
 Here are some markdown content.`,
+					},
 				},
+				reactions: trello.ReactionSummaries{
+					{
+						Count: 2,
+						Emoji: trello.ReactionEmoji{
+							Native:    "👍",
+							ShortName: "+1",
+						},
+					},
+					{
+						Count: 1,
+						Emoji: trello.ReactionEmoji{
+							Native:    "😀",
+							ShortName: "grinning",
+						},
+					},
+				},
+			},
+			expected: `
+user 1 @ 2014-11-12T11:45:26.371Z [comment 1]
+---------------------------------------------
+👍2😀1
+# Comment title
+
+> some context
+
+Here are some markdown content.
+`,
+		},
+		"no reaction": {
+			given: given{
+				comment: trello.Comment{
+					ID:   "comment 1",
+					Date: "2014-11-12T11:45:26.371Z",
+					MemberCreator: trello.CommentMemberCreator{
+						Username: "user 1",
+					},
+					Data: trello.CommentData{
+						Text: `# Comment title
+
+> some context
+
+Here are some markdown content.`,
+					},
+				},
+				reactions: trello.ReactionSummaries{},
 			},
 			expected: `
 user 1 @ 2014-11-12T11:45:26.371Z [comment 1]
@@ -469,7 +545,7 @@ Here are some markdown content.
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			r := NewInTableRenderer(PlainLabel{}, PlainDescription{})
-			actual := r.RenderComment(tt.given)
+			actual := r.RenderComment(tt.given.comment, tt.given.reactions)
 			if actual != tt.expected {
 				t.Errorf("expected:\n%v\nactual:\n%v", tt.expected, actual)
 			}

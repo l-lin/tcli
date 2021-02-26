@@ -171,6 +171,17 @@ func (h HttpRepository) DeleteComment(idCard, idComment string) error {
 	return h.delete(u)
 }
 
+func (h HttpRepository) FindReactionSummaries(idComment string) (ReactionSummaries, error) {
+	v := h.buildQueries("")
+	u := fmt.Sprintf("%s/actions/%s/reactionsSummary?%v", h.BaseURL, idComment, v.Encode())
+
+	var reactions ReactionSummaries
+	if err := h.get(u, &reactions); err != nil {
+		return nil, err
+	}
+	return reactions, nil
+}
+
 func (h HttpRepository) get(url string, ret interface{}) error {
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {

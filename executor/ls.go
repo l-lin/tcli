@@ -80,10 +80,25 @@ func (l ls) renderComments(card trello.Card) {
 	if err != nil {
 		fmt.Fprintf(l.stderr, "could not fetch comments for card '%s': %v\n", card.Name, err)
 	} else {
-		fmt.Fprintf(l.stdout, "%s\n", l.r.RenderComments(comments))
+		mapReactionSummariesByIDComment := make(map[string]trello.ReactionSummaries)
+		for _, comment := range comments {
+			var reactionSummaries trello.ReactionSummaries
+			reactionSummaries, err = l.tr.FindReactionSummaries(comment.ID)
+			if err != nil {
+				fmt.Fprintf(l.stderr, "could not fetch reaction summaries for comment '%s': %v\n", comment.ID, err)
+				return
+			}
+			mapReactionSummariesByIDComment[comment.ID] = reactionSummaries
+		}
+		fmt.Fprintf(l.stdout, "%s\n", l.r.RenderComments(comments, mapReactionSummariesByIDComment))
 	}
 }
 
 func (l ls) renderComment(comment trello.Comment) {
-	fmt.Fprintf(l.stdout, "%s\n", l.r.RenderComment(comment))
+	reactionSummaries, err := l.tr.FindReactionSummaries(comment.ID)
+	if err != nil {
+		fmt.Fprintf(l.stderr, "could not fetch reaction summaries for comment '%s': %v\n", comment.ID, err)
+	} else {
+		fmt.Fprintf(l.stdout, "%s\n", l.r.RenderComment(comment, reactionSummaries))
+	}
 }
