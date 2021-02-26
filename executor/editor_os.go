@@ -7,7 +7,6 @@ import (
 )
 
 func NewOsEditor(editorCommand string) Editor {
-	// works on other platforms (i.e. Windows, MacOS)?
 	return OsEditor{Command: editorCommand}
 }
 
@@ -15,8 +14,8 @@ type OsEditor struct {
 	Command string
 }
 
-func (o OsEditor) Edit(in []byte) (out []byte, err error) {
-	tmpFile, err := os.CreateTemp(os.TempDir(), "tcli-*.yaml")
+func (o OsEditor) Edit(in []byte, fileType string) (out []byte, err error) {
+	tmpFile, err := os.CreateTemp(os.TempDir(), "tcli-*."+fileType)
 	if err != nil {
 		return nil, err
 	}

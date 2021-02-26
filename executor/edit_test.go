@@ -89,7 +89,7 @@ func TestEdit_Execute(t *testing.T) {
 					out, _ := yaml.Marshal(trello.NewCardToCreate(createdCard1))
 					e := NewMockEditor(ctrl)
 					e.EXPECT().
-						Edit(in).
+						Edit(in, yamlFileType).
 						Return(out, nil)
 					return e
 				},
@@ -130,7 +130,7 @@ func TestEdit_Execute(t *testing.T) {
 					out, _ := yaml.Marshal(trello.NewCardToEdit(updatedCard1))
 					e := NewMockEditor(ctrl)
 					e.EXPECT().
-						Edit(in).
+						Edit(in, yamlFileType).
 						Return(out, nil)
 					return e
 				},
@@ -171,7 +171,7 @@ func TestEdit_Execute(t *testing.T) {
 					in, _ := editRenderer.MarshalCardToEdit(cte1, nil, nil)
 					e := NewMockEditor(ctrl)
 					e.EXPECT().
-						Edit(in).
+						Edit(in, yamlFileType).
 						Return(in, nil)
 					return e
 				},
@@ -204,7 +204,7 @@ func TestEdit_Execute(t *testing.T) {
 					out := []byte(createComment.Text)
 					e := NewMockEditor(ctrl)
 					e.EXPECT().
-						Edit(in).
+						Edit(in, markdownFileType).
 						Return(out, nil)
 					return e
 				},
@@ -361,7 +361,7 @@ func TestEdit_Execute(t *testing.T) {
 					in, _ := editRenderer.MarshalCardToEdit(cte1, nil, nil)
 					e := NewMockEditor(ctrl)
 					e.EXPECT().
-						Edit(in).
+						Edit(in, yamlFileType).
 						Return(in, nil)
 					return e
 				},
@@ -395,7 +395,7 @@ func TestEdit_Execute(t *testing.T) {
 					out := []byte(createComment.Text)
 					e := NewMockEditor(ctrl)
 					e.EXPECT().
-						Edit(in).
+						Edit(in, markdownFileType).
 						Return(out, nil)
 					return e
 				},

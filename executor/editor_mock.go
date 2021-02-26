@@ -34,16 +34,16 @@ func (m *MockEditor) EXPECT() *MockEditorMockRecorder {
 }
 
 // Edit mocks base method.
-func (m *MockEditor) Edit(in []byte) ([]byte, error) {
+func (m *MockEditor) Edit(in []byte, fileType string) ([]byte, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Edit", in)
+	ret := m.ctrl.Call(m, "Edit", in, fileType)
 	ret0, _ := ret[0].([]byte)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Edit indicates an expected call of Edit.
-func (mr *MockEditorMockRecorder) Edit(in interface{}) *gomock.Call {
+func (mr *MockEditorMockRecorder) Edit(in, fileType interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Edit", reflect.TypeOf((*MockEditor)(nil).Edit), in)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Edit", reflect.TypeOf((*MockEditor)(nil).Edit), in, fileType)
 }

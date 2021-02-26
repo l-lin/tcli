@@ -91,7 +91,7 @@ func (e edit) createCard(card trello.Card) (err error) {
 	}
 
 	var out []byte
-	if out, err = e.editor.Edit(in); err != nil {
+	if out, err = e.editor.Edit(in, yamlFileType); err != nil {
 		return
 	}
 
@@ -139,7 +139,7 @@ func (e edit) editCard(card trello.Card) (err error) {
 	}
 
 	var out []byte
-	if out, err = e.editor.Edit(in); err != nil {
+	if out, err = e.editor.Edit(in, yamlFileType); err != nil {
 		return
 	}
 
@@ -174,7 +174,7 @@ func (e edit) createComment(commentText, idCard string) (err error) {
 	in := []byte(commentText)
 
 	var out []byte
-	if out, err = e.editor.Edit(in); err != nil {
+	if out, err = e.editor.Edit(in, markdownFileType); err != nil {
 		return
 	}
 
