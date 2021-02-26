@@ -17,4 +17,5 @@ type Repository interface {
 	FindComment(idCard string, idComment string) (*Comment, error)
 	CreateComment(createComment CreateComment) (*Comment, error)
 	UpdateComment(updateComment UpdateComment) (*Comment, error)
+	DeleteComment(idCard, idComment string) error
 }

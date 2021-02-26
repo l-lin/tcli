@@ -59,6 +59,21 @@ func (r rm) execute(arg string) {
 			if _, err := r.tr.UpdateCard(updatedCard); err != nil {
 				fmt.Fprintf(r.stderr, "could not archive card '%s': %s\n", card.Name, err)
 			}
+		}).
+		then().
+		findComment().
+		doOnComment(func(comment *trello.Comment) {
+			prompt := promptui.Prompt{
+				Label:     fmt.Sprintf("Delete comment '%s'?", comment.ID),
+				IsConfirm: true,
+				Stdin:     r.stdin,
+			}
+			if _, err := prompt.Run(); err != nil {
+				return
+			}
+			if err := r.tr.DeleteComment(comment.Data.Card.ID, comment.ID); err != nil {
+				fmt.Fprintf(r.stderr, "could not delete comment '%s': %s\n", comment.ID, err)
+			}
 		})
 	if exec.err != nil {
 		fmt.Fprintf(r.stderr, "%s\n", exec.err)

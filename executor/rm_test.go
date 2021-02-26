@@ -19,6 +19,7 @@ func TestRm_Execute(t *testing.T) {
 	card := trello.Card{ID: "card 1", Name: "card"}
 	updatedCard := trello.NewUpdateCard(card)
 	updatedCard.Closed = true
+	comment := trello.Comment{ID: "comment", Data: trello.CommentData{Card: trello.CommentDataCard{ID: card.ID}}}
 
 	type given struct {
 		args                  []string
@@ -88,6 +89,55 @@ func TestRm_Execute(t *testing.T) {
 					tr.EXPECT().
 						FindCard(list.ID, card.Name).
 						Return(&card, nil)
+					return tr
+				},
+				stdin: refuseStdin(),
+			},
+			expected: expected{},
+		},
+		"rm /board/list/card/comment (user accepts to delete)": {
+			given: given{
+				args: []string{"/board/list/card/comment"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board.Name).
+						Return(&board, nil)
+					tr.EXPECT().
+						FindList(board.ID, list.Name).
+						Return(&list, nil)
+					tr.EXPECT().
+						FindCard(list.ID, card.Name).
+						Return(&card, nil)
+					tr.EXPECT().
+						FindComment(card.ID, comment.ID).
+						Return(&comment, nil)
+					tr.EXPECT().
+						DeleteComment(card.ID, comment.ID).
+						Return(nil)
+					return tr
+				},
+				stdin: acceptStdin(),
+			},
+			expected: expected{},
+		},
+		"rm /board/list/card/comment (user refuses to delete)": {
+			given: given{
+				args: []string{"/board/list/card/comment"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board.Name).
+						Return(&board, nil)
+					tr.EXPECT().
+						FindList(board.ID, list.Name).
+						Return(&list, nil)
+					tr.EXPECT().
+						FindCard(list.ID, card.Name).
+						Return(&card, nil)
+					tr.EXPECT().
+						FindComment(card.ID, comment.ID).
+						Return(&comment, nil)
 					return tr
 				},
 				stdin: refuseStdin(),
@@ -227,6 +277,34 @@ func TestRm_Execute(t *testing.T) {
 			},
 			expected: expected{
 				stderr: fmt.Sprintf("could not archive card '%s': unexpected error\n", updatedCard.Name),
+			},
+		},
+		"rm /board/list/card/comment (error when deleting comment)": {
+			given: given{
+				args: []string{"/board/list/card/comment"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board.Name).
+						Return(&board, nil)
+					tr.EXPECT().
+						FindList(board.ID, list.Name).
+						Return(&list, nil)
+					tr.EXPECT().
+						FindCard(list.ID, card.Name).
+						Return(&card, nil)
+					tr.EXPECT().
+						FindComment(card.ID, comment.ID).
+						Return(&comment, nil)
+					tr.EXPECT().
+						DeleteComment(card.ID, comment.ID).
+						Return(errors.New("unexpected error"))
+					return tr
+				},
+				stdin: acceptStdin(),
+			},
+			expected: expected{
+				stderr: fmt.Sprintf("could not delete comment '%s': unexpected error\n", comment.ID),
 			},
 		},
 	}

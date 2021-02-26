@@ -174,13 +174,23 @@ func (c *CacheInMemory) UpdateComment(updateComment UpdateComment) (*Comment, er
 		return nil, err
 	}
 
-	cardIndex := c.findCommentIndex(updateComment.IDCard, updateComment.ID)
-	if cardIndex != -1 {
-		c.mapCommentsByIDCard[updateComment.IDCard][cardIndex] = *comment
+	commentIndex := c.findCommentIndex(updateComment.IDCard, updateComment.ID)
+	if commentIndex != -1 {
+		c.mapCommentsByIDCard[updateComment.IDCard][commentIndex] = *comment
 	} else {
 		c.mapCommentsByIDCard[updateComment.IDCard] = append(c.mapCommentsByIDCard[updateComment.IDCard], *comment)
 	}
 	return comment, nil
+}
+
+func (c *CacheInMemory) DeleteComment(idCard, idComment string) error {
+	if err := c.r.DeleteComment(idCard, idComment); err != nil {
+		return err
+	}
+
+	commentIndex := c.findCommentIndex(idCard, idComment)
+	c.removeComment(idCard, commentIndex)
+	return nil
 }
 
 func (c *CacheInMemory) findCardIndex(idList, idCard string) int {
@@ -213,4 +223,18 @@ func (c *CacheInMemory) removeCard(idList string, cardIndex int) {
 		return
 	}
 	c.mapCardsByIDList[idList] = append(cards[:cardIndex], cards[cardIndex+1:]...)
+}
+
+func (c *CacheInMemory) removeComment(idCard string, commentIndex int) {
+	if commentIndex == -1 {
+		return
+	}
+	comments, found := c.mapCommentsByIDCard[idCard]
+	if !found {
+		return
+	}
+	if commentIndex >= len(comments) {
+		return
+	}
+	c.mapCommentsByIDCard[idCard] = append(comments[:commentIndex], comments[commentIndex+1:]...)
 }

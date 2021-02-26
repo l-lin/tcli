@@ -79,7 +79,7 @@ func (h HttpRepository) FindList(idBoard string, query string) (*List, error) {
 }
 
 func (h HttpRepository) FindCards(idList string) (Cards, error) {
-	v := h.buildQueries("id,name,desc,idBoard,idList,labels,closed,shortLink,shortUrl,pos")
+	v := h.buildQueries("id,name,desc,idBoard,idCard,labels,closed,shortLink,shortUrl,pos")
 	u := fmt.Sprintf("%s/lists/%s/cards?%v", h.BaseURL, idList, v.Encode())
 
 	var cards Cards
@@ -165,8 +165,14 @@ func (h HttpRepository) UpdateComment(updateComment UpdateComment) (*Comment, er
 	return &comment, nil
 }
 
+func (h HttpRepository) DeleteComment(idCard, idComment string) error {
+	v := h.buildQueries("")
+	u := fmt.Sprintf("%s/cards/%s/actions/%s/comments?%v", h.BaseURL, idCard, idComment, v.Encode())
+	return h.delete(u)
+}
+
 func (h HttpRepository) get(url string, ret interface{}) error {
-	request, err := http.NewRequest("GET", url, nil)
+	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return err
 	}
@@ -184,12 +190,25 @@ func (h HttpRepository) get(url string, ret interface{}) error {
 	return json.Unmarshal(respBody, ret)
 }
 
+func (h HttpRepository) delete(url string) error {
+	request, err := http.NewRequest(http.MethodDelete, url, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = h.client.DoOnlyOk(request)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (h HttpRepository) post(url string, reqBody interface{}, ret interface{}) error {
-	return h.performRequest("POST", url, reqBody, ret)
+	return h.performRequest(http.MethodPost, url, reqBody, ret)
 }
 
 func (h HttpRepository) put(url string, reqBody interface{}, ret interface{}) error {
-	return h.performRequest("PUT", url, reqBody, ret)
+	return h.performRequest(http.MethodPut, url, reqBody, ret)
 }
 
 func (h HttpRepository) performRequest(method, url string, reqBody interface{}, ret interface{}) error {

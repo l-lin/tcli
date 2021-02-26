@@ -63,6 +63,20 @@ func (mr *MockRepositoryMockRecorder) CreateComment(createComment interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateComment", reflect.TypeOf((*MockRepository)(nil).CreateComment), createComment)
 }
 
+// DeleteComment mocks base method.
+func (m *MockRepository) DeleteComment(idCard, idComment string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteComment", idCard, idComment)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteComment indicates an expected call of DeleteComment.
+func (mr *MockRepositoryMockRecorder) DeleteComment(idCard, idComment interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteComment", reflect.TypeOf((*MockRepository)(nil).DeleteComment), idCard, idComment)
+}
+
 // FindBoard mocks base method.
 func (m *MockRepository) FindBoard(query string) (*Board, error) {
 	m.ctrl.T.Helper()
