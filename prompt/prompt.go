@@ -1,6 +1,7 @@
 package prompt
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/c-bata/go-prompt"
 	"github.com/l-lin/tcli/completer"
@@ -54,10 +55,12 @@ func (p *Prompt) Executor(in string) {
 		Str("cmd", cmd).
 		Strs("args", args).
 		Msg("executing command")
-	if e := executor.New(p.conf, cmd, p.tr, p.r, p.Session); e != nil {
-		e.Execute(args)
+
+	pipeIndex, foundPipe := findPipeIndex(args)
+	if foundPipe {
+		p.executeWithPipe(cmd, args, pipeIndex)
 	} else {
-		fmt.Fprintf(p.stderr, "command not found: %s\n", cmd)
+		p.execute(cmd, args)
 	}
 }
 
@@ -67,6 +70,10 @@ func (p *Prompt) Completer(d prompt.Document) []prompt.Suggest {
 	cmd, _ := getCmd(input)
 	args, err := getArgs(input)
 	if err != nil {
+		return []prompt.Suggest{}
+	}
+	_, found := findPipeIndex(args)
+	if found {
 		return []prompt.Suggest{}
 	}
 	return c.Complete(cmd, args)
@@ -170,4 +177,33 @@ func getArgs(input string) ([]string, error) {
 		args = append(args, "")
 	}
 	return args[1:], nil
+}
+
+func findPipeIndex(args []string) (int, bool) {
+	for i, arg := range args {
+		if "|" == arg {
+			return i, true
+		}
+	}
+	return -1, false
+}
+
+func (p *Prompt) executeWithPipe(cmd string, args []string, pipeIndex int) {
+	log.Debug().Msg("executing command with pipe")
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	if e := executor.New(p.conf, cmd, p.tr, p.r, p.Session, &stdout, &stderr); e != nil {
+		e.Execute(args[:pipeIndex])
+		executor.NewOS(bytes.NewReader(stdout.Bytes()), os.Stdout, os.Stderr).Execute(args[pipeIndex+1:])
+	} else {
+		fmt.Fprintf(p.stderr, "command not found: %s\n", cmd)
+	}
+}
+
+func (p *Prompt) execute(cmd string, args []string) {
+	if e := executor.New(p.conf, cmd, p.tr, p.r, p.Session, os.Stdout, os.Stderr); e != nil {
+		e.Execute(args)
+	} else {
+		fmt.Fprintf(p.stderr, "command not found: %s\n", cmd)
+	}
 }

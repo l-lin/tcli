@@ -6,6 +6,31 @@
 
 ![tcli](./tcli.gif)
 
+Available features:
+
+- [x] `ls` command to show boards, lists, cards and comments
+- [x] `cat` command to show more info on boards, lists, cards and comments
+- [x] `cd` command to navigate through the Trello hierarchy (`boards > lists > cards > comments`)
+- [x] `cp` command to copy cards and comments
+- [x] `touch` command to create new cards and comments
+- [x] `mv` command to move cards
+- [x] `edit` command to create or edit cards and comments
+- [x] `rm` command to archive cards and delete comments
+
+You can also integrate OS commands with a pipe (`|`) after the TCli command:
+
+```bash
+# to read long descriptions or comments for example
+/> cat /board/list/card | less
+# everything after the pipe are used as your OS execution
+# e.g. using grep to filter out some keywords
+/> cat /board/list/card | grep some-keywords
+# or using multiple pipes
+/> cat /board/list/card | sed "s/word-to-replace/replaced-word/g" | less
+# you can also redirect the output
+/> cat /board/list/card | sed "s/word-to-replace/replaced-word/g" > /tmp/output
+```
+
 ## Installation
 ### Downloading standalone binary
 

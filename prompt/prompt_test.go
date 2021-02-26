@@ -171,6 +171,12 @@ func TestGetArgs(t *testing.T) {
 				args: []string{"TODO/🎉 DONE"},
 			},
 		},
+		"containing pipe": {
+			given: "cat board/list/card | less",
+			expected: expected{
+				args: []string{"board/list/card", "|", "less"},
+			},
+		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -181,6 +187,50 @@ func TestGetArgs(t *testing.T) {
 			}
 			if !reflect.DeepEqual(actualArgs, tt.expected.args) {
 				t.Errorf("expected %q, actual %q", tt.expected.args, actualArgs)
+			}
+		})
+	}
+}
+
+func Test_FindPipeIndex(t *testing.T) {
+	type expected struct {
+		index int
+		found bool
+	}
+	var tests = map[string]struct {
+		given    []string
+		expected expected
+	}{
+		"args with a pipe": {
+			given: []string{"arg1", "|", "arg2"},
+			expected: expected{
+				index: 1,
+				found: true,
+			},
+		},
+		"args without pipe": {
+			given: []string{"arg1", "arg2"},
+			expected: expected{
+				index: -1,
+				found: false,
+			},
+		},
+		"empty arg": {
+			given: []string{},
+			expected: expected{
+				index: -1,
+				found: false,
+			},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			actualIndex, actualFound := findPipeIndex(tt.given)
+			if actualIndex != tt.expected.index {
+				t.Errorf("expected index %v, actual index %v", tt.expected, actualIndex)
+			}
+			if actualFound != tt.expected.found {
+				t.Errorf("expected found %v, actual found %v", tt.expected.found, actualFound)
 			}
 		})
 	}

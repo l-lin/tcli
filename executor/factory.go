@@ -4,6 +4,7 @@ import (
 	"github.com/l-lin/tcli/conf"
 	"github.com/l-lin/tcli/renderer"
 	"github.com/l-lin/tcli/trello"
+	"io"
 	"os"
 )
 
@@ -11,69 +12,69 @@ var Factories = []Factory{
 	{
 		Cmd:         "help",
 		Description: "display help",
-		Create: func(_ conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session) Executor {
+		Create: func(_ conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session, stdout, stderr io.Writer) Executor {
 			return &help{
-				stdout: os.Stdout,
+				stdout: stdout,
 			}
 		},
 	},
 	{
 		Cmd:         "exit",
 		Description: "exit CLI",
-		Create: func(_ conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session) Executor {
+		Create: func(_ conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session, stdout, stderr io.Writer) Executor {
 			return &exit{}
 		},
 	},
 	{
 		Cmd:         "cd",
 		Description: "change level in the hierarchy",
-		Create: func(_ conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session) Executor {
+		Create: func(_ conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session, stdout, stderr io.Writer) Executor {
 			return &cd{executor{
 				tr:      tr,
 				r:       r,
 				session: session,
-				stdout:  os.Stdout,
-				stderr:  os.Stderr,
+				stdout:  stdout,
+				stderr:  stderr,
 			}}
 		},
 	},
 	{
 		Cmd:         "ls",
 		Description: "list resource content",
-		Create: func(_ conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session) Executor {
+		Create: func(_ conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session, stdout, stderr io.Writer) Executor {
 			return &ls{executor{
 				tr:      tr,
 				r:       r,
 				session: session,
-				stdout:  os.Stdout,
-				stderr:  os.Stderr,
+				stdout:  stdout,
+				stderr:  stderr,
 			}}
 		},
 	},
 	{
 		Cmd:         "cat",
 		Description: "show resource content info",
-		Create: func(_ conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session) Executor {
+		Create: func(_ conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session, stdout, stderr io.Writer) Executor {
 			return &cat{executor{
 				tr:      tr,
 				r:       r,
 				session: session,
-				stdout:  os.Stdout,
-				stderr:  os.Stderr,
+				stdout:  stdout,
+				stderr:  stderr,
 			}}
 		},
 	},
 	{
 		Cmd:         "edit",
 		Description: "edit resource content",
-		Create: func(conf conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session) Executor {
+		Create: func(conf conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session, stdout, stderr io.Writer) Executor {
 			return &edit{
 				executor: executor{
 					tr:      tr,
 					r:       r,
 					session: session,
-					stdout:  os.Stdout,
-					stderr:  os.Stderr,
+					stdout:  stdout,
+					stderr:  stderr,
 				},
 				stdin:        os.Stdin,
 				editor:       NewOsEditor(conf.Editor),
@@ -84,14 +85,14 @@ var Factories = []Factory{
 	{
 		Cmd:         "touch",
 		Description: "create new resource",
-		Create: func(conf conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session) Executor {
+		Create: func(conf conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session, stdout, stderr io.Writer) Executor {
 			return &touch{
 				executor: executor{
 					tr:      tr,
 					r:       r,
 					session: session,
-					stdout:  os.Stdout,
-					stderr:  os.Stderr,
+					stdout:  stdout,
+					stderr:  stderr,
 				},
 			}
 		},
@@ -99,14 +100,14 @@ var Factories = []Factory{
 	{
 		Cmd:         "rm",
 		Description: "archive resource",
-		Create: func(conf conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session) Executor {
+		Create: func(conf conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session, stdout, stderr io.Writer) Executor {
 			return &rm{
 				executor: executor{
 					tr:      tr,
 					r:       r,
 					session: session,
-					stdout:  os.Stdout,
-					stderr:  os.Stderr,
+					stdout:  stdout,
+					stderr:  stderr,
 				},
 				stdin: os.Stdin,
 			}
@@ -115,14 +116,14 @@ var Factories = []Factory{
 	{
 		Cmd:         "mv",
 		Description: "move resource",
-		Create: func(conf conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session) Executor {
+		Create: func(conf conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session, stdout, stderr io.Writer) Executor {
 			return &mv{
 				executor: executor{
 					tr:      tr,
 					r:       r,
 					session: session,
-					stdout:  os.Stdout,
-					stderr:  os.Stderr,
+					stdout:  stdout,
+					stderr:  stderr,
 				},
 			}
 		},
@@ -130,14 +131,14 @@ var Factories = []Factory{
 	{
 		Cmd:         "cp",
 		Description: "copy resource",
-		Create: func(conf conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session) Executor {
+		Create: func(conf conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session, stdout, stderr io.Writer) Executor {
 			return &cp{
 				executor: executor{
 					tr:      tr,
 					r:       r,
 					session: session,
-					stdout:  os.Stdout,
-					stderr:  os.Stderr,
+					stdout:  stdout,
+					stderr:  stderr,
 				},
 			}
 		},
@@ -147,5 +148,5 @@ var Factories = []Factory{
 type Factory struct {
 	Cmd         string
 	Description string
-	Create      func(conf conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session) Executor
+	Create      func(conf conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session, stdout, stderr io.Writer) Executor
 }

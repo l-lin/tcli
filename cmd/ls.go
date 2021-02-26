@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/l-lin/tcli/executor"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 func NewLSCmd() *cobra.Command {
@@ -24,6 +25,6 @@ func NewLSCmd() *cobra.Command {
 }
 
 func runLS(_ *cobra.Command, args []string) {
-	e := executor.New(*container.Conf, "ls", container.TrelloRepository, container.Renderer, nil)
+	e := executor.New(*container.Conf, "ls", container.TrelloRepository, container.Renderer, nil, os.Stdout, os.Stderr)
 	e.Execute(args)
 }

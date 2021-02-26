@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/l-lin/tcli/executor"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 func NewRMCmd() *cobra.Command {
@@ -18,6 +19,6 @@ func NewRMCmd() *cobra.Command {
 }
 
 func runRM(_ *cobra.Command, args []string) {
-	e := executor.New(*container.Conf, "rm", container.TrelloRepository, container.Renderer, nil)
+	e := executor.New(*container.Conf, "rm", container.TrelloRepository, container.Renderer, nil, os.Stdout, os.Stderr)
 	e.Execute(args)
 }

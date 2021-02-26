@@ -21,10 +21,10 @@ type executor struct {
 	stderr  io.Writer
 }
 
-func New(conf conf.Conf, cmd string, tr trello.Repository, r renderer.Renderer, session *trello.Session) Executor {
+func New(conf conf.Conf, cmd string, tr trello.Repository, r renderer.Renderer, session *trello.Session, stdout, stderr io.Writer) Executor {
 	for _, factory := range Factories {
 		if factory.Cmd == cmd {
-			return factory.Create(conf, tr, r, session)
+			return factory.Create(conf, tr, r, session, stdout, stderr)
 		}
 	}
 	return nil

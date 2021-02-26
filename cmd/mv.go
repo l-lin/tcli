@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/l-lin/tcli/executor"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 func NewMVCmd() *cobra.Command {
@@ -21,6 +22,6 @@ func NewMVCmd() *cobra.Command {
 }
 
 func runMV(_ *cobra.Command, args []string) {
-	e := executor.New(*container.Conf, "mv", container.TrelloRepository, container.Renderer, nil)
+	e := executor.New(*container.Conf, "mv", container.TrelloRepository, container.Renderer, nil, os.Stdout, os.Stderr)
 	e.Execute(args)
 }

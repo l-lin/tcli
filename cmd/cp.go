@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/l-lin/tcli/executor"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 func NewCPCmd() *cobra.Command {
@@ -24,6 +25,6 @@ func NewCPCmd() *cobra.Command {
 }
 
 func runCP(_ *cobra.Command, args []string) {
-	e := executor.New(*container.Conf, "cp", container.TrelloRepository, container.Renderer, nil)
+	e := executor.New(*container.Conf, "cp", container.TrelloRepository, container.Renderer, nil, os.Stdout, os.Stderr)
 	e.Execute(args)
 }
