@@ -25,16 +25,16 @@ func TestInTable_RenderBoards(t *testing.T) {
 					DateLastActivity: "2021-02-08T21:02:58.117Z",
 				},
 			},
-			expected: `Name       ID    Short URL                      Last activity date
-----       --    ---------                      ------------------
-Board 1    1     https://trello.com/b/azerty    2021-02-04T14:19:25.229Z
-Board 2    2     https://trello.com/b/popo      2021-02-08T21:02:58.117Z
+			expected: `Name       Last activity date
+----       ------------------
+Board 1    2021-02-04T14:19:25.229Z
+Board 2    2021-02-08T21:02:58.117Z
 `,
 		},
 		"no board": {
 			given: trello.Boards{},
-			expected: `Name    ID    Short URL    Last activity date
-----    --    ---------    ------------------
+			expected: `Name    Last activity date
+----    ------------------
 `,
 		},
 	}
@@ -100,16 +100,16 @@ func TestInTable_RenderLists(t *testing.T) {
 				{ID: "1", Name: "List 1"},
 				{ID: "2", Name: "List 2"},
 			},
-			expected: `Name      ID
-----      --
-List 1    1
-List 2    2
+			expected: `Name
+----
+List 1
+List 2
 `,
 		},
 		"no list": {
 			given: trello.Lists{},
-			expected: `Name    ID
-----    --
+			expected: `Name
+----
 `,
 		},
 	}
@@ -199,10 +199,10 @@ func TestInTable_RenderCards(t *testing.T) {
 					},
 				}
 			},
-			expected: `Name      ID    Short URL                     Position    Labels
-----      --    ---------                     --------    ------
-Card 1    1     https://trello.com/c/abcd1    10          Label 10 Label 11 
-Card 2    2     https://trello.com/c/abcd2    20          Label 20 sky 
+			expected: `Name      Position    Labels
+----      --------    ------
+Card 1    10          Label 10 Label 11 
+Card 2    20          Label 20 sky 
 `,
 		},
 		"two cards without label": {
@@ -224,10 +224,10 @@ Card 2    2     https://trello.com/c/abcd2    20          Label 20 sky
 					},
 				}
 			},
-			expected: `Name      ID    Short URL                     Position    Labels
-----      --    ---------                     --------    ------
-Card 1    1     https://trello.com/c/abcd1    10          
-Card 2    2     https://trello.com/c/abcd2    20          
+			expected: `Name      Position    Labels
+----      --------    ------
+Card 1    10          
+Card 2    20          
 `,
 		},
 		"display cards by position order": {
@@ -249,18 +249,18 @@ Card 2    2     https://trello.com/c/abcd2    20
 					},
 				}
 			},
-			expected: `Name      ID    Short URL                     Position    Labels
-----      --    ---------                     --------    ------
-Card 2    2     https://trello.com/c/abcd2    1           
-Card 1    1     https://trello.com/c/abcd1    10          
+			expected: `Name      Position    Labels
+----      --------    ------
+Card 2    1           
+Card 1    10          
 `,
 		},
 		"no card": {
 			given: func() trello.Cards {
 				return trello.Cards{}
 			},
-			expected: `Name    ID    Short URL    Position    Labels
-----    --    ---------    --------    ------
+			expected: `Name    Position    Labels
+----    --------    ------
 `,
 		},
 	}
