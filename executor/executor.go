@@ -177,6 +177,7 @@ func (lse *listStepExecutor) then() *cardStepExecutor {
 
 type cardStepExecutor struct {
 	stepExecutor
+	cards trello.Cards
 }
 
 func (cse *cardStepExecutor) doOnEmptyCardName(action func(session *trello.Session)) *cardStepExecutor {
@@ -220,6 +221,32 @@ func (cse *cardStepExecutor) doOnCardName(action func(cardName string, session *
 		cse.isFinished = true
 	}
 	return cse
+}
+
+func (cse *cardStepExecutor) findAllCardsInList() *cardStepExecutor {
+	if cse.err != nil || cse.isFinished {
+		return cse
+	}
+	if cse.p.CardName == "*" {
+		cse.cards, cse.err = cse.tr.FindCards(cse.session.List.ID)
+	}
+	return cse
+}
+
+func (cse *cardStepExecutor) doOnAllCardsInList(action func(*trello.List, trello.Cards)) *cardStepExecutor {
+	if cse.err != nil || cse.isFinished || cse.p.CommentID != "" {
+		return cse
+	}
+
+	if len(cse.cards) > 0 {
+		action(cse.session.List, cse.cards)
+		cse.isFinished = true
+	}
+	return cse
+}
+
+func (cse *cardStepExecutor) orFindCard() *cardStepExecutor {
+	return cse.findCard()
 }
 
 func (cse *cardStepExecutor) findCard() *cardStepExecutor {

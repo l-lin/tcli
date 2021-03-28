@@ -116,7 +116,7 @@ func (e edit) createCard(card trello.Card) (err error) {
 	).IDLabelsInString()
 
 	prompt := promptui.Prompt{
-		Label:     fmt.Sprintf("Do you want to create the card '%s'?", createdCard.Name),
+		Label:     fmt.Sprintf("Do you want to create the card '%s'", createdCard.Name),
 		IsConfirm: true,
 		Stdin:     e.stdin,
 	}
@@ -165,7 +165,7 @@ func (e edit) editCard(card trello.Card) (err error) {
 	).IDLabelsInString()
 
 	prompt := promptui.Prompt{
-		Label:     fmt.Sprintf("Do you want to update the card '%s'?", updatedCard.Name),
+		Label:     fmt.Sprintf("Do you want to update the card '%s'", updatedCard.Name),
 		IsConfirm: true,
 		Stdin:     e.stdin,
 	}

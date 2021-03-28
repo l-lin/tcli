@@ -19,6 +19,9 @@ func TestRm_Execute(t *testing.T) {
 	card := trello.Card{ID: "card 1", Name: "card"}
 	updatedCard := trello.NewUpdateCard(card)
 	updatedCard.Closed = true
+	card2 := trello.Card{ID: "card 2", Name: "another card"}
+	updatedCard2 := trello.NewUpdateCard(card2)
+	updatedCard2.Closed = true
 	comment := trello.Comment{ID: "comment", Data: trello.CommentData{Card: trello.CommentDataCard{ID: card.ID}}}
 
 	type given struct {
@@ -143,6 +146,28 @@ func TestRm_Execute(t *testing.T) {
 				stdin: refuseStdin(),
 			},
 			expected: expected{},
+		},
+		"rm /board/list/*": {
+			given: given{
+				args: []string{"/board/list/*"},
+				buildTrelloRepository: func() trello.Repository {
+					tr := trello.NewMockRepository(ctrl)
+					tr.EXPECT().
+						FindBoard(board.Name).
+						Return(&board, nil)
+					tr.EXPECT().
+						FindList(board.ID, list.Name).
+						Return(&list, nil)
+					tr.EXPECT().
+						FindCards(list.ID).
+						Return(trello.Cards{card, card2}, nil)
+					tr.EXPECT().
+						ArchiveAllCards(list.ID).
+						Return(nil)
+					return tr
+				},
+				stdin: acceptStdin(),
+			},
 		},
 		// ERRORS
 		"rm /../..": {

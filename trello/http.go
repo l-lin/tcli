@@ -102,6 +102,13 @@ func (h HttpRepository) FindCard(idList string, query string) (*Card, error) {
 	return nil, fmt.Errorf("no card found with query %s", query)
 }
 
+func (h HttpRepository) ArchiveAllCards(idList string) error {
+	v := h.buildQueries("")
+	u := fmt.Sprintf("%s/lists/%s/archiveAllCards?%v", h.BaseURL, idList, v.Encode())
+
+	return h.performRequestWithoutBody(u, http.MethodPost)
+}
+
 func (h HttpRepository) CreateCard(createCard CreateCard) (*Card, error) {
 	v := h.buildQueries("")
 	u := fmt.Sprintf("%s/cards?%v", h.BaseURL, v.Encode())
@@ -191,16 +198,7 @@ func (h HttpRepository) get(url string, ret interface{}) error {
 }
 
 func (h HttpRepository) delete(url string) error {
-	request, err := http.NewRequest(http.MethodDelete, url, nil)
-	if err != nil {
-		return err
-	}
-
-	_, err = h.client.DoOnlyOk(request)
-	if err != nil {
-		return err
-	}
-	return nil
+	return h.performRequestWithoutBody(url, http.MethodDelete)
 }
 
 func (h HttpRepository) post(url string, reqBody interface{}, ret interface{}) error {
@@ -234,6 +232,19 @@ func (h HttpRepository) performRequest(method, url string, reqBody interface{}, 
 		return err
 	}
 	return json.Unmarshal(respBody, ret)
+}
+
+func (h HttpRepository) performRequestWithoutBody(url, httpMethod string) error {
+	request, err := http.NewRequest(httpMethod, url, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = h.client.DoOnlyOk(request)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (h HttpRepository) buildQueries(fields string) url.Values {

@@ -33,6 +33,20 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 	return m.recorder
 }
 
+// ArchiveAllCards mocks base method.
+func (m *MockRepository) ArchiveAllCards(idList string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ArchiveAllCards", idList)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ArchiveAllCards indicates an expected call of ArchiveAllCards.
+func (mr *MockRepositoryMockRecorder) ArchiveAllCards(idList interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ArchiveAllCards", reflect.TypeOf((*MockRepository)(nil).ArchiveAllCards), idList)
+}
+
 // CreateCard mocks base method.
 func (m *MockRepository) CreateCard(createCard CreateCard) (*Card, error) {
 	m.ctrl.T.Helper()

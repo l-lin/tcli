@@ -44,10 +44,25 @@ func (r rm) execute(arg string) {
 			fmt.Fprintf(r.stderr, "list archiving not implemented yet\n")
 		}).
 		then().
-		findCard().
+		findAllCardsInList().
+		doOnAllCardsInList(func(list *trello.List, cards trello.Cards) {
+			prompt := promptui.Prompt{
+				Label:     fmt.Sprintf("Archive all cards in the list '%s'", list.Name),
+				IsConfirm: true,
+				Stdin:     r.stdin,
+			}
+			if _, err := prompt.Run(); err != nil {
+				return
+			}
+
+			if err := r.tr.ArchiveAllCards(list.ID); err != nil {
+				fmt.Fprintf(r.stderr, "could not archive cards in the list '%s': %s\n", list.Name, err)
+			}
+		}).
+		orFindCard().
 		doOnCard(func(card *trello.Card) {
 			prompt := promptui.Prompt{
-				Label:     fmt.Sprintf("Archive card '%s'?", card.Name),
+				Label:     fmt.Sprintf("Archive card '%s'", card.Name),
 				IsConfirm: true,
 				Stdin:     r.stdin,
 			}
@@ -64,7 +79,7 @@ func (r rm) execute(arg string) {
 		findComment().
 		doOnComment(func(comment *trello.Comment) {
 			prompt := promptui.Prompt{
-				Label:     fmt.Sprintf("Delete comment '%s'?", comment.ID),
+				Label:     fmt.Sprintf("Delete comment '%s'", comment.ID),
 				IsConfirm: true,
 				Stdin:     r.stdin,
 			}

@@ -103,6 +103,14 @@ func (c *CacheInMemory) FindCard(idList string, query string) (*Card, error) {
 	return nil, fmt.Errorf("no card found with query %s", query)
 }
 
+func (c *CacheInMemory) ArchiveAllCards(idList string) error {
+	if err := c.r.ArchiveAllCards(idList); err != nil {
+		return nil
+	}
+	c.mapCardsByIDList[idList] = Cards{}
+	return nil
+}
+
 func (c *CacheInMemory) CreateCard(createCard CreateCard) (*Card, error) {
 	card, err := c.r.CreateCard(createCard)
 	if err != nil {

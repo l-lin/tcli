@@ -11,6 +11,7 @@ type Repository interface {
 	FindList(idBoard string, query string) (*List, error)
 	FindCards(idList string) (Cards, error)
 	FindCard(idList string, query string) (*Card, error)
+	ArchiveAllCards(idList string) error
 	CreateCard(createCard CreateCard) (*Card, error)
 	UpdateCard(updateCard UpdateCard) (*Card, error)
 	FindComments(idCard string) (Comments, error)

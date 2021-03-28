@@ -16,6 +16,7 @@ Available features:
 - [x] `mv` command to move cards
 - [x] `edit` command to create or edit cards and comments
 - [x] `rm` command to archive cards and delete comments
+  - [x] `rm /board/list/*` command to archive all cards in list
 
 You can also integrate OS commands with a pipe (`|`) after the TCli command:
 

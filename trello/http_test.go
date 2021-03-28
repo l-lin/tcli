@@ -598,6 +598,63 @@ func TestHttpRepository_FindCard(t *testing.T) {
 	}
 }
 
+func TestHttpRepository_ArchiveAllCards(t *testing.T) {
+	type given struct {
+		tsFn func() *httptest.Server
+	}
+	type expected struct {
+		hasError bool
+		card     *Card
+	}
+	var tests = map[string]struct {
+		given    given
+		expected expected
+	}{
+		"happy path": {
+			given: given{
+				tsFn: func() *httptest.Server {
+					return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						if r.Method != "POST" {
+							w.WriteHeader(http.StatusMethodNotAllowed)
+						} else {
+							w.WriteHeader(http.StatusOK)
+						}
+					}))
+				},
+			},
+			expected: expected{
+				hasError: false,
+			},
+		},
+		"server error": {
+			given: given{
+				tsFn: func() *httptest.Server {
+					return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						w.WriteHeader(http.StatusInternalServerError)
+					}))
+				},
+			},
+			expected: expected{
+				hasError: true,
+			},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			ts := tt.given.tsFn()
+			repository := NewHttpRepository(conf.Conf{
+				Trello: conf.Trello{
+					BaseURL: ts.URL,
+				},
+			}, false)
+			actualErr := repository.ArchiveAllCards("list")
+			if tt.expected.hasError && actualErr == nil || !tt.expected.hasError && actualErr != nil {
+				t.Errorf("expected err %v, actual err %v", tt.expected.hasError, actualErr)
+			}
+		})
+	}
+}
+
 func TestHttpRepository_CreateCard(t *testing.T) {
 	type given struct {
 		tsFn func() *httptest.Server
