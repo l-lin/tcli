@@ -27,7 +27,7 @@ var Factories = []Factory{
 	},
 	{
 		Cmd:         "clear",
-		Description: "clear cache",
+		Description: "clear the terminal screen & cache",
 		Create: func(_ conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session, stdout, stderr io.Writer) Executor {
 			return &clear{
 				executor{

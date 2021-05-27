@@ -16,7 +16,7 @@ func TestHelp_Execute(t *testing.T) {
 	// THEN
 	expected := `help     display help
 exit     exit CLI
-clear    clear cache
+clear    clear the terminal screen & cache
 cd       change level in the hierarchy
 ls       list resource content
 cat      show resource content info

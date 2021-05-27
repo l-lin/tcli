@@ -82,7 +82,7 @@ func TestCompleter_Complete(t *testing.T) {
 				session: &trello.Session{},
 			},
 			expected: []prompt.Suggest{
-				{Text: "clear", Description: "clear cache"},
+				{Text: "clear", Description: "clear the terminal screen & cache"},
 				{Text: "cd", Description: "change level in the hierarchy"},
 				{Text: "cat", Description: "show resource content info"},
 				{Text: "cp", Description: "copy resource"},

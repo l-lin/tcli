@@ -9,7 +9,7 @@ import (
 func NewClearCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "clear",
-		Short: "Clear cache",
+		Short: "Clear terminal screen & cache",
 		Run:   runClear,
 	}
 }
