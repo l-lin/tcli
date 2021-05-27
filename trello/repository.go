@@ -4,6 +4,7 @@ package trello
 // Repository to call perform CRUD operation on Trello resources
 // We may want to update this interface to accept channels to support async
 type Repository interface {
+	Refresh()
 	FindBoards() (Boards, error)
 	FindBoard(query string) (*Board, error)
 	FindLabels(idBoard string) (Labels, error)

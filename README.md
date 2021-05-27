@@ -17,6 +17,7 @@ Available features:
 - [x] `edit` command to create or edit cards and comments
 - [x] `rm` command to archive cards and delete comments
   - [x] `rm /board/list/*` command to archive all cards in list
+- [x] `clear` command to clear the terminal and clear cache
 
 You can also integrate OS commands with a pipe (`|`) after the TCli command:
 

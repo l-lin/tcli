@@ -26,6 +26,21 @@ var Factories = []Factory{
 		},
 	},
 	{
+		Cmd:         "clear",
+		Description: "clear cache",
+		Create: func(_ conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session, stdout, stderr io.Writer) Executor {
+			return &clear{
+				executor{
+					tr:      tr,
+					r:       r,
+					session: session,
+					stdout:  stdout,
+					stderr:  stderr,
+				},
+			}
+		},
+	},
+	{
 		Cmd:         "cd",
 		Description: "change level in the hierarchy",
 		Create: func(_ conf.Conf, tr trello.Repository, r renderer.Renderer, session *trello.Session, stdout, stderr io.Writer) Executor {

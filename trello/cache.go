@@ -26,6 +26,13 @@ func NewCacheInMemory(r Repository) Repository {
 	}
 }
 
+func (c *CacheInMemory) Refresh() {
+	c.mapLabelsByIDBoard = map[string]Labels{}
+	c.mapListsByIDBoard = map[string]Lists{}
+	c.mapCardsByIDList = map[string]Cards{}
+	c.mapCommentsByIDCard = map[string]Comments{}
+}
+
 func (c *CacheInMemory) FindBoards() (Boards, error) {
 	if c.Boards != nil {
 		log.Debug().Msg("fetching boards from cache")

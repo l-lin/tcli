@@ -226,6 +226,18 @@ func (mr *MockRepositoryMockRecorder) FindLists(idBoard interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindLists", reflect.TypeOf((*MockRepository)(nil).FindLists), idBoard)
 }
 
+// Refresh mocks base method.
+func (m *MockRepository) Refresh() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Refresh")
+}
+
+// Refresh indicates an expected call of Refresh.
+func (mr *MockRepositoryMockRecorder) Refresh() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Refresh", reflect.TypeOf((*MockRepository)(nil).Refresh))
+}
+
 // UpdateCard mocks base method.
 func (m *MockRepository) UpdateCard(updateCard UpdateCard) (*Card, error) {
 	m.ctrl.T.Helper()

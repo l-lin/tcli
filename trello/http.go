@@ -21,6 +21,11 @@ type HttpRepository struct {
 	client *wrappedhttp.Client
 }
 
+func (h HttpRepository) Refresh() {
+	// do nothing
+	// it's violating interface segregation principle, but who cares
+}
+
 func (h HttpRepository) FindBoards() (Boards, error) {
 	v := h.buildQueries("id,name,shortLink,shortUrl,dateLastActivity")
 	u := fmt.Sprintf("%s/members/me/boards?%v", h.BaseURL, v.Encode())
