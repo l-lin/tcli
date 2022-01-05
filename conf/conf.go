@@ -7,12 +7,16 @@ import (
 const (
 	defaultTrelloApiBaseURL = "https://trello.com/1"
 	defaultEditor           = "editor"
+	defaultFormat           = "yaml"
 )
+
+var allFormats = []string{"yaml", "toml"}
 
 // Conf of the application
 type Conf struct {
 	Trello `yaml:"trello"`
 	Editor string `yaml:"editor"`
+	Format string `yaml:"format"`
 }
 
 type Trello struct {
@@ -28,6 +32,7 @@ func NewConf() *Conf {
 			BaseURL: defaultTrelloApiBaseURL,
 		},
 		Editor: defaultEditor,
+		Format: defaultFormat,
 	}
 }
 
@@ -77,6 +82,7 @@ func (p *provider) createIfNotExists() error {
 		askTrelloAppName().
 		askTrelloApiKey().
 		askTrelloAccessToken().
+		askFormat().
 		create()
 	if err != nil {
 		return err

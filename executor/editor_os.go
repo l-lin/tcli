@@ -7,11 +7,11 @@ import (
 )
 
 func NewOsEditor(editorCommand string) Editor {
-	return OsEditor{Command: editorCommand}
+	return OsEditor{command: editorCommand}
 }
 
 type OsEditor struct {
-	Command string
+	command string
 }
 
 func (o OsEditor) Edit(in []byte, fileType string) (out []byte, err error) {
@@ -30,7 +30,7 @@ func (o OsEditor) Edit(in []byte, fileType string) (out []byte, err error) {
 		return nil, err
 	}
 
-	cmd := exec.Command(o.Command, tmpFile.Name())
+	cmd := exec.Command(o.command, tmpFile.Name())
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

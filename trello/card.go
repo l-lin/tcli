@@ -29,16 +29,16 @@ func (c Cards) SortedByPos() Cards {
 }
 
 type Card struct {
-	ID        string  `json:"id"`
-	Name      string  `json:"name"`
-	Desc      string  `json:"desc"`
-	IDBoard   string  `json:"idBoard"`
-	IDList    string  `json:"idList"`
-	Closed    bool    `json:"closed"`
-	ShortLink string  `json:"shortLink"`
-	ShortURL  string  `json:"shortUrl"`
-	Pos       float64 `json:"pos"`
-	Labels    `json:"labels"`
+	ID        string  `json:"id"        toml:"id"`
+	Name      string  `json:"name"      toml:"name"`
+	Desc      string  `json:"desc"      toml:"desc"`
+	IDBoard   string  `json:"idBoard"   toml:"idBoard"`
+	IDList    string  `json:"idList"    toml:"idList"`
+	Closed    bool    `json:"closed"    toml:"closed"`
+	ShortLink string  `json:"shortLink" toml:"shortLink"`
+	ShortURL  string  `json:"shortUrl"  toml:"shortUrl"`
+	Pos       float64 `json:"pos"       toml:"pos"`
+	Labels    `json:"labels" toml:"labels"`
 }
 
 func (c Card) TCliID() string {
@@ -54,12 +54,12 @@ func (c Card) SanitizedName() string {
 // CreateCard represents the resources used to create a new card
 // See https://developer.atlassian.com/cloud/trello/rest/api-group-cards/#api-cards-post for more info
 type CreateCard struct {
-	Name     string      `json:"name"`
-	Desc     string      `json:"desc"`
-	IDList   string      `json:"idList"`
-	IDLabels string      `json:"idLabels,omitempty"`
-	Closed   bool        `json:"closed,omitempty"`
-	Pos      interface{} `json:"pos,omitempty"` // "top", "bottom" or a positive float
+	Name     string      `json:"name"               toml:"name"`
+	Desc     string      `json:"desc"               toml:"desc"`
+	IDList   string      `json:"idList"             toml:"idList"`
+	IDLabels string      `json:"idLabels,omitempty" toml:"idLabels,omitempty"`
+	Closed   bool        `json:"closed,omitempty"   toml:"closed,omitempty"`
+	Pos      interface{} `json:"pos,omitempty"      toml:"pos,omitempty"` // "top", "bottom" or a positive float
 }
 
 func NewCreateCard(card Card) CreateCard {
@@ -85,11 +85,11 @@ func NewCardToCreate(card Card) CardToCreate {
 // it's different from the other card representation because we do not want to expose everything to the user
 // like for instance, the card ID as the user
 type CardToCreate struct {
-	Name   string   `yaml:"name"`
-	Desc   string   `yaml:"desc"`
-	IDList string   `yaml:"idList"`
-	Pos    string   `yaml:"pos,omitempty"` // "top", "bottom" or a positive float
-	Labels []string `yaml:"labels"`
+	Name   string   `yaml:"name"          toml:"name"`
+	Desc   string   `yaml:"desc"          toml:"desc"`
+	IDList string   `yaml:"idList"        toml:"idList"`
+	Pos    string   `yaml:"pos,omitempty" toml:"pos,omitempty"` // "top", "bottom" or a positive float
+	Labels []string `yaml:"labels"        toml:"labels"`
 }
 
 func (ctc CardToCreate) GetPos() interface{} {
@@ -101,14 +101,14 @@ func (ctc CardToCreate) GetPos() interface{} {
 // UpdateCard represents the resources used to update a card
 // See https://developer.atlassian.com/cloud/trello/rest/api-group-cards/#api-cards-id-put for more info
 type UpdateCard struct {
-	ID       string      `json:"id"`
-	Name     string      `json:"name"`
-	Desc     string      `json:"desc"`
-	IDBoard  string      `json:"idBoard"`
-	IDList   string      `json:"idList"`
-	IDLabels string      `json:"idLabels,omitempty"`
-	Closed   bool        `json:"closed,omitempty"`
-	Pos      interface{} `json:"pos,omitempty"` // "top", "bottom" or a positive float
+	ID       string      `json:"id"                 toml:"id"`
+	Name     string      `json:"name"               toml:"name"`
+	Desc     string      `json:"desc"               toml:"desc"`
+	IDBoard  string      `json:"idBoard"            toml:"idBoard"`
+	IDList   string      `json:"idList"             toml:"idList"`
+	IDLabels string      `json:"idLabels,omitempty" toml:"idLabels,omitempty"`
+	Closed   bool        `json:"closed,omitempty"   toml:"closed,omitempty"`
+	Pos      interface{} `json:"pos,omitempty"      toml:"pos,omitempty"` // "top", "bottom" or a positive float
 }
 
 func NewUpdateCard(card Card) UpdateCard {
@@ -139,12 +139,12 @@ func NewCardToEdit(card Card) CardToEdit {
 // it's different from the other card representation because we do not want to expose everything to the user
 // like for instance, the card ID as the user
 type CardToEdit struct {
-	Name   string   `yaml:"name"`
-	Desc   string   `yaml:"desc"`
-	Closed bool     `yaml:"closed"`
-	IDList string   `yaml:"idList"`
-	Labels []string `yaml:"labels"`
-	Pos    string   `yaml:"pos,omitempty"` // "top", "bottom" or a positive float
+	Name   string   `yaml:"name"          toml:"name"`
+	Desc   string   `yaml:"desc"          toml:"desc"`
+	Closed bool     `yaml:"closed"        toml:"closed"`
+	IDList string   `yaml:"idList"        toml:"idList"`
+	Labels []string `yaml:"labels"        toml:"labels"`
+	Pos    string   `yaml:"pos,omitempty" toml:"pos,omitempty"` // "top", "bottom" or a positive float
 }
 
 func (cte CardToEdit) GetPos() interface{} {

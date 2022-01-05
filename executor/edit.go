@@ -97,7 +97,7 @@ func (e edit) createCard(card trello.Card) (err error) {
 	}
 
 	var out []byte
-	if out, err = e.editor.Edit(in, yamlFileType); err != nil {
+	if out, err = e.editor.Edit(in, e.editRenderer.GetFileType()); err != nil {
 		return
 	}
 
@@ -145,7 +145,7 @@ func (e edit) editCard(card trello.Card) (err error) {
 	}
 
 	var out []byte
-	if out, err = e.editor.Edit(in, yamlFileType); err != nil {
+	if out, err = e.editor.Edit(in, e.editRenderer.GetFileType()); err != nil {
 		return
 	}
 

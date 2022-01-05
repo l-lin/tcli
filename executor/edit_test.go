@@ -12,6 +12,8 @@ import (
 	"testing"
 )
 
+const yamlFileType = "yaml"
+
 var acceptStdin = func() io.ReadCloser { return mockReadWriterCloser{strings.NewReader("y\n")} }
 var refuseStdin = func() io.ReadCloser { return mockReadWriterCloser{strings.NewReader("N\n")} }
 

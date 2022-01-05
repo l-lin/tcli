@@ -75,6 +75,17 @@ func (creator *creator) askTrelloAppName() *creator {
 	return creator
 }
 
+func (creator *creator) askFormat() *creator {
+	prompt := promptui.Select{
+		Label:  "Format to use when editing a card (yaml or toml)",
+		Items:  allFormats,
+		Stdin:  creator.stdin,
+		Stdout: creator.stdout,
+	}
+	_, creator.Format, creator.Err = prompt.Run()
+	return creator
+}
+
 func (creator creator) create() (*Conf, error) {
 	return creator.Conf, creator.Err
 }

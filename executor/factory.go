@@ -93,7 +93,7 @@ var Factories = []Factory{
 				},
 				stdin:        os.Stdin,
 				editor:       NewOsEditor(conf.Editor),
-				editRenderer: renderer.NewEditInPrettyYaml(),
+				editRenderer: renderer.NewEdit(conf.Format),
 			}
 		},
 	},

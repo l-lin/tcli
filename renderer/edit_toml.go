@@ -2,44 +2,21 @@ package renderer
 
 import (
 	"bytes"
+	"github.com/BurntSushi/toml"
 	"github.com/l-lin/tcli/trello"
-	"gopkg.in/yaml.v2"
 	"html/template"
-	"strings"
 )
 
-type EditInYaml struct{}
+type EditInPrettyToml struct{}
 
-func NewEditInYaml() Edit {
-	return EditInYaml{}
+func NewEditInPrettyToml() Edit {
+	return EditInPrettyToml{}
 }
 
-func (e EditInYaml) MarshalCardToEdit(cte trello.CardToEdit, _ trello.Lists, _ trello.Labels) ([]byte, error) {
-	return yaml.Marshal(cte)
-}
-
-func (e EditInYaml) MarshalCardToCreate(create trello.CardToCreate, _ trello.Lists, _ trello.Labels) ([]byte, error) {
-	return yaml.Marshal(create)
-}
-
-func (e EditInYaml) Unmarshal(in []byte, v interface{}) error {
-	return yaml.Unmarshal(in, v)
-}
-
-func (e EditInYaml) GetFileType() string {
-	return "yaml"
-}
-
-func NewEditInPrettyYaml() Edit {
-	return EditInPrettyYaml{}
-}
-
-type EditInPrettyYaml struct{}
-
-func (e EditInPrettyYaml) MarshalCardToCreate(ctc trello.CardToCreate, lists trello.Lists, labels trello.Labels) ([]byte, error) {
+func (e EditInPrettyToml) MarshalCardToCreate(ctc trello.CardToCreate, lists trello.Lists, labels trello.Labels) ([]byte, error) {
 	t := `
 {{- /* ---------------- NAME ---------------- */ -}}
-name: "{{.Card.Name}}"
+name = "{{.Card.Name}}"
 {{/* ---------------- LISTS ---------------- */ -}}
 # available lists:
 {{- if .Lists -}}
@@ -47,10 +24,10 @@ name: "{{.Card.Name}}"
 # {{$list.ID}}: {{$list.Name}}
 {{- end -}}
 {{end}}
-idList: "{{.Card.IDList}}"
+idList = "{{.Card.IDList}}"
 {{/* ---------------- POSITION ---------------- */ -}}
 # the position of the card in its list: "top", "bottom" or a positive float
-pos: "bottom"
+pos = "bottom"
 {{/* ---------------- LABELS ---------------- */ -}}
 # available labels (use color or ID):
 {{- if .Labels -}}
@@ -58,11 +35,11 @@ pos: "bottom"
 # {{$label.ID}}: {{$label.Color}}{{if $label.Name}} [{{$label.Name}}]{{end }}
 {{- end -}}
 {{end}}
-labels: 
-  - 
+labels = []
 {{/* ---------------- DESCRIPTION ---------------- */ -}}
-desc: |-
-  `
+desc = '''
+'''
+`
 	tpl := template.Must(template.New("create-card").Parse(t))
 	tplParams := struct {
 		Card   trello.CardToCreate
@@ -80,13 +57,13 @@ desc: |-
 	return w.Bytes(), nil
 }
 
-func (e EditInPrettyYaml) MarshalCardToEdit(cte trello.CardToEdit, lists trello.Lists, labels trello.Labels) ([]byte, error) {
+func (e EditInPrettyToml) MarshalCardToEdit(cte trello.CardToEdit, lists trello.Lists, labels trello.Labels) ([]byte, error) {
 	t := `
 {{- /* ---------------- NAME ---------------- */ -}}
-name: "{{.Card.Name}}"
+name = "{{.Card.Name}}"
 {{/* ---------------- CLOSED ---------------- */ -}}
 # whether the card should be archived (closed: true)
-closed: {{.Card.Closed}}
+closed = {{.Card.Closed}}
 {{/* ---------------- LISTS ---------------- */ -}}
 # available lists:
 {{- if .Lists -}}
@@ -94,10 +71,10 @@ closed: {{.Card.Closed}}
 # {{$list.ID}}: {{$list.Name}}
 {{- end -}}
 {{end}}
-idList: "{{.Card.IDList}}"
+idList = "{{.Card.IDList}}"
 {{/* ---------------- POSITION ---------------- */ -}}
 # the position of the card in its list: "top", "bottom" or a positive float
-pos: {{.Card.Pos}}
+pos = "{{.Card.Pos}}"
 {{/* ---------------- LABELS ---------------- */ -}}
 # available labels (use color or ID):
 {{- if .Labels -}}
@@ -105,15 +82,18 @@ pos: {{.Card.Pos}}
 # {{$label.ID}}: {{$label.Color}}{{if $label.Name}} [{{$label.Name}}]{{end }}
 {{- end -}}
 {{end}}
-labels:
+labels = [
 {{- if .Card.Labels -}}
-{{range $label := .Card.Labels}}
-  - "{{$label}}"
+  {{- range $i, $label := .Card.Labels -}}
+    {{if $i}},{{end}}"{{$label}}"
+  {{- end -}}
 {{- end -}}
-{{end}}
+]
 {{/* ---------------- DESCRIPTION ---------------- */ -}}
-desc: |-
-{{htmlSafe .CardDescription}}`
+desc = '''
+{{htmlSafe .CardDescription}}
+'''
+`
 	tpl := template.Must(template.New("edit-card").Funcs(template.FuncMap{
 		"htmlSafe": func(html string) template.HTML {
 			return template.HTML(html)
@@ -127,7 +107,7 @@ desc: |-
 	}{
 		Card:            cte,
 		Lists:           lists,
-		CardDescription: e.transformDescription(cte.Desc),
+		CardDescription: cte.Desc,
 		Labels:          labels,
 	}
 	w := bytes.NewBufferString("")
@@ -137,22 +117,10 @@ desc: |-
 	return w.Bytes(), nil
 }
 
-func (e EditInPrettyYaml) Unmarshal(in []byte, v interface{}) error {
-	return yaml.Unmarshal(in, v)
+func (e EditInPrettyToml) Unmarshal(bytes []byte, i interface{}) error {
+	return toml.Unmarshal(bytes, i)
 }
 
-func (e EditInPrettyYaml) transformDescription(desc string) string {
-	sb := strings.Builder{}
-	for _, s := range strings.Split(desc, "\n") {
-		if s != "" {
-			sb.WriteString("  ")
-			sb.WriteString(s)
-		}
-		sb.WriteString("\n")
-	}
-	return sb.String()
-}
-
-func (e EditInPrettyYaml) GetFileType() string {
-	return "yaml"
+func (e EditInPrettyToml) GetFileType() string {
+	return "toml"
 }

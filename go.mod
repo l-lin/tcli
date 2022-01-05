@@ -3,6 +3,7 @@ module github.com/l-lin/tcli
 go 1.16
 
 require (
+	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/c-bata/go-prompt v0.2.5
 	github.com/charmbracelet/glamour v0.2.0
 	github.com/cheynewallace/tabby v1.1.1

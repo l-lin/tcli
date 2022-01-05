@@ -2,7 +2,6 @@
 package executor
 
 const (
-	yamlFileType     = "yaml"
 	markdownFileType = "md"
 )
 

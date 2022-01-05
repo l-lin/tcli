@@ -84,6 +84,8 @@ trello:
   base_url: https://trello.com/1
 # OS command used to edit the Trello resources
 editor: editor
+# Format to use when editing a card (yaml or toml)
+format: yaml
 ```
 
 ## Inspiration
