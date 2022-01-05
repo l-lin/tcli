@@ -20,7 +20,7 @@ type Container struct {
 }
 
 // Bootstrap the beans from the given user inputs
-func Boostrap(inputs Inputs) *Container {
+func Bootstrap(inputs Inputs) *Container {
 	container := &Container{
 		Inputs: inputs,
 	}

@@ -68,5 +68,5 @@ func initializeIocContainer(c *cobra.Command, _ []string) {
 		File:    fp.GetConfigFile(),
 		NoCache: fp.GetNoCache(),
 	}
-	container = ioc.Boostrap(inputs)
+	container = ioc.Bootstrap(inputs)
 }
