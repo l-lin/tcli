@@ -98,9 +98,9 @@ func TestEdit_Execute(t *testing.T) {
 					ctc1 := trello.NewCardToCreate(trello.Card{
 						Name:   card1.Name,
 						IDList: card1.IDList,
-					})
+					}, []string{})
 					in, _ := editRenderer.MarshalCardToCreate(ctc1, nil, nil)
-					out, _ := yaml.Marshal(trello.NewCardToCreate(createdCard1))
+					out, _ := yaml.Marshal(trello.NewCardToCreate(createdCard1, []string{}))
 					e := NewMockEditor(ctrl)
 					e.EXPECT().
 						Edit(in, yamlFileType).

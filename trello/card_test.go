@@ -140,7 +140,7 @@ func TestNewCardToCreate(t *testing.T) {
 	}
 
 	// WHEN
-	actual := NewCardToCreate(c)
+	actual := NewCardToCreate(c, []string{})
 
 	// THEN
 	if c.Name != actual.Name {

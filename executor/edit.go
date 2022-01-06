@@ -11,9 +11,11 @@ import (
 
 type edit struct {
 	executor
-	editor       Editor
-	stdin        io.ReadCloser
-	editRenderer renderer.Edit
+	editor        Editor
+	stdin         io.ReadCloser
+	editRenderer  renderer.Edit
+	defaultLabels []string
+	neverPrompt   bool
 }
 
 func (e edit) Execute(args []string) {
@@ -90,7 +92,7 @@ func (e edit) createCard(card trello.Card) (err error) {
 		return
 	}
 
-	ctc := trello.NewCardToCreate(card)
+	ctc := trello.NewCardToCreate(card, e.defaultLabels)
 	var in []byte
 	if in, err = e.editRenderer.MarshalCardToCreate(ctc, lists, labels); err != nil {
 		return
@@ -115,15 +117,18 @@ func (e edit) createCard(card trello.Card) (err error) {
 		trello.LabelFilterOr(trello.LabelFilterByID, trello.LabelFilterByTCliColor, trello.LabelFilterByColor),
 	).IDLabelsInString()
 
-	prompt := promptui.Prompt{
-		Label:     fmt.Sprintf("Do you want to create the card '%s'", createdCard.Name),
-		IsConfirm: true,
-		Stdin:     e.stdin,
+	if !e.neverPrompt {
+		prompt := promptui.Prompt{
+			Label:     fmt.Sprintf("Do you want to create the card '%s'", createdCard.Name),
+			IsConfirm: true,
+			Stdin:     e.stdin,
+		}
+		if _, err = prompt.Run(); err != nil {
+			fmt.Fprintf(e.stdout, "card '%s' not created\n", card.Name)
+			return nil
+		}
 	}
-	if _, err = prompt.Run(); err != nil {
-		fmt.Fprintf(e.stdout, "card '%s' not created\n", card.Name)
-		return nil
-	}
+
 	_, err = e.tr.CreateCard(createdCard)
 	return
 }
@@ -164,13 +169,15 @@ func (e edit) editCard(card trello.Card) (err error) {
 		trello.LabelFilterOr(trello.LabelFilterByID, trello.LabelFilterByTCliColor, trello.LabelFilterByColor),
 	).IDLabelsInString()
 
-	prompt := promptui.Prompt{
-		Label:     fmt.Sprintf("Do you want to update the card '%s'", updatedCard.Name),
-		IsConfirm: true,
-		Stdin:     e.stdin,
-	}
-	if _, err = prompt.Run(); err != nil {
-		return nil
+	if !e.neverPrompt {
+		prompt := promptui.Prompt{
+			Label:     fmt.Sprintf("Do you want to update the card '%s'", updatedCard.Name),
+			IsConfirm: true,
+			Stdin:     e.stdin,
+		}
+		if _, err = prompt.Run(); err != nil {
+			return nil
+		}
 	}
 	_, err = e.tr.UpdateCard(updatedCard)
 	return
@@ -186,13 +193,15 @@ func (e edit) createComment(commentText, idCard string) (err error) {
 
 	editedText := string(out)
 
-	prompt := promptui.Prompt{
-		Label:     "Do you want to create the comment?",
-		IsConfirm: true,
-		Stdin:     e.stdin,
-	}
-	if _, err = prompt.Run(); err != nil {
-		return nil
+	if !e.neverPrompt {
+		prompt := promptui.Prompt{
+			Label:     "Do you want to create the comment?",
+			IsConfirm: true,
+			Stdin:     e.stdin,
+		}
+		if _, err = prompt.Run(); err != nil {
+			return nil
+		}
 	}
 
 	createComment := trello.CreateComment{
@@ -213,13 +222,15 @@ func (e edit) updateComment(comment *trello.Comment) (err error) {
 
 	editedText := string(out)
 
-	prompt := promptui.Prompt{
-		Label:     fmt.Sprintf("Do you want to update the comment '%s'?", comment.ID),
-		IsConfirm: true,
-		Stdin:     e.stdin,
-	}
-	if _, err = prompt.Run(); err != nil {
-		return nil
+	if !e.neverPrompt {
+		prompt := promptui.Prompt{
+			Label:     fmt.Sprintf("Do you want to update the comment '%s'?", comment.ID),
+			IsConfirm: true,
+			Stdin:     e.stdin,
+		}
+		if _, err = prompt.Run(); err != nil {
+			return nil
+		}
 	}
 
 	updateComment := trello.UpdateComment{

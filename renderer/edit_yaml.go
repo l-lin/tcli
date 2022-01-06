@@ -39,27 +39,32 @@ type EditInPrettyYaml struct{}
 func (e EditInPrettyYaml) MarshalCardToCreate(ctc trello.CardToCreate, lists trello.Lists, labels trello.Labels) ([]byte, error) {
 	t := `
 {{- /* ---------------- NAME ---------------- */ -}}
-name: "{{.Card.Name}}"
+name: "{{ .Card.Name }}"
 {{/* ---------------- LISTS ---------------- */ -}}
 # available lists:
 {{- if .Lists -}}
-{{range $list := .Lists}}
-# {{$list.ID}}: {{$list.Name}}
-{{- end -}}
-{{end}}
-idList: "{{.Card.IDList}}"
+  {{ range $list := .Lists }}
+# {{ $list.ID }}: {{ $list.Name }}
+  {{- end -}}
+{{ end }}
+idList: "{{ .Card.IDList }}"
 {{/* ---------------- POSITION ---------------- */ -}}
 # the position of the card in its list: "top", "bottom" or a positive float
 pos: "bottom"
 {{/* ---------------- LABELS ---------------- */ -}}
 # available labels (use color or ID):
 {{- if .Labels -}}
-{{range $label := .Labels}}
-# {{$label.ID}}: {{$label.Color}}{{if $label.Name}} [{{$label.Name}}]{{end }}
-{{- end -}}
-{{end}}
+  {{ range $label := .Labels }}
+# {{ $label.ID }}: {{ $label.Color }}{{ if $label.Name }} [{{ $label.Name }}]{{ end }}
+  {{- end -}}
+{{ end }}
 labels: 
-  - 
+{{- if .Card.Labels -}}
+  {{ range $label := .Card.Labels }}
+  - "{{ $label }}"
+  {{- end }}
+{{- else }}
+  - {{ end }}
 {{/* ---------------- DESCRIPTION ---------------- */ -}}
 desc: |-
   `
@@ -83,34 +88,34 @@ desc: |-
 func (e EditInPrettyYaml) MarshalCardToEdit(cte trello.CardToEdit, lists trello.Lists, labels trello.Labels) ([]byte, error) {
 	t := `
 {{- /* ---------------- NAME ---------------- */ -}}
-name: "{{.Card.Name}}"
+name: "{{ .Card.Name }}"
 {{/* ---------------- CLOSED ---------------- */ -}}
 # whether the card should be archived (closed: true)
-closed: {{.Card.Closed}}
+closed: {{ .Card.Closed }}
 {{/* ---------------- LISTS ---------------- */ -}}
 # available lists:
 {{- if .Lists -}}
-{{range $list := .Lists}}
-# {{$list.ID}}: {{$list.Name}}
-{{- end -}}
-{{end}}
-idList: "{{.Card.IDList}}"
+  {{ range $list := .Lists }}
+# {{ $list.ID }}: {{ $list.Name }}
+  {{- end -}}
+{{ end }}
+idList: "{{ .Card.IDList }}"
 {{/* ---------------- POSITION ---------------- */ -}}
 # the position of the card in its list: "top", "bottom" or a positive float
-pos: {{.Card.Pos}}
+pos: {{ .Card.Pos }}
 {{/* ---------------- LABELS ---------------- */ -}}
 # available labels (use color or ID):
 {{- if .Labels -}}
-{{range $label := .Labels}}
-# {{$label.ID}}: {{$label.Color}}{{if $label.Name}} [{{$label.Name}}]{{end }}
+{{ range $label := .Labels }}
+# {{ $label.ID }}: {{ $label.Color }}{{ if $label.Name }} [{{ $label.Name }}]{{ end }}
 {{- end -}}
-{{end}}
+{{ end }}
 labels:
 {{- if .Card.Labels -}}
-{{range $label := .Card.Labels}}
+  {{ range $label := .Card.Labels }}
   - "{{$label}}"
-{{- end -}}
-{{end}}
+  {{- end -}}
+{{ end }}
 {{/* ---------------- DESCRIPTION ---------------- */ -}}
 desc: |-
 {{htmlSafe .CardDescription}}`

@@ -9,7 +9,8 @@ import (
 
 type rm struct {
 	executor
-	stdin io.ReadCloser
+	stdin       io.ReadCloser
+	neverPrompt bool
 }
 
 func (r rm) Execute(args []string) {
@@ -61,14 +62,17 @@ func (r rm) execute(arg string) {
 		}).
 		orFindCard().
 		doOnCard(func(card *trello.Card) {
-			prompt := promptui.Prompt{
-				Label:     fmt.Sprintf("Archive card '%s'", card.Name),
-				IsConfirm: true,
-				Stdin:     r.stdin,
+			if !r.neverPrompt {
+				prompt := promptui.Prompt{
+					Label:     fmt.Sprintf("Archive card '%s'", card.Name),
+					IsConfirm: true,
+					Stdin:     r.stdin,
+				}
+				if _, err := prompt.Run(); err != nil {
+					return
+				}
 			}
-			if _, err := prompt.Run(); err != nil {
-				return
-			}
+
 			updatedCard := trello.NewUpdateCard(*card)
 			updatedCard.Closed = true
 			if _, err := r.tr.UpdateCard(updatedCard); err != nil {
@@ -78,14 +82,17 @@ func (r rm) execute(arg string) {
 		then().
 		findComment().
 		doOnComment(func(comment *trello.Comment) {
-			prompt := promptui.Prompt{
-				Label:     fmt.Sprintf("Delete comment '%s'", comment.ID),
-				IsConfirm: true,
-				Stdin:     r.stdin,
+			if !r.neverPrompt {
+				prompt := promptui.Prompt{
+					Label:     fmt.Sprintf("Delete comment '%s'", comment.ID),
+					IsConfirm: true,
+					Stdin:     r.stdin,
+				}
+				if _, err := prompt.Run(); err != nil {
+					return
+				}
 			}
-			if _, err := prompt.Run(); err != nil {
-				return
-			}
+
 			if err := r.tr.DeleteComment(comment.Data.Card.ID, comment.ID); err != nil {
 				fmt.Fprintf(r.stderr, "could not delete comment '%s': %s\n", comment.ID, err)
 			}

@@ -82,10 +82,26 @@ trello:
   api_key: yyy
   # Trello base API URL
   base_url: https://trello.com/1
+  # default configuration when starting TCLI in interactive mode
+  default_config:
+    # default board to start TCLI with
+    board:
+      id: 123abc
+      name: "Board name"
+    # default list to start TCLI with
+    list:
+      id: 456def
+      name: "List name"
+    # labels to set when creating new cards
+    labels:
+      - black
+      - red
 # OS command used to edit the Trello resources
 editor: editor
 # Format to use when editing a card (yaml or toml)
 format: yaml
+# set to 'true' to not prompt at each edition / removal
+never_prompt: false
 ```
 
 ## Inspiration

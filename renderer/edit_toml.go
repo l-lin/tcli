@@ -20,9 +20,9 @@ name = "{{.Card.Name}}"
 {{/* ---------------- LISTS ---------------- */ -}}
 # available lists:
 {{- if .Lists -}}
-{{range $list := .Lists}}
+  {{range $list := .Lists}}
 # {{$list.ID}}: {{$list.Name}}
-{{- end -}}
+  {{- end -}}
 {{end}}
 idList = "{{.Card.IDList}}"
 {{/* ---------------- POSITION ---------------- */ -}}
@@ -31,11 +31,17 @@ pos = "bottom"
 {{/* ---------------- LABELS ---------------- */ -}}
 # available labels (use color or ID):
 {{- if .Labels -}}
-{{range $label := .Labels}}
-# {{$label.ID}}: {{$label.Color}}{{if $label.Name}} [{{$label.Name}}]{{end }}
-{{- end -}}
+  {{range $label := .Labels}}
+# {{$label.ID}}: {{$label.Color}}{{if $label.Name}} [{{$label.Name}}]{{end}}
+  {{- end -}}
 {{end}}
-labels = []
+labels = [
+{{- if .Card.Labels -}}
+  {{- range $i, $label := .Card.Labels -}}
+    {{if $i}},{{end}}"{{$label}}"
+  {{- end -}}
+{{- end -}}
+]
 {{/* ---------------- DESCRIPTION ---------------- */ -}}
 desc = '''
 '''
@@ -79,7 +85,7 @@ pos = "{{.Card.Pos}}"
 # available labels (use color or ID):
 {{- if .Labels -}}
 {{range $label := .Labels}}
-# {{$label.ID}}: {{$label.Color}}{{if $label.Name}} [{{$label.Name}}]{{end }}
+# {{$label.ID}}: {{$label.Color}}{{if $label.Name}} [{{$label.Name}}]{{end}}
 {{- end -}}
 {{end}}
 labels = [

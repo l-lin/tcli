@@ -25,7 +25,7 @@ func TestEditInToml_MarshalCardToCreate(t *testing.T) {
 		given    given
 		expected expected
 	}{
-		"card to create": {
+		"card without labels": {
 			given: given{
 				ctc: trello.CardToCreate{
 					Name:   "card",
@@ -54,6 +54,40 @@ pos = "bottom"
 # id sky: sky [name sky]
 # id black: black
 labels = []
+desc = '''
+'''
+`,
+			},
+		},
+		"card with labels": {
+			given: given{
+				ctc: trello.CardToCreate{
+					Name:   "card",
+					IDList: "list 1",
+					Labels: []string{"red", "black"},
+				},
+				boardLists: trello.Lists{
+					{ID: "list 1", Name: "list name 1"},
+					{ID: "list 2", Name: "list name 2"},
+					{ID: "list 3", Name: "list name 3"},
+				},
+				labels: labels,
+			},
+			expected: expected{
+				hasError: false,
+				content: `name = "card"
+# available lists:
+# list 1: list name 1
+# list 2: list name 2
+# list 3: list name 3
+idList = "list 1"
+# the position of the card in its list: "top", "bottom" or a positive float
+pos = "bottom"
+# available labels (use color or ID):
+# id red: red [name red]
+# id sky: sky [name sky]
+# id black: black
+labels = ["red","black"]
 desc = '''
 '''
 `,

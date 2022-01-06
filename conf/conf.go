@@ -8,22 +8,41 @@ const (
 	defaultTrelloApiBaseURL = "https://trello.com/1"
 	defaultEditor           = "editor"
 	defaultFormat           = "yaml"
+	defaultPrompt           = false
 )
 
 var allFormats = []string{"yaml", "toml"}
 
 // Conf of the application
 type Conf struct {
-	Trello `yaml:"trello"`
-	Editor string `yaml:"editor"`
-	Format string `yaml:"format"`
+	Trello      `yaml:"trello"`
+	Editor      string `yaml:"editor"`
+	Format      string `yaml:"format"`
+	NeverPrompt bool   `yaml:"never_prompt"`
 }
 
 type Trello struct {
-	AppName     string `yaml:"-"`
-	ApiKey      string `yaml:"api_key"`
-	AccessToken string `yaml:"access_token"`
-	BaseURL     string `yaml:"base_url"`
+	AppName             string `yaml:"-"`
+	ApiKey              string `yaml:"api_key"`
+	AccessToken         string `yaml:"access_token"`
+	BaseURL             string `yaml:"base_url"`
+	TrelloDefaultConfig `yaml:"default_config"`
+}
+
+type TrelloDefaultConfig struct {
+	TrelloDefaultBoard `yaml:"board"`
+	TrelloDefaultList  `yaml:"list"`
+	Labels             []string `yaml:"labels"`
+}
+
+type TrelloDefaultBoard struct {
+	ID   string `yaml:"id"`
+	Name string `yaml:"name"`
+}
+
+type TrelloDefaultList struct {
+	ID   string `yaml:"id"`
+	Name string `yaml:"name"`
 }
 
 func NewConf() *Conf {
@@ -31,8 +50,9 @@ func NewConf() *Conf {
 		Trello: Trello{
 			BaseURL: defaultTrelloApiBaseURL,
 		},
-		Editor: defaultEditor,
-		Format: defaultFormat,
+		Editor:      defaultEditor,
+		Format:      defaultFormat,
+		NeverPrompt: defaultPrompt,
 	}
 }
 

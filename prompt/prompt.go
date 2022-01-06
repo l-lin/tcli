@@ -16,11 +16,24 @@ import (
 )
 
 func NewPrompt(conf conf.Conf, tr trello.Repository, r renderer.Renderer) *Prompt {
+	session := &trello.Session{}
+	if conf.TrelloDefaultBoard.ID != "" {
+		session.Board = &trello.Board{
+			ID:   conf.TrelloDefaultBoard.ID,
+			Name: conf.TrelloDefaultBoard.Name,
+		}
+	}
+	if conf.TrelloDefaultList.ID != "" {
+		session.List = &trello.List{
+			ID:   conf.TrelloDefaultList.ID,
+			Name: conf.TrelloDefaultList.Name,
+		}
+	}
 	return &Prompt{
 		conf:    conf,
 		tr:      tr,
 		r:       r,
-		Session: &trello.Session{},
+		Session: session,
 		stdout:  os.Stdout,
 		stderr:  os.Stderr,
 	}

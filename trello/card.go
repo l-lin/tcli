@@ -72,12 +72,13 @@ func NewCreateCard(card Card) CreateCard {
 	}
 }
 
-func NewCardToCreate(card Card) CardToCreate {
+func NewCardToCreate(card Card, defaultLabels []string) CardToCreate {
 	return CardToCreate{
 		Name:   card.Name,
 		Desc:   card.Desc,
 		IDList: card.IDList,
 		Pos:    strconv.FormatFloat(card.Pos, 'f', 2, 64),
+		Labels: defaultLabels,
 	}
 }
 
